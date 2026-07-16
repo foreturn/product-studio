@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "帮助氛围编程用户将简短提示词扩展为边界清晰、由产品研发角色协作、证据验收并可安全发布的软件增量。",
   "author": {
-    "name": "本地开发者"
+    "name": "foreturn"
   },
   "keywords": [
     "vibe-coding",
@@ -17,7 +17,7 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "产品工作室",
+    "displayName": "product-studio",
     "shortDescription": "把简短想法推进为边界清晰、经过验证的软件。",
     "longDescription": "从简短提示词联想用户旅程、范围与约束，由产品、架构、前端、后端、验收和发布角色分工推进，以持久化契约、逐项证据、上线验证与反馈回流闭合产品开发生命周期。",
     "developerName": "本地开发者",
