@@ -1,0 +1,19 @@
+{
+  "name": "product-studio",
+  "version": "0.3.0",
+  "description": "帮助氛围编程用户将简短提示词扩展为边界清晰、由产品研发角色协作、证据验收并可安全发布的软件增量。",
+  "author": {
+    "name": "本地开发者"
+  },
+  "keywords": [
+    "vibe-coding",
+    "prompt-enrichment",
+    "product-development",
+    "requirements",
+    "frontend",
+    "backend",
+    "architecture",
+    "delivery"
+  ],
+  "skills": "./skills/"
+}

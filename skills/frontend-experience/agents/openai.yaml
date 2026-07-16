@@ -1,0 +1,4 @@
+interface:
+  display_name: "前端与体验负责人"
+  short_description: "实现易用、交互简洁、布局合理、色彩协调、响应式且可访问的界面"
+  default_prompt: "使用 $frontend-experience 将这个流程实现为易用、简洁、协调且经过真实验收的界面。"

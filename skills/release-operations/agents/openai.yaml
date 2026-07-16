@@ -1,0 +1,4 @@
+interface:
+  display_name: "发布与运行负责人"
+  short_description: "管理发布策略、制品配置、迁移、观测、回滚、事故与反馈回流"
+  default_prompt: "使用 $release-operations 制定可追溯、可观测、可回滚的发布与运行方案。"
