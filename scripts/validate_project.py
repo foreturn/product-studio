@@ -132,10 +132,14 @@ def main() -> int:
     errors: list[str] = []
     codex_manifest = ROOT / ".codex-plugin" / "plugin.json"
     claude_manifest = ROOT / ".claude-plugin" / "plugin.json"
+    claude_marketplace_manifest = ROOT / ".claude-plugin" / "marketplace.json"
+    marketplace_manifest = ROOT / ".agents" / "plugins" / "marketplace.json"
     product_docs = ROOT / "docs" / "product" / "product-studio"
     required = [
         codex_manifest,
         claude_manifest,
+        claude_marketplace_manifest,
+        marketplace_manifest,
         ROOT / "templates" / "product-brief.md",
         ROOT / "templates" / "feature-spec.md",
         ROOT / "templates" / "architecture-decision.md",
@@ -153,6 +157,8 @@ def main() -> int:
 
     codex = load_json(codex_manifest, errors)
     claude = load_json(claude_manifest, errors)
+    claude_marketplace = load_json(claude_marketplace_manifest, errors)
+    marketplace = load_json(marketplace_manifest, errors)
     if isinstance(codex, dict) and isinstance(claude, dict):
         for field in ("name", "description", "keywords", "skills"):
             if codex.get(field) != claude.get(field):
@@ -161,6 +167,62 @@ def main() -> int:
             str(claude.get("version", ""))
         ):
             errors.append("Manifest base versions differ")
+
+        author = codex.get("author")
+        interface = codex.get("interface")
+        if not isinstance(author, dict) or not isinstance(interface, dict):
+            errors.append("Codex manifest publisher metadata is incomplete")
+        elif author.get("name") != interface.get("developerName"):
+            errors.append("Codex author name and developer name differ")
+
+    if isinstance(claude, dict) and isinstance(claude_marketplace, dict):
+        if claude_marketplace.get("name") != "foreturn":
+            errors.append("Claude marketplace name must be foreturn")
+        if not claude_marketplace.get("description"):
+            errors.append("Claude marketplace description is missing")
+
+        owner = claude_marketplace.get("owner")
+        author = claude.get("author")
+        if not isinstance(owner, dict) or not isinstance(author, dict):
+            errors.append("Claude marketplace publisher metadata is incomplete")
+        elif owner.get("name") != author.get("name"):
+            errors.append("Claude marketplace owner and plugin author differ")
+
+        plugins = claude_marketplace.get("plugins")
+        plugin = plugins[0] if isinstance(plugins, list) and len(plugins) == 1 else None
+        if not isinstance(plugin, dict):
+            errors.append("Claude marketplace must contain exactly one plugin")
+        else:
+            if plugin.get("name") != claude.get("name"):
+                errors.append("Claude marketplace plugin name differs from manifest")
+            if plugin.get("source") != "./":
+                errors.append("Claude marketplace plugin source must be the repository root")
+            if plugin.get("description") != claude.get("description"):
+                errors.append("Claude marketplace description differs from manifest")
+
+    if isinstance(codex, dict) and isinstance(marketplace, dict):
+        if marketplace.get("name") != "foreturn":
+            errors.append("Marketplace name must be foreturn")
+
+        plugins = marketplace.get("plugins")
+        plugin = plugins[0] if isinstance(plugins, list) and len(plugins) == 1 else None
+        if not isinstance(plugin, dict):
+            errors.append("Marketplace must contain exactly one plugin")
+        else:
+            if plugin.get("name") != codex.get("name"):
+                errors.append("Marketplace plugin name differs from Codex manifest")
+            source = plugin.get("source")
+            if not isinstance(source, dict) or source.get("source") != "url":
+                errors.append("Marketplace plugin must use a URL source")
+            elif source.get("url") != "https://github.com/foreturn/product-studio.git":
+                errors.append("Marketplace plugin URL is incorrect")
+            policy = plugin.get("policy")
+            if not isinstance(policy, dict) or policy.get("installation") != "AVAILABLE":
+                errors.append("Marketplace installation policy must be AVAILABLE")
+            if not isinstance(policy, dict) or policy.get("authentication") != "ON_INSTALL":
+                errors.append("Marketplace authentication policy must be ON_INSTALL")
+            if plugin.get("category") != "Productivity":
+                errors.append("Marketplace category must be Productivity")
 
     codex_source = codex_manifest.read_text(encoding="utf-8")
     if re.search(r"\\u[0-9a-fA-F]{4}", codex_source):

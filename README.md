@@ -38,8 +38,11 @@ product-delivery
 
 ```text
 product-studio/
+|-- .agents/plugins/marketplace.json
 |-- .codex-plugin/plugin.json
-|-- .claude-plugin/plugin.json
+|-- .claude-plugin/
+|   |-- marketplace.json
+|   `-- plugin.json
 |-- skills/
 |   |-- product-delivery/
 |   |-- product-discovery/
@@ -55,6 +58,28 @@ product-studio/
 `-- assets/
 ```
 
+## 安装
+
+### Codex
+
+从 GitHub 向 Codex 注册 marketplace，再安装其中的插件：
+
+```powershell
+codex plugin marketplace add foreturn/product-studio
+codex plugin add product-studio@foreturn
+```
+
+第一条命令只注册 marketplace；第二条命令才会安装 `product-studio`。仓库更新后，可运行 `codex plugin marketplace upgrade foreturn` 刷新 marketplace，再按 Codex 提示升级插件。
+
+### Claude Code
+
+Claude Code 使用独立的 marketplace 清单与安装命令：
+
+```powershell
+claude plugin marketplace add foreturn/product-studio
+claude plugin install product-studio@foreturn
+```
+
 ## 校验
 
 运行项目检查：
@@ -63,10 +88,8 @@ product-studio/
 python scripts/validate_project.py
 ```
 
-Codex 插件使用内置 `plugin-creator` 校验器。Claude Code 使用当前本机 CLI 支持的命令：
+Codex 插件使用内置 `plugin-creator` 校验器。Claude Code 同时严格校验插件与 marketplace 清单：
 
 ```powershell
-claude plugin validate C:\Users\root\plugins\product-studio
+claude plugin validate --strict C:\Users\root\plugins\product-studio
 ```
-
-较新的 Claude Code 版本可能支持 `--strict`，本机版本 `2.1.118` 尚不支持。

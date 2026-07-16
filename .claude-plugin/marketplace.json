@@ -1,0 +1,14 @@
+{
+  "name": "foreturn",
+  "owner": {
+    "name": "foreturn"
+  },
+  "description": "foreturn 的产品开发工作流插件集合。",
+  "plugins": [
+    {
+      "name": "product-studio",
+      "source": "./",
+      "description": "帮助氛围编程用户将简短提示词扩展为边界清晰、由产品研发角色协作、证据验收并可安全发布的软件增量。"
+    }
+  ]
+}
