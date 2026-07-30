@@ -83,6 +83,13 @@ TEMPLATE_SECTIONS = {
         "## 停止条件与回滚",
         "## 反馈与下一轮迭代",
     ),
+    "memory.md": (
+        "## 关注事实",
+        "## 关键决策",
+        "## 约定与偏好",
+        "## 待续事项",
+        "## 最近变更",
+    ),
 }
 
 
@@ -146,6 +153,7 @@ def main() -> int:
         ROOT / "templates" / "api-contract.md",
         ROOT / "templates" / "acceptance-report.md",
         ROOT / "templates" / "release-plan.md",
+        ROOT / "templates" / "memory.md",
         product_docs / "product-brief.md",
         product_docs / "feature-spec.md",
         product_docs / "architecture-decisions.md",
@@ -228,6 +236,15 @@ def main() -> int:
     if re.search(r"\\u[0-9a-fA-F]{4}", codex_source):
         errors.append("Codex manifest contains escaped Chinese Unicode text")
 
+    hooks_manifest = ROOT / "hooks" / "hooks.json"
+    if not hooks_manifest.is_file():
+        errors.append("Missing hooks/hooks.json")
+    elif "SessionStart" not in hooks_manifest.read_text(encoding="utf-8"):
+        errors.append("hooks/hooks.json must register a SessionStart hook")
+    hooks_loader = ROOT / "hooks" / "scripts" / "load_role_memories.py"
+    if not hooks_loader.is_file():
+        errors.append("Missing hooks/scripts/load_role_memories.py")
+
     skill_names: set[str] = set()
     for skill_dir in sorted(path for path in SKILLS.iterdir() if path.is_dir()):
         skill_file = skill_dir / "SKILL.md"
@@ -245,6 +262,10 @@ def main() -> int:
 
         content = skill_file.read_text(encoding="utf-8")
         require_terms(skill_file, content, COMMON_SKILL_SECTIONS, errors)
+        if f"docs/memory/{name}.md" not in content:
+            errors.append(
+                f"Missing role memory reference docs/memory/{name}.md: {skill_dir.name}"
+            )
         capability_terms = SKILL_CAPABILITY_TERMS.get(name)
         if capability_terms:
             require_terms(skill_file, content, capability_terms, errors)
@@ -288,6 +309,12 @@ def main() -> int:
         SKILLS / "product-delivery" / "SKILL.md",
         delivery_skill,
         CORE_SKILLS - {"product-delivery"},
+        errors,
+    )
+    require_terms(
+        SKILLS / "product-delivery" / "SKILL.md",
+        delivery_skill,
+        ("角色记忆", "docs/memory/"),
         errors,
     )
 
