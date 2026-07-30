@@ -1,4 +1,0 @@
-interface:
-  display_name: "交付验收负责人"
-  short_description: "以风险驱动策略验证体验、契约、数据、安全、性能与回归证据"
-  default_prompt: "使用 $delivery-verification 以风险驱动策略逐项审计产品、体验、契约与回归证据。"

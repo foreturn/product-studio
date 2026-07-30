@@ -1,0 +1,4 @@
+interface:
+  display_name: "产品经理"
+  short_description: "定义用户问题、旅程、优先级、范围、成功指标与验收标准"
+  default_prompt: "以产品经理身份使用 $discovery，从当前项目证据定义用户问题、旅程、范围、假设与可验收标准。"

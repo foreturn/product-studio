@@ -1,0 +1,4 @@
+interface:
+  display_name: "前端与体验负责人"
+  short_description: "实现易用、状态完整、响应式、可访问且经真实验收的界面"
+  default_prompt: "以前端与体验负责人身份使用 $frontend，从用户任务与状态出发实现并真实验收当前项目界面。"

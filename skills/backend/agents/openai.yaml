@@ -1,0 +1,4 @@
+interface:
+  display_name: "后端负责人"
+  short_description: "实现领域模型、接口、数据、权限、一致性、可靠性与可观测性"
+  default_prompt: "以后端负责人身份使用 $backend，依据当前项目契约落实领域不变量、接口、数据、安全与失败恢复。"

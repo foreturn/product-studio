@@ -1,0 +1,4 @@
+interface:
+  display_name: "独立验收负责人"
+  short_description: "独立追溯要求，以风险驱动策略审计当前证据与交付结论"
+  default_prompt: "以独立验收负责人身份使用 $verification，从原始意图逐项审计当前项目的实现、风险与直接证据。"

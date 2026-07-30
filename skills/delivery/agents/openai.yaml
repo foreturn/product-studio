@@ -1,0 +1,4 @@
+interface:
+  display_name: "产品交付负责人"
+  short_description: "按需编排角色、依赖、风险、项目记忆、并行条件与阶段门禁"
+  default_prompt: "以产品交付负责人身份使用 $delivery，按需选择最小角色链，并仅在门禁通过且写入不冲突时并行推进。"

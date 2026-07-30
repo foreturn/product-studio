@@ -1,4 +1,0 @@
-interface:
-  display_name: "产品交付负责人"
-  short_description: "拆解短提示词，协调角色、依赖、风险、门禁与完整交付闭环"
-  default_prompt: "使用 $product-delivery 将这句简短想法拆成风险可控、分角色实施并逐项验收的完整增量。"

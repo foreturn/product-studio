@@ -1,4 +1,0 @@
-interface:
-  display_name: "系统架构师"
-  short_description: "设计领域边界、契约、一致性、安全、可靠性、可观测与迁移"
-  default_prompt: "使用 $system-design 根据产品契约设计领域边界、质量属性、故障恢复与演进方案。"

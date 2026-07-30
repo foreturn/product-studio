@@ -1,4 +1,0 @@
-interface:
-  display_name: "后端负责人"
-  short_description: "设计领域模型、接口、数据、权限、一致性、可靠性与可观测性"
-  default_prompt: "使用 $backend-contract 实现领域模型、接口、数据、安全和故障恢复契约。"
