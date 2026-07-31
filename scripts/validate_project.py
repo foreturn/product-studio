@@ -43,7 +43,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
                 "决策与变更控制",
                 "交付沟通",
             ),
-            "d6f54bb323aebae753d6fe07650eb7e197654302e2a833720335a1a7d1802bdd",
+            "ac34e4102c70f9740260a28fe91caa2c79e33c0b75ee70fc58ff02464c8f953b",
         ),
     },
     "design": {
