@@ -3,7 +3,7 @@ schema: 3
 memory: design
 scope: current-project-code
 project_root: "."
-updated_at: "2026-07-31T18:53:06+08:00"
+updated_at: "2026-07-31T21:52:42+08:00"
 ---
 
 # design 代码事实
@@ -36,8 +36,8 @@ updated_at: "2026-07-31T18:53:06+08:00"
 
 ### design:system:invariant:capability-executable-detail
 
-- **当前实现**：五个 Skill 共加载六份专业能力 reference，正文逐字恢复自 Git 节点 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194`：`router` 使用原交付编排卷，`design` 按产品模式和系统模式分别使用原产品设计卷与系统架构卷，后端、前端、验证各使用本领域原卷。六卷均保持目录、角色职责、核心能力、专业决策顺序、交付证据、常见误判六章及 45 项核心能力；reference 不保存触发、路由、记忆或外部操作规则。
-- **源码锚点**：`skills/router/references/delivery-capabilities.md#核心能力`；`skills/design/references/product-design-principles.md#核心能力`；`skills/design/references/architecture-principles.md#核心能力`；`skills/backend/references/backend-design-principles.md#核心能力`；`skills/frontend/references/frontend-design-principles.md#核心能力`；`skills/verification/references/verification-principles.md#核心能力`
-- **关联与消费者**：五份 `SKILL.md` 的条件加载规则与 `scripts/validate_project.py#validate_reference` 的来源哈希、章节、能力集合及正文深度门禁。
-- **验证证据**：六个工作树 Git blob 与该节点对应原文件逐一相等；`scripts/validate_project.py#validate_reference` 另以规范化 SHA-256、六章精确顺序、45 项核心能力名称及每项最低正文深度复核，并通过篡改原文的负向用例证明门禁有效。
-- **重验条件**：来源节点、reference 路径或内容、能力名称、六章结构、模式加载方式或哈希门禁发生变化。
+- **当前实现**：五个 Skill 共加载五份专业能力 reference，内容以 Git 节点 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，并删去独立的决策顺序与交付证据章节；`router` 使用交付编排卷，`design` 的产品模式依 `SKILL.md` 内置契约执行、系统模式使用系统架构卷，后端、前端、验证各使用本领域卷。五卷均保持目录、角色职责、核心能力、常见误判四章及 38 项核心能力；reference 不保存触发、路由、记忆或外部操作规则。
+- **源码锚点**：`skills/router/references/delivery-capabilities.md#核心能力`；`skills/design/SKILL.md#产品模式的下游契约`；`skills/design/references/architecture-principles.md#核心能力`；`skills/backend/references/backend-design-principles.md#核心能力`；`skills/frontend/references/frontend-design-principles.md#核心能力`；`skills/verification/references/verification-principles.md#核心能力`
+- **关联与消费者**：五份 `SKILL.md` 的条件加载规则与 `scripts/validate_project.py#validate_reference` 的裁剪后内容哈希、章节、能力集合及正文深度门禁。
+- **验证证据**：五份 reference 与 `scripts/validate_project.py` 中固定的规范化 SHA-256 基线逐一相等；校验器另以四章精确顺序、38 项核心能力名称及每项最低正文深度复核，并通过篡改正文的负向用例证明门禁有效。
+- **重验条件**：来源节点、reference 路径或内容、能力名称、四章结构、模式加载方式或哈希门禁发生变化。

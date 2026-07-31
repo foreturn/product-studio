@@ -3,7 +3,7 @@ schema: 3
 memory: verification
 scope: current-project-code
 project_root: "."
-updated_at: "2026-07-31T18:53:06+08:00"
+updated_at: "2026-07-31T21:52:42+08:00"
 ---
 
 # verification 代码事实
@@ -12,10 +12,10 @@ updated_at: "2026-07-31T18:53:06+08:00"
 
 ### verification:check:plugin:static-contract
 
-- **当前实现**：项目提供单一静态校验入口，检查五技能精确集合、六份与 Git 节点原文哈希一致的能力 reference、四个 schema 3 代码事实模板、按 Owner 完整匹配的四段语义键、带 `#精确定位` 的本地源码锚点及 Markdown 真实标题、双端 manifest 与 marketplace 一致性、旧 callable 清除、局部任务直达、全栈 API 契约里程碑及生产外部操作的超范围边界；`--self-test` 会在临时副本中注入 13 类退化并要求全部被拒绝。
+- **当前实现**：项目提供单一静态校验入口，检查五技能精确集合、五份裁剪后固定哈希与四章结构的能力 reference、四个 schema 3 代码事实模板、按 Owner 完整匹配的四段语义键、带 `#精确定位` 的本地源码锚点及 Markdown 真实标题、双端 manifest 与 marketplace 一致性、旧 callable 清除、局部任务直达、全栈 API 契约里程碑及生产外部操作的超范围边界；`--self-test` 会在临时副本中注入 13 类退化并要求全部被拒绝。
 - **源码锚点**：`scripts/validate_project.py#main`；`scripts/README.md#校验脚本`；`README.md#校验`
-- **关联与消费者**：五份 Skill、六份专业能力 reference、四份模板、当前 `design`／`verification` 事实文件及 Codex／Claude 插件清单。
-- **验证证据**：稳定检查资产为 `scripts/validate_project.py#validate`、`scripts/validate_project.py#run_negative_self_tests` 及其 13 个隔离突变用例；适用环境为插件根目录、Python 3 与 UTF-8 模式，复现命令是 `python -X utf8 scripts/validate_project.py --self-test`；关键断言是基线无错误、每个突变均被拒绝且临时副本不改当前工作树，覆盖技能集合、reference 集合与原文哈希、事实字段与语义键、源码锚点、模板骨架、旧调用及路由契约退化。
+- **关联与消费者**：五份 Skill、五份专业能力 reference、四份模板、当前 `design`／`verification` 事实文件及 Codex／Claude 插件清单。
+- **验证证据**：稳定检查资产为 `scripts/validate_project.py#validate`、`scripts/validate_project.py#run_negative_self_tests` 及其 13 个隔离突变用例；适用环境为插件根目录、Python 3 与 UTF-8 模式，复现命令是 `python -X utf8 scripts/validate_project.py --self-test`；关键断言是基线无错误、每个突变均被拒绝且临时副本不改当前工作树，覆盖技能集合、reference 集合与裁剪后内容哈希、事实字段与语义键、源码锚点、模板骨架、旧调用及路由契约退化。
 - **重验条件**：校验器、任一 Skill/reference/template/memory、README、Codex 或 Claude 清单发生变化。
 
 ### verification:constraint:external-operation:scope

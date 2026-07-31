@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-REFERENCE_COMMIT = "9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194"
+REFERENCE_BASE_COMMIT = "9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194"
 SKILL_ORDER = ("router", "design", "backend", "frontend", "verification")
 SKILLS = set(SKILL_ORDER)
 MEMORY_OWNERS = ("design", "backend", "frontend", "verification")
@@ -29,8 +29,6 @@ REFERENCE_SECTIONS = (
     "目录",
     "角色职责",
     "核心能力",
-    "专业决策顺序",
-    "交付证据",
     "常见误判",
 )
 REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
@@ -45,22 +43,10 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
                 "决策与变更控制",
                 "交付沟通",
             ),
-            "681c0491f45d47eecec89da3ba4df6698075e064ff053c23da2c8ed48e644c97",
+            "d6f54bb323aebae753d6fe07650eb7e197654302e2a833720335a1a7d1802bdd",
         ),
     },
     "design": {
-        "references/product-design-principles.md": (
-            (
-                "问题定义",
-                "用户与任务建模",
-                "证据化联想",
-                "旅程与状态设计",
-                "范围与优先级",
-                "成功衡量",
-                "澄清沟通",
-            ),
-            "6970dc33ee93e04ebea79ef319e06a687c7f8052836e7bb41c690d4f4f7829b3",
-        ),
         "references/architecture-principles.md": (
             (
                 "系统建模",
@@ -71,7 +57,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
                 "可观测与可运行性",
                 "演进与迁移",
             ),
-            "7d75d13a6158de9af1cb94c6e00f5a010f3ec0ca84b90c40ea8939120b6b65a6",
+            "4bad1430de9a25bbe80fe5343817c542eea81bfe99d45a1a7ef83706501317aa",
         ),
     },
     "backend": {
@@ -86,7 +72,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
                 "性能与可观测性",
                 "测试策略",
             ),
-            "fa491e7db845eb4f966bb1ab40236b06c410d91ea423dc1cd70a9c26da71ce45",
+            "87892dce9392a8afb4fefc57db6fe7fcee6ffa55db447b187d05f1306d825bed",
         ),
     },
     "frontend": {
@@ -101,7 +87,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
                 "组件与状态工程",
                 "前端性能与视觉验收",
             ),
-            "c17674dad45526690db2b45834f0573b457224610aa62a0599ff0f2fb954ccf3",
+            "26b01b74338db328ae288c31a040a7b69e21d795efa9a489d52c007c5c135dcb",
         ),
     },
     "verification": {
@@ -116,7 +102,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
                 "回归分析",
                 "证据审计",
             ),
-            "b2faca2b0ab3a2f78c918678bee8a509e171ab7d3c7da26102dd9e5c9b5f2b3e",
+            "16ad4c5f94fcd5f7d68ddf7c379ce78d487f1b8631cd45f50e27026fbccc13d0",
         ),
     },
 }
@@ -361,7 +347,8 @@ def validate_reference(
     digest = hashlib.sha256(content.replace("\r\n", "\n").encode("utf-8")).hexdigest()
     if digest != expected_sha256:
         errors.append(
-            f"Capability reference differs from {REFERENCE_COMMIT}: {rel(path, root)}"
+            "Capability reference differs from the curated baseline derived from "
+            f"{REFERENCE_BASE_COMMIT}: {rel(path, root)}"
         )
     actual_sections = tuple(headings(content, 2))
     if actual_sections != REFERENCE_SECTIONS:
@@ -481,7 +468,7 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
                 "只用系统模式",
                 "双模式",
                 "跳过本技能",
-                "product-design-principles.md",
+                "产品模式不加载独立 reference",
                 "architecture-principles.md",
                 "不属于 `docs/product-studio/` 代码事实记忆",
             ),
@@ -623,7 +610,7 @@ def validate_readme(root: Path, errors: list[str]) -> None:
             "`frontend`",
             "`verification`",
             "9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194",
-            "目录—角色职责—核心能力—专业决策顺序—交付证据—常见误判",
+            "目录—角色职责—核心能力—常见误判",
             "当前代码事实",
             "router` 不拥有记忆",
         ),
@@ -794,7 +781,8 @@ def main() -> int:
             print(f"[ERROR] {error}")
         return 1
     suffix = ", negative regressions rejected" if "--self-test" in sys.argv[1:] else ""
-    print(f"[OK] Product Studio: {len(SKILL_ORDER)} skills, 6 restored capability references, {len(MEMORY_OWNERS)} code-memory templates{suffix}")
+    reference_count = sum(len(references) for references in REFERENCE_SPECS.values())
+    print(f"[OK] Product Studio: {len(SKILL_ORDER)} skills, {reference_count} curated capability references, {len(MEMORY_OWNERS)} code-memory templates{suffix}")
     return 0
 
 
