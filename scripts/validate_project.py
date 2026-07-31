@@ -6,11 +6,27 @@ from __future__ import annotations
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "skills"
+ROOT_REFERENCES = ROOT / "references"
+ROOT_REFERENCE_LINK_PATTERN = re.compile(
+    r"(?:^|[\s`(\"'=])(?P<link>(?:(?:\.\.[\\/])+|[\\/])references"
+    r"(?:[\\/]|(?=$|[\s`)\]>'\"])))",
+    re.IGNORECASE | re.MULTILINE,
+)
+README_ROOT_REFERENCE_LINK_PATTERN = re.compile(
+    r"(?:^|[\s`(\"'=])(?P<link>references[\\/]"
+    r"[^\s`)\]>'\"]+)",
+    re.IGNORECASE | re.MULTILINE,
+)
+TEMPLATE_CAPABILITY_LINK_PATTERN = re.compile(
+    r"\.\./skills/[a-z0-9]+/references/[A-Za-z0-9_.-]+\.md",
+    re.IGNORECASE,
+)
 CORE_SKILL_ORDER = (
     "delivery",
     "discovery",
@@ -43,8 +59,13 @@ COMMON_SKILL_SECTIONS = (
 )
 SKILL_REFERENCE_ONLY_SECTIONS = (
     "## 职责",
+    "## 角色职责",
     "## 核心能力",
     "## 专业决策顺序",
+    "## 能力组合",
+    "## 完成判据",
+    "## 交付证据",
+    "## 常见误判",
 )
 REFERENCE_CAPABILITY_TERMS = {
     "delivery": ("意图归类", "切片与排程", "依赖协调", "风险管理", "决策与变更控制", "质量门禁", "交付沟通"),
@@ -77,74 +98,88 @@ SKILL_INVOCATION_TERM_GROUPS = (
     ("固定责任角色", "只由本角色"),
     ("串行",),
 )
-PROJECT_MEMORY_TERM_GROUPS = (
-    ("当前项目根",),
+ROLE_MEMORY_TERM_GROUPS = (
     ("docs/product-studio/",),
-    ("跨会话",),
-    ("当前项目事实基线",),
-    ("用户显式提供",),
+    ("事实卡",),
+    ("当前仍成立", "已经成立"),
+    ("本角色",),
+    ("角色专属细节",),
+    ("精确定位",),
+    ("成立证据",),
+    ("关联事实",),
+    ("下游约束",),
     ("外部参考",),
-    ("核验适用性",),
     ("不会自动成为当前项目事实",),
+    ("当前用户确认", "仓库实现", "本项目验证"),
     ("只读",),
-    ("不授权写入", "不自动授权写入", "不授权创建或更新"),
-    ("氛围编程完成前",),
-    ("动态更新", "动态收口"),
-    ("同名",),
-    ("精确来源", "精确依据"),
-    ("失效条件",),
-    ("时间戳记录核验时点",),
-    ("不单独构成新证据",),
+    ("过程阶段",),
+    ("任务终态", "可复核终态"),
+    ("适用验证完成后", "全部适用验证结束后"),
+    ("无需再次单独询问",),
+    ("事实增量",),
+    ("稳定 ID",),
+    ("状态与置信度",),
+    ("取代关系",),
+    ("重验条件", "失效条件"),
+    ("不得全量覆盖", "不全量覆盖", "原样边界"),
+    ("未受影响", "前后差分"),
+    ("无事实增量",),
+    ("schema 2",),
+    ("模板仅用于首次创建",),
+    ("既有 schema 2 新增事实时",),
+    ("不再读取或套用模板",),
+    ("本角色只拥有",),
+    ("只增量合并本角色", "各拥有者只增量合并自己"),
 )
-PROJECT_MEMORY_REFERENCE_SECTION_TERMS = {
-    "## 定义与位置": (
-        "<当前项目根>/docs/product-studio/",
-        "产品名称只作为文档元数据保存",
-        "不是项目事实的持久化位置",
+ROLE_MEMORY_FORBIDDEN_TERMS = (
+    "过程阶段允许写",
+    "过程阶段可以写",
+    "过程阶段可写",
+    "所有角色共同改写",
+    "所有角色都可改写",
+    "允许" + "全量覆盖",
+    "可以" + "全量覆盖",
+)
+ROLE_MEMORY_FORBIDDEN_PATTERNS = (
+    re.compile(
+        r"过程阶段.{0,16}(?:允许|可以|可|能够|应当|应该|须|必须)"
+        r".{0,12}(?:写入|更新|创建|改写|编辑)"
     ),
-    "## 作用域与隔离": (
-        "当前项目根是事实归属与持久化隔离键",
-        "不同仓库中的同名 `docs/product-studio/` 分别描述各自项目",
-        "不再为其增加路径层级",
-        "带来源与适用范围的显式引用完成交接",
+    re.compile(
+        r"(?:所有|全部|各)(?:受影响)?角色.{0,16}"
+        r"(?:共同|均可|都可|可以共同|可共同).{0,16}"
+        r"(?:改写|编辑|更新|写入|维护)"
     ),
-    "## 信息来源与适用性": (
-        "当前项目事实基线",
-        "用户显式提供的链接、页面、截图、设计稿、文档或其他项目材料",
-        "外部参考",
-        "不会自动成为当前项目事实",
-        "精确来源、提取特征、用途、时间与置信度",
-        "当前用户确认、当前仓库实现、权威 Schema、运行证据或本项目验证",
-        "信息读取与持久化写入是两条独立边界",
-        "参考材料可以进入分析上下文",
-    ),
-    "## 命名与寻址": (
-        "七个 Skill 使用单个小写英文单词",
-        "templates/<skill>.md",
-        "docs/product-studio/<skill>.md",
-        "活跃寻址使用这一条同名路径",
-        "旧名称与旧文件只作为迁移历史保留",
-    ),
-    "## 读取与更新": (
-        "当前用户指令与当前仓库事实优先于旧记忆",
-        "只读任务不授权创建或更新项目记忆",
-        "凭据、令牌、私钥、会话密钥及其他秘密不属于记忆正文",
-    ),
-    "## AI 记忆结构": (
-        "verified_revision",
-        "稳定 ID 与精确来源",
-        "动作队列",
-        "交接与失效条件",
-        "时间戳本身不是更新证据",
-    ),
-    "## 动态收口": (
-        "每次获准的氛围编程完成前",
-        "每个参与或受影响角色必须复核并动态更新",
-        "已复核、无变化",
-        "氛围编程仍处于未收口状态",
-    ),
-    "## 角色与记忆文件": (),
-}
+)
+DELIVERY_MEMORY_ROUTING_TERM_GROUPS = (
+    ("跨角色总路由",),
+    ("受影响角色",),
+    ("产品／架构", "产品/架构"),
+    ("前端",),
+    ("后端",),
+    ("`verification`",),
+    ("`release`",),
+    ("`delivery`",),
+    ("各拥有者",),
+    ("只增量合并自己",),
+    ("`delivery` 不代写专项事实",),
+    ("任一写入失败",),
+    ("不反向改变", "不倒改"),
+    ("不得制造悬空引用",),
+)
+DELIVERY_MEMORY_ROUTE_SEQUENCE = (
+    "产品／架构",
+    "前端",
+    "后端",
+    "`verification`",
+    "`release`",
+    "`delivery`",
+)
+DELIVERY_MEMORY_FORBIDDEN_TERMS = (
+    "`delivery` 可代写专项事实",
+    "由 `delivery` 代写专项事实",
+    "`delivery` 代写专项事实",
+)
 TEMPLATE_ROLE_OWNERS = {f"{name}.md": name for name in CORE_SKILL_ORDER}
 CAPABILITY_REFERENCES = {
     "delivery": ("references/delivery-capabilities.md", ()),
@@ -156,88 +191,32 @@ CAPABILITY_REFERENCES = {
     "release": ("references/release-principles.md", ()),
 }
 CAPABILITY_REFERENCE_SECTIONS = (
-    "## 角色职责",
+    "## 能力目录",
     "## 核心能力",
+    "## 能力组合",
+    "## 完成判据",
+)
+LEGACY_CAPABILITY_REFERENCE_SECTIONS = (
+    "## 角色职责",
     "## 专业决策顺序",
     "## 交付证据",
     "## 常见误判",
 )
-COMMON_MEMORY_SECTIONS = (
-    "## 恢复摘要",
-    "## 依据账本",
-    "## 动作队列",
-    "## 当前验证",
-    "## 交接与失效",
+CAPABILITY_CARD_FIELDS = (
+    "**启用**",
+    "**输入**",
+    "**执行**",
+    "**裁决**",
+    "**产出**",
+    "**验证**",
+    "**完成**",
+    "**边界**",
 )
-TEMPLATE_ROLE_SECTIONS = {
-    "delivery": (
-        "## 原始意图与范围",
-        "## 角色链与依赖",
-        "## 交付切片",
-        "## 风险与阻塞",
-        "## 角色记忆收口",
-    ),
-    "discovery": (
-        "## 原始意图",
-        "## 用户问题与目标结果",
-        "## 核心旅程与状态",
-        "## 范围与非目标",
-        "## 假设与开放问题",
-        "## 验收标准",
-        "## 决策记录",
-    ),
-    "architecture": (
-        "## 架构上下文",
-        "## 不变量与质量属性",
-        "## 边界与所有权",
-        "## 决策索引",
-        "## 候选方案与权衡",
-        "## 失败模式",
-        "## 迁移与回滚",
-    ),
-    "frontend": (
-        "## 输入来源与适用性",
-        "## 用户任务与流程",
-        "## 界面状态矩阵",
-        "## 交互与可访问性",
-        "## 实现映射",
-        "## 真实渲染证据",
-    ),
-    "backend": (
-        "## 输入来源与适用性",
-        "## 领域与数据不变量",
-        "## 接口与错误契约",
-        "## 权限与安全",
-        "## 一致性与失败恢复",
-        "## 兼容与迁移",
-        "## 调用方交接",
-    ),
-    "verification": (
-        "## 验收对象",
-        "## 要求与证据矩阵",
-        "## 核心旅程与状态证据",
-        "## 失败与恢复证据",
-        "## 回归与非功能",
-        "## 失败分类",
-        "## 最终结论",
-    ),
-    "release": (
-        "## 发布对象与授权",
-        "## 发布前门禁",
-        "## 部署与迁移步骤",
-        "## 健康与业务信号",
-        "## 停止与回滚",
-        "## 执行记录",
-        "## 上线后验证",
-        "## 反馈回流",
-        "## 最终结论",
-    ),
-}
 TEMPLATE_SECTIONS = {
-    f"{name}.md": COMMON_MEMORY_SECTIONS + TEMPLATE_ROLE_SECTIONS[name]
+    f"{name}.md": ("## 事实家族", "## 现行事实")
     for name in CORE_SKILL_ORDER
 }
-MEMORY_FRONTMATTER_FIELDS = (
+SCHEMA_1_FRONTMATTER_FIELDS = (
     "schema",
     "memory",
     "scope",
@@ -249,27 +228,137 @@ MEMORY_FRONTMATTER_FIELDS = (
     "confidence",
     "supersedes",
 )
-TEMPLATE_AI_TERMS = (
-    "AI 写入规则",
-    "AI 恢复顺序",
-    "verified_revision",
-    "confidence",
-    "supersedes",
-    "精确来源",
-    "失效条件",
-    "外部参考",
-    "适用性",
-    "外部参考不会自动成为当前项目事实",
+SCHEMA_2_FRONTMATTER_FIELDS = (
+    "schema",
+    "memory",
+    "scope",
+    "project_root",
+    "updated_at",
 )
-FINAL_MEMORY_STATUS = {
-    "delivery": "done",
-    "discovery": "done",
-    "architecture": "done",
-    "frontend": "done",
-    "backend": "done",
-    "verification": "done",
-    "release": "not_applicable",
+TEMPLATE_AI_TERM_GROUPS = (
+    ("本模板仅用于首次创建",),
+    ("角色能力", "能力手册"),
+    ("一个独立语义一张卡",),
+    ("从 `001` 递增", "从 001 递增"),
+    ("只生成有证据", "仅生成有证据", "只保留有依据"),
+    ("实例化时",),
+    ("删除本说明",),
+    ("既有 schema 1 或 schema 2",),
+    ("不得读取或套用本模板", "不再读取或套用模板"),
+)
+FACT_CARD_FIELDS = (
+    "事实类型",
+    "已成立事实",
+    "角色专属细节",
+    "适用范围",
+    "精确定位",
+    "成立证据",
+    "核验基线",
+    "关联事实",
+    "下游约束",
+    "状态",
+    "置信度",
+    "取代关系",
+    "失效条件",
+)
+FACT_ID_PREFIXES = {
+    "delivery": ("DEL-",),
+    "discovery": ("DISC-",),
+    "architecture": ("ARCH-", "ADR-"),
+    "frontend": ("FE-",),
+    "backend": ("BE-",),
+    "verification": ("VER-",),
+    "release": ("RLS-",),
 }
+TEMPLATE_FACT_ID_FAMILIES = {
+    "delivery": (
+        "DEL-SCOPE-*",
+        "DEL-CAP-*",
+        "DEL-REL-*",
+        "DEL-INTEGRATION-*",
+        "DEL-DEP-*",
+        "DEL-RISK-*",
+        "DEL-OUTCOME-*",
+    ),
+    "discovery": (
+        "DISC-USER-*",
+        "DISC-OUTCOME-*",
+        "DISC-RULE-*",
+        "DISC-JOURNEY-*",
+        "DISC-SCOPE-*",
+        "DISC-AC-*",
+        "DISC-DEC-*",
+        "DISC-LIMIT-*",
+    ),
+    "architecture": (
+        "ARCH-TOPO-*",
+        "ARCH-BOUND-*",
+        "ARCH-INV-*",
+        "ARCH-FLOW-*",
+        "ARCH-ADR-*",
+        "ARCH-REL-*",
+        "ARCH-EVO-*",
+        "ARCH-LIMIT-*",
+    ),
+    "frontend": (
+        "FE-SURFACE-*",
+        "FE-FLOW-*",
+        "FE-STATE-*",
+        "FE-IMPL-*",
+        "FE-A11Y-*",
+        "FE-RESP-*",
+        "FE-RENDER-*",
+        "FE-LIMIT-*",
+    ),
+    "backend": (
+        "BE-DOMAIN-*",
+        "BE-SCHEMA-*",
+        "BE-API-*",
+        "BE-AUTH-*",
+        "BE-CONSIST-*",
+        "BE-INT-*",
+        "BE-OBS-*",
+        "BE-COMPAT-*",
+        "BE-LIMIT-*",
+    ),
+    "verification": (
+        "VER-BASE-*",
+        "VER-AC-*",
+        "VER-JOURNEY-*",
+        "VER-REC-*",
+        "VER-NFR-*",
+        "VER-DEFECT-*",
+        "VER-CONCLUSION-*",
+    ),
+    "release": (
+        "RLS-ENV-*",
+        "RLS-ART-*",
+        "RLS-AUTH-*",
+        "RLS-GATE-*",
+        "RLS-DEPLOY-*",
+        "RLS-SIGNAL-*",
+        "RLS-ROLLBACK-*",
+        "RLS-LIMIT-*",
+    ),
+}
+TEMPLATE_FACT_SKELETON_PREFIXES = {
+    "delivery": "DEL",
+    "discovery": "DISC",
+    "architecture": "ARCH",
+    "frontend": "FE",
+    "backend": "BE",
+    "verification": "VER",
+    "release": "RLS",
+}
+LEGACY_PROCESS_TEMPLATE_HEADINGS = (
+    "## 恢复摘要",
+    "## 依据账本",
+    "## 动作队列",
+    "## 当前验证",
+    "## 交接与失效",
+    "## 角色记忆收口",
+    "## 执行记录",
+)
 LEGACY_TERMS = tuple(
     "-".join(parts)
     for parts in (
@@ -306,6 +395,51 @@ OVERRESTRICTIVE_SOURCE_TERMS = (
     "旧报告和其他项目结果" + "不得充作当前证据",
     "不得把其他仓库或产品的交付状态" + "并入当前项目",
 )
+LEGACY_MEMORY_LIFECYCLE_TERMS = (
+    "氛围编程" + "完成前",
+    "动态" + "收口",
+    "动态" + "更新其记忆",
+    "动态" + "更新自己拥有的记忆",
+)
+FULL_REPLACEMENT_MEMORY_TERMS = (
+    "原地" + "覆盖上一快照",
+    "一次性" + "原地覆盖",
+    "原地" + "覆盖本角色文件",
+    "原地" + "覆盖各自最后事实",
+    "保持" + "旧快照",
+    "当前有效" + "编排快照",
+    "上一已闭合任务的" + "最后事实",
+    "从模板" + "重建已有记忆",
+    "允许" + "全量覆盖",
+    "可以" + "全量覆盖",
+    "允许" + "整文件重建",
+    "允许套用本模板" + "重建",
+)
+TEMPLATE_REUSE_MEMORY_TERMS = (
+    "模板用于首次创建，也供" + "已有",
+    "模板既供首次创建，也供" + "已有",
+    "模板用于首次创建及" + "已有",
+    "定义新记忆首次创建及" + "已有",
+    "新增事实卡时只读匹配 ID 家族的字段" + "提示",
+    "新增事实时只读取同名" + "模板",
+    "新增事实时，只读取同名" + "模板",
+    "已有 schema 2 记忆需要新增事实卡时，也应只读同名" + "模板",
+    "已有 schema 2 新增事实时，只读取同名" + "模板",
+    "既有 schema 2 新增事实时，只读取同名" + "模板",
+    "只读匹配 ID 家族的" + "模板卡",
+)
+SCHEMA_1_FINAL_STATUSES = {
+    "done",
+    "failed",
+    "blocked",
+    "not_applicable",
+}
+VERIFICATION_CONCLUSIONS = {
+    "通过",
+    "失败",
+    "阻塞",
+    "不适用",
+}
 
 
 def load_json(path: Path, errors: list[str]) -> object | None:
@@ -353,6 +487,48 @@ def markdown_section(content: str, heading: str) -> str | None:
     return "\n".join(lines[start:]).strip()
 
 
+def markdown_heading_block(content: str, heading: str) -> str | None:
+    """Return one Markdown heading block until the next same-or-higher heading."""
+    heading_match = re.match(r"^(#{1,6})\s+", heading)
+    if heading_match is None:
+        return None
+    heading_level = len(heading_match.group(1))
+    lines = content.splitlines()
+    start: int | None = None
+    in_fence = False
+    for index, line in enumerate(lines):
+        if re.match(r"^\s*(?:```|~~~)", line):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if start is None:
+            if line.strip() == heading:
+                start = index + 1
+            continue
+        next_heading = re.match(r"^(#{1,6})\s+", line)
+        if next_heading and len(next_heading.group(1)) <= heading_level:
+            return "\n".join(lines[start:index]).strip()
+    if start is None:
+        return None
+    return "\n".join(lines[start:]).strip()
+
+
+def markdown_headings(content: str, level: int) -> list[str]:
+    """Return headings at one exact level, excluding fenced code blocks."""
+    prefix = "#" * level
+    pattern = re.compile(rf"^{re.escape(prefix)}(?!#)\s+.+")
+    headings: list[str] = []
+    in_fence = False
+    for line in content.splitlines():
+        if re.match(r"^\s*(?:```|~~~)", line):
+            in_fence = not in_fence
+            continue
+        if not in_fence and pattern.match(line):
+            headings.append(line.strip())
+    return headings
+
+
 def require_section(
     path: Path,
     content: str,
@@ -383,6 +559,129 @@ def require_term_groups(
                 f"Missing required {context} contract '{expected}': "
                 f"{path.relative_to(ROOT)}"
             )
+
+
+def require_unique_sections(
+    path: Path,
+    content: str,
+    headings: tuple[str, ...],
+    errors: list[str],
+) -> None:
+    actual_headings = markdown_headings(content, 2)
+    for heading in headings:
+        count = actual_headings.count(heading)
+        if count != 1:
+            errors.append(
+                f"Required section must appear exactly once ('{heading}', got {count}): "
+                f"{path.relative_to(ROOT)}"
+            )
+
+
+def require_ordered_terms(
+    path: Path,
+    content: str,
+    terms: tuple[str, ...],
+    errors: list[str],
+    context: str,
+) -> None:
+    cursor = 0
+    for term in terms:
+        position = content.find(term, cursor)
+        if position < 0:
+            errors.append(
+                f"Missing or out-of-order {context} term '{term}': "
+                f"{path.relative_to(ROOT)}"
+            )
+            return
+        cursor = position + len(term)
+
+
+def reject_terms(
+    path: Path,
+    content: str,
+    terms: tuple[str, ...],
+    errors: list[str],
+    context: str,
+) -> None:
+    for term in terms:
+        if term in content:
+            errors.append(
+                f"Forbidden {context} contract '{term}': {path.relative_to(ROOT)}"
+            )
+
+
+def reject_patterns(
+    path: Path,
+    content: str,
+    patterns: tuple[re.Pattern[str], ...],
+    errors: list[str],
+    context: str,
+) -> None:
+    for pattern in patterns:
+        match = pattern.search(content)
+        if match:
+            errors.append(
+                f"Forbidden {context} contract '{match.group(0)}': "
+                f"{path.relative_to(ROOT)}"
+            )
+
+
+def require_single_line_containing(
+    path: Path,
+    content: str,
+    marker: str,
+    errors: list[str],
+) -> str | None:
+    matches = [line.strip() for line in content.splitlines() if marker in line]
+    if len(matches) != 1:
+        errors.append(
+            f"Expected exactly one line containing '{marker}', got {len(matches)}: "
+            f"{path.relative_to(ROOT)}"
+        )
+        return None
+    return matches[0]
+
+
+def reject_removed_root_reference_links(
+    path: Path,
+    content: str,
+    errors: list[str],
+) -> None:
+    matches = {
+        match.group("link")
+        for match in ROOT_REFERENCE_LINK_PATTERN.finditer(content)
+    }
+    normalized_content = content.replace("\\", "/").lower()
+    normalized_root_references = str(ROOT_REFERENCES.resolve()).replace(
+        "\\", "/"
+    ).lower()
+    if normalized_root_references in normalized_content:
+        matches.add(str(ROOT_REFERENCES.resolve()))
+    if path == ROOT / "README.md":
+        matches.update(
+            match.group("link")
+            for match in README_ROOT_REFERENCE_LINK_PATTERN.finditer(content)
+        )
+    for match in sorted(matches, key=str.lower):
+        errors.append(
+            f"Root-level reference link '{match}' is not allowed: "
+            f"{path.relative_to(ROOT)}"
+        )
+
+
+def validate_template_capability_link(
+    path: Path,
+    content: str,
+    owner: str,
+    errors: list[str],
+) -> None:
+    expected = f"../skills/{owner}/{CAPABILITY_REFERENCES[owner][0]}"
+    actual = TEMPLATE_CAPABILITY_LINK_PATTERN.findall(content)
+    if actual != [expected]:
+        errors.append(
+            f"Template must load exactly its owning role capability reference: "
+            f"{path.relative_to(ROOT)} expected={expected}, got={actual}"
+        )
 
 
 def parse_yaml_scalar(
@@ -438,16 +737,29 @@ def validate_memory_frontmatter(
     expected_memory: str,
     errors: list[str],
     *,
-    require_current_values: bool,
+    template: bool,
 ) -> dict[str, str]:
     fields = parse_frontmatter(path, errors)
-    for field in MEMORY_FRONTMATTER_FIELDS:
+    schema = fields.get("schema")
+    if schema not in {"1", "2"}:
+        errors.append(f"Memory schema must be 1 or 2: {path.relative_to(ROOT)}")
+        return fields
+    if template and schema != "2":
+        errors.append(f"Memory template schema must be 2: {path.relative_to(ROOT)}")
+
+    expected_fields = (
+        SCHEMA_1_FRONTMATTER_FIELDS if schema == "1" else SCHEMA_2_FRONTMATTER_FIELDS
+    )
+    for field in expected_fields:
         if field not in fields:
             errors.append(
                 f"Missing memory frontmatter field '{field}': {path.relative_to(ROOT)}"
             )
-    if fields.get("schema") != "1":
-        errors.append(f"Memory schema must be 1: {path.relative_to(ROOT)}")
+    if schema == "2" and set(fields) != set(expected_fields):
+        errors.append(
+            f"Schema 2 memory frontmatter must contain only {expected_fields}: "
+            f"{path.relative_to(ROOT)} has {tuple(fields)}"
+        )
     if fields.get("memory") != expected_memory:
         errors.append(
             f"Memory name must match skill '{expected_memory}': {path.relative_to(ROOT)}"
@@ -455,23 +767,289 @@ def validate_memory_frontmatter(
     if fields.get("scope") != "current-project":
         errors.append(f"Memory scope must be current-project: {path.relative_to(ROOT)}")
 
-    if require_current_values:
-        expected_status = FINAL_MEMORY_STATUS[expected_memory]
-        if fields.get("status") != expected_status:
-            errors.append(
-                f"Project memory status must be '{expected_status}': "
-                f"{path.relative_to(ROOT)}"
-            )
-        for field in ("project_root", "updated_at", "verified_at", "verified_revision"):
+    if template:
+        for field in ("project_root", "updated_at"):
+            if fields.get(field):
+                errors.append(
+                    f"Reusable memory template field '{field}' must be empty: "
+                    f"{path.relative_to(ROOT)}"
+                )
+
+    if not template:
+        required_values = (
+            ("project_root", "updated_at", "verified_at", "verified_revision")
+            if schema == "1"
+            else ("project_root", "updated_at")
+        )
+        for field in required_values:
             if not fields.get(field):
                 errors.append(
                     f"Empty current memory field '{field}': {path.relative_to(ROOT)}"
                 )
-        if fields.get("confidence") not in {"high", "medium", "low"}:
+        updated_at = fields.get("updated_at", "")
+        if updated_at and not is_rfc3339_with_offset(updated_at):
+            errors.append(
+                f"Current memory updated_at must be RFC 3339 with a timezone "
+                f"offset: {path.relative_to(ROOT)}"
+            )
+        if schema == "1" and fields.get("confidence") not in {"high", "medium", "low"}:
             errors.append(
                 f"Invalid current memory confidence: {path.relative_to(ROOT)}"
             )
+        if schema == "1" and fields.get("status") not in SCHEMA_1_FINAL_STATUSES:
+            errors.append(
+                f"Schema 1 memory status must be terminal, got "
+                f"'{fields.get('status', '')}': {path.relative_to(ROOT)}"
+            )
     return fields
+
+
+FACT_HEADING_PATTERN = re.compile(
+    r"^###\s+([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-\d{3})\s+[—｜]\s+(.+)$"
+)
+RFC3339_WITH_OFFSET_PATTERN = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
+)
+TERMINAL_RESULT_PATTERN = re.compile(
+    r"^(?:(?:当前|本次)?[^；。]{0,24}?(?:结论|结果)(?:为|是|：)\s*)?"
+    r"(通过|失败|阻塞|不适用)(?=[：；。，,\s]|$)"
+)
+UNCERTAIN_RESULT_PATTERN = re.compile(
+    r"(?:尚未|未能|无法|不能)(?:确定|确认|判断)|待定|"
+    r"(?:仍待|尚待|有待|待后续|需后续)[^；。]{0,12}"
+    r"(?:确定|确认|判断|验证|核验|取证)"
+)
+
+
+def is_unresolved_placeholder(value: str) -> bool:
+    return re.fullmatch(r"<[^<>\r\n]+>", value.strip()) is not None
+
+
+def is_rfc3339_with_offset(value: str) -> bool:
+    if RFC3339_WITH_OFFSET_PATTERN.fullmatch(value) is None:
+        return False
+    try:
+        datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return True
+
+
+def validate_fact_cards(
+    path: Path,
+    content: str,
+    owner: str,
+    errors: list[str],
+    *,
+    template: bool,
+) -> None:
+    headings = markdown_headings(content, 3)
+    cards: list[tuple[str, str, str]] = []
+    if template:
+        expected_heading = (
+            f"### {TEMPLATE_FACT_SKELETON_PREFIXES[owner]}-<FAMILY>-001 "
+            f"— <可独立理解的事实标题>"
+        )
+        if headings != [expected_heading]:
+            errors.append(
+                f"Fact template must contain exactly one generic fact-card skeleton "
+                f"'{expected_heading}': {path.relative_to(ROOT)} has {headings}"
+            )
+            return
+        cards.append(
+            (
+                f"{TEMPLATE_FACT_SKELETON_PREFIXES[owner]}-<FAMILY>-001",
+                expected_heading,
+                markdown_heading_block(content, expected_heading) or "",
+            )
+        )
+    else:
+        for heading in headings:
+            match = FACT_HEADING_PATTERN.match(heading)
+            if match is None:
+                errors.append(
+                    f"Fact-card heading must contain a stable ID and readable title: "
+                    f"{path.relative_to(ROOT)} has '{heading}'"
+                )
+                continue
+            fact_id = match.group(1)
+            if is_unresolved_placeholder(match.group(2)):
+                errors.append(
+                    f"Unresolved fact title in '{heading}': {path.relative_to(ROOT)}"
+                )
+            block = markdown_heading_block(content, heading)
+            cards.append((fact_id, heading, block or ""))
+
+    if not cards:
+        errors.append(f"No fact cards found: {path.relative_to(ROOT)}")
+        return
+
+    ids = [fact_id for fact_id, _, _ in cards]
+    duplicate_ids = sorted({fact_id for fact_id in ids if ids.count(fact_id) > 1})
+    if duplicate_ids:
+        errors.append(
+            f"Duplicate fact IDs {duplicate_ids}: {path.relative_to(ROOT)}"
+        )
+
+    allowed_prefixes = FACT_ID_PREFIXES[owner]
+    allowed_family_prefixes = tuple(
+        family.removesuffix("*") for family in TEMPLATE_FACT_ID_FAMILIES[owner]
+    )
+    for fact_id, heading, block in cards:
+        if not fact_id.startswith(allowed_prefixes):
+            errors.append(
+                f"Fact ID '{fact_id}' does not belong to {owner}: "
+                f"{path.relative_to(ROOT)}"
+            )
+        if not template and not fact_id.startswith(allowed_family_prefixes):
+            errors.append(
+                f"Fact ID '{fact_id}' does not belong to a declared {owner} fact "
+                f"family: {path.relative_to(ROOT)}"
+            )
+        actual_fields = re.findall(
+            r"(?m)^-\s+\*\*([^*\r\n]+)\*\*：\s*.*$",
+            block,
+        )
+        if actual_fields != list(FACT_CARD_FIELDS):
+            errors.append(
+                f"Fact card '{heading}' must contain exactly the thirteen declared "
+                f"fields in order: {path.relative_to(ROOT)} has {actual_fields}"
+            )
+        field_values: dict[str, str] = {}
+        field_positions: list[int] = []
+        for field in FACT_CARD_FIELDS:
+            matches = list(
+                re.finditer(
+                    rf"(?m)^-\s+\*\*{re.escape(field)}\*\*：\s*(.*)$",
+                    block,
+                )
+            )
+            if len(matches) != 1:
+                errors.append(
+                    f"Fact card '{heading}' must contain exactly one '{field}' field: "
+                    f"{path.relative_to(ROOT)}"
+                )
+                continue
+            field_positions.append(matches[0].start())
+            field_values[field] = matches[0].group(1).strip()
+        if len(field_positions) == len(FACT_CARD_FIELDS) and (
+            field_positions != sorted(field_positions)
+        ):
+            errors.append(
+                f"Fact-card fields are out of order in '{heading}': "
+                f"{path.relative_to(ROOT)}"
+            )
+        if not template:
+            for field, value in field_values.items():
+                if not value or is_unresolved_placeholder(value):
+                    errors.append(
+                        f"Unresolved fact value '{field}' in '{heading}': "
+                        f"{path.relative_to(ROOT)}"
+                    )
+            if field_values.get("状态") not in {
+                "current",
+                "conditional",
+                "stale",
+                "superseded",
+            }:
+                errors.append(
+                    f"Invalid fact status in '{heading}': {path.relative_to(ROOT)}"
+                )
+            if field_values.get("置信度") not in {"high", "medium", "low"}:
+                errors.append(
+                    f"Invalid fact confidence in '{heading}': {path.relative_to(ROOT)}"
+                )
+
+
+def validate_template_family_index(
+    path: Path,
+    content: str,
+    owner: str,
+    errors: list[str],
+) -> None:
+    section = markdown_section(content, "## 事实家族") or ""
+    bullet_lines = [
+        line.strip()
+        for line in section.splitlines()
+        if re.match(r"^\s*-\s+", line)
+    ]
+    family_pattern = re.compile(
+        r"^-\s+`([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+-\*)`：\s*(\S.*)$"
+    )
+    matches: list[tuple[str, str]] = []
+    for line in bullet_lines:
+        match = family_pattern.fullmatch(line)
+        if match is None:
+            errors.append(
+                f"Malformed template fact-family entry '{line}': "
+                f"{path.relative_to(ROOT)}"
+            )
+            continue
+        matches.append((match.group(1), match.group(2)))
+
+    family_ids = [family_id for family_id, _ in matches]
+    duplicate_ids = sorted(
+        {family_id for family_id in family_ids if family_ids.count(family_id) > 1}
+    )
+    if duplicate_ids:
+        errors.append(
+            f"Duplicate template fact families {duplicate_ids}: "
+            f"{path.relative_to(ROOT)}"
+        )
+    expected_families = list(TEMPLATE_FACT_ID_FAMILIES[owner])
+    if family_ids != expected_families:
+        errors.append(
+            f"Template fact-family index differs from its skill contract: "
+            f"{path.relative_to(ROOT)} expected={expected_families}, "
+            f"got={family_ids}"
+        )
+    for family_id, description in matches:
+        if "<" in description or ">" in description:
+            errors.append(
+                f"Template fact family '{family_id}' needs a concrete description: "
+                f"{path.relative_to(ROOT)}"
+            )
+
+
+def validate_template_sections(
+    path: Path,
+    content: str,
+    expected_sections: tuple[str, ...],
+    errors: list[str],
+) -> None:
+    level_two_headings = markdown_headings(content, 2)
+    if level_two_headings != list(expected_sections):
+        errors.append(
+            f"Fact template must contain exactly these level-two sections in order: "
+            f"{path.relative_to(ROOT)} expected={list(expected_sections)}, "
+            f"got={level_two_headings}"
+        )
+    for heading in LEGACY_PROCESS_TEMPLATE_HEADINGS:
+        if heading in level_two_headings:
+            errors.append(
+                f"Process-log section '{heading}' remains in fact template: "
+                f"{path.relative_to(ROOT)}"
+            )
+
+
+def validate_schema2_memory_sections(
+    path: Path,
+    content: str,
+    errors: list[str],
+) -> None:
+    level_two_headings = markdown_headings(content, 2)
+    if level_two_headings.count("## 现行事实") != 1:
+        errors.append(
+            f"Schema 2 memory must contain exactly one '## 现行事实' section: "
+            f"{path.relative_to(ROOT)}"
+        )
+    forbidden_headings = ("## 事实家族",) + LEGACY_PROCESS_TEMPLATE_HEADINGS
+    for heading in forbidden_headings:
+        if heading in level_two_headings:
+            errors.append(
+                f"Instantiated schema 2 memory contains template or process section "
+                f"'{heading}': {path.relative_to(ROOT)}"
+            )
 
 
 def validate_instantiated_memory(path: Path, content: str, errors: list[str]) -> None:
@@ -488,6 +1066,72 @@ def validate_instantiated_memory(path: Path, content: str, errors: list[str]) ->
                 )
 
 
+def validate_verification_conclusion(
+    path: Path,
+    content: str,
+    errors: list[str],
+) -> None:
+    headings = [
+        heading
+        for heading in markdown_headings(content, 2)
+        if heading == "## 最终结论"
+    ]
+    if len(headings) != 1:
+        errors.append(
+            f"Verification memory must contain exactly one current final-conclusion "
+            f"section: {path.relative_to(ROOT)}"
+        )
+        return
+
+    section = markdown_section(content, "## 最终结论") or ""
+    matches = re.findall(
+        r"(?m)^-\s*结论：\s*(通过|失败|阻塞|不适用)(?=[；。\s]|$)",
+        section,
+    )
+    if len(matches) != 1 or matches[0] not in VERIFICATION_CONCLUSIONS:
+        errors.append(
+            f"Verification memory final-conclusion section must contain exactly one "
+            f"terminal '- 结论：' line: {path.relative_to(ROOT)}"
+        )
+
+
+def validate_schema2_verification_conclusion(
+    path: Path,
+    content: str,
+    errors: list[str],
+) -> None:
+    current_cards: list[tuple[str, str]] = []
+    for heading in markdown_headings(content, 3):
+        match = FACT_HEADING_PATTERN.match(heading)
+        if match is None or not match.group(1).startswith("VER-CONCLUSION-"):
+            continue
+        block = markdown_heading_block(content, heading) or ""
+        status_match = re.search(r"(?m)^-\s+\*\*状态\*\*：\s*(\S+)\s*$", block)
+        fact_match = re.search(r"(?m)^-\s+\*\*已成立事实\*\*：\s*(.+)$", block)
+        if status_match and status_match.group(1) == "current":
+            current_cards.append(
+                (match.group(1), fact_match.group(1).strip() if fact_match else "")
+            )
+
+    if len(current_cards) != 1:
+        errors.append(
+            f"Schema 2 verification memory must contain exactly one current "
+            f"VER-CONCLUSION fact card: {path.relative_to(ROOT)}"
+        )
+        return
+
+    fact_id, conclusion = current_cards[0]
+    if (
+        TERMINAL_RESULT_PATTERN.match(conclusion) is None
+        or UNCERTAIN_RESULT_PATTERN.search(conclusion) is not None
+    ):
+        errors.append(
+            f"Current verification conclusion '{fact_id}' must state one terminal "
+            f"result ({', '.join(sorted(VERIFICATION_CONCLUSIONS))}): "
+            f"{path.relative_to(ROOT)}"
+        )
+
+
 def main() -> int:
     errors: list[str] = []
     for name in CORE_SKILLS:
@@ -497,6 +1141,7 @@ def main() -> int:
         ("role identities", SKILL_ROLE_IDENTITIES),
         ("boundary terms", SKILL_BOUNDARY_TERMS),
         ("memory files", SKILL_MEMORY_FILES),
+        ("fact ID families", TEMPLATE_FACT_ID_FAMILIES),
     ):
         missing = CORE_SKILLS - set(contract)
         extra = set(contract) - CORE_SKILLS
@@ -516,7 +1161,6 @@ def main() -> int:
     claude_marketplace_manifest = ROOT / ".claude-plugin" / "marketplace.json"
     marketplace_manifest = ROOT / ".agents" / "plugins" / "marketplace.json"
     product_docs = ROOT / "docs" / "product-studio"
-    project_memory_reference = ROOT / "references" / "project-memory.md"
     skill_dirs = {path.name for path in SKILLS.iterdir() if path.is_dir()}
     template_files = {path.name for path in (ROOT / "templates").glob("*.md")}
     project_memory_files = {path.name for path in product_docs.glob("*.md")}
@@ -533,24 +1177,28 @@ def main() -> int:
             f"missing={sorted(expected_memory_files - template_files)}, "
             f"extra={sorted(template_files - expected_memory_files)}"
         )
-    if project_memory_files != expected_memory_files:
+    unexpected_memory_files = project_memory_files - expected_memory_files
+    if unexpected_memory_files:
         errors.append(
-            f"Project memory filenames must exactly match skills: "
-            f"missing={sorted(expected_memory_files - project_memory_files)}, "
-            f"extra={sorted(project_memory_files - expected_memory_files)}"
+            f"Project memory filenames must map to known skills: "
+            f"extra={sorted(unexpected_memory_files)}"
         )
     required = [
         codex_manifest,
         claude_manifest,
         claude_marketplace_manifest,
         marketplace_manifest,
-        project_memory_reference,
     ]
     required.extend(ROOT / "templates" / filename for filename in sorted(expected_memory_files))
-    required.extend(product_docs / filename for filename in sorted(expected_memory_files))
     for path in required:
         if not path.is_file():
             errors.append(f"Missing required file: {path.relative_to(ROOT)}")
+    if ROOT_REFERENCES.exists():
+        for path in sorted(item for item in ROOT_REFERENCES.rglob("*") if item.is_file()):
+            errors.append(
+                f"Root-level references are not part of the skill architecture: "
+                f"{path.relative_to(ROOT)}"
+            )
 
     codex = load_json(codex_manifest, errors)
     claude = load_json(claude_manifest, errors)
@@ -648,6 +1296,12 @@ def main() -> int:
         skill_names.add(name)
 
         content = skill_file.read_text(encoding="utf-8")
+        require_unique_sections(
+            skill_file,
+            content,
+            COMMON_SKILL_SECTIONS,
+            errors,
+        )
         sections = {
             heading: require_section(skill_file, content, heading, errors)
             for heading in COMMON_SKILL_SECTIONS
@@ -674,9 +1328,13 @@ def main() -> int:
                 capability_source_section,
                 (
                     ref_name,
-                    "职责、核心能力、专业决策顺序",
-                    "交付证据",
-                    "常见误判",
+                    "能力目录",
+                    "适用的能力卡",
+                    "完整读取",
+                    "目录摘要不得代替能力卡正文",
+                    "输入、执行、裁决、产出、验证、完成与边界",
+                    "能力组合",
+                    "完成判据",
                     "唯一详细定义",
                 ),
                 errors,
@@ -704,16 +1362,46 @@ def main() -> int:
             require_term_groups(
                 skill_file,
                 memory_section,
-                PROJECT_MEMORY_TERM_GROUPS,
+                ROLE_MEMORY_TERM_GROUPS,
                 errors,
-                "project-memory section",
+                "role-memory section",
             )
             if memory_file:
                 require_terms(
                     skill_file,
                     memory_section,
-                    (memory_file, f"../../templates/{memory_file}"),
+                    (
+                        f"<当前项目根>/docs/product-studio/{memory_file}",
+                        f"../../templates/{memory_file}",
+                    ),
                     errors,
+                )
+            reject_terms(
+                skill_file,
+                memory_section,
+                ROLE_MEMORY_FORBIDDEN_TERMS,
+                errors,
+                "role-memory",
+            )
+            reject_patterns(
+                skill_file,
+                memory_section,
+                ROLE_MEMORY_FORBIDDEN_PATTERNS,
+                errors,
+                "role-memory",
+            )
+            declared_families = set(
+                re.findall(
+                    r"`([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+-\*)`",
+                    memory_section,
+                )
+            )
+            expected_families = set(TEMPLATE_FACT_ID_FAMILIES[name])
+            if declared_families != expected_families:
+                errors.append(
+                    f"Skill fact-ID families must match its template: "
+                    f"{skill_file.relative_to(ROOT)} expected="
+                    f"{sorted(expected_families)}, got={sorted(declared_families)}"
                 )
 
         if capability_reference:
@@ -725,12 +1413,90 @@ def main() -> int:
                 ref_content = ref_path.read_text(encoding="utf-8")
                 for heading in CAPABILITY_REFERENCE_SECTIONS:
                     require_section(ref_path, ref_content, heading, errors)
-                require_terms(
-                    ref_path,
+                reference_sections = markdown_headings(ref_content, 2)
+                expected_reference_sections = list(CAPABILITY_REFERENCE_SECTIONS)
+                if reference_sections != expected_reference_sections:
+                    errors.append(
+                        f"Capability reference sections must exactly be "
+                        f"{expected_reference_sections}: {ref_path.relative_to(ROOT)} "
+                        f"has {reference_sections}"
+                    )
+                for heading in LEGACY_CAPABILITY_REFERENCE_SECTIONS:
+                    if markdown_section(ref_content, heading) is not None:
+                        errors.append(
+                            f"Legacy capability section must be replaced by ability cards "
+                            f"('{heading}'): {ref_path.relative_to(ROOT)}"
+                        )
+                require_terms(ref_path, ref_content, ref_terms, errors)
+                expected_capability_headings = [
+                    f"### {capability}"
+                    for capability in REFERENCE_CAPABILITY_TERMS[name]
+                ]
+                capability_section = markdown_section(
                     ref_content,
-                    (*ref_terms, *REFERENCE_CAPABILITY_TERMS[name]),
-                    errors,
+                    "## 核心能力",
                 )
+                capability_headings = (
+                    markdown_headings(capability_section, 3)
+                    if capability_section is not None
+                    else []
+                )
+                if (
+                    len(capability_headings) != len(expected_capability_headings)
+                    or set(capability_headings) != set(expected_capability_headings)
+                ):
+                    errors.append(
+                        f"Capability cards must exactly be "
+                        f"{expected_capability_headings}: {ref_path.relative_to(ROOT)} "
+                        f"has {capability_headings}"
+                    )
+                for capability in REFERENCE_CAPABILITY_TERMS[name]:
+                    capability_heading = f"### {capability}"
+                    capability_card = markdown_heading_block(
+                        ref_content,
+                        capability_heading,
+                    )
+                    if capability_card is None:
+                        errors.append(
+                            f"Missing capability card '{capability_heading}': "
+                            f"{ref_path.relative_to(ROOT)}"
+                        )
+                        continue
+                    if not capability_card:
+                        errors.append(
+                            f"Empty capability card '{capability_heading}': "
+                            f"{ref_path.relative_to(ROOT)}"
+                        )
+                        continue
+                    require_terms(
+                        ref_path,
+                        capability_card,
+                        CAPABILITY_CARD_FIELDS,
+                        errors,
+                    )
+                    field_positions: list[int] = []
+                    for field in CAPABILITY_CARD_FIELDS:
+                        matches = list(
+                            re.finditer(
+                                rf"(?m)^-\s+{re.escape(field)}：",
+                                capability_card,
+                            )
+                        )
+                        if len(matches) != 1:
+                            errors.append(
+                                f"Capability card '{capability_heading}' must contain "
+                                f"exactly one list field '{field}：': "
+                                f"{ref_path.relative_to(ROOT)}"
+                            )
+                            continue
+                        field_positions.append(matches[0].start())
+                    if len(field_positions) == len(CAPABILITY_CARD_FIELDS) and (
+                        field_positions != sorted(field_positions)
+                    ):
+                        errors.append(
+                            f"Capability card fields are out of order in "
+                            f"'{capability_heading}': {ref_path.relative_to(ROOT)}"
+                        )
 
         agent_metadata = skill_dir / "agents" / "openai.yaml"
         if not agent_metadata.is_file():
@@ -771,32 +1537,6 @@ def main() -> int:
             f"extra={sorted(skill_names - CORE_SKILLS)}"
         )
 
-    if project_memory_reference.is_file():
-        project_memory_content = project_memory_reference.read_text(encoding="utf-8")
-        reference_sections = {
-            heading: require_section(
-                project_memory_reference,
-                project_memory_content,
-                heading,
-                errors,
-            )
-            for heading in PROJECT_MEMORY_REFERENCE_SECTION_TERMS
-        }
-        for heading, terms in PROJECT_MEMORY_REFERENCE_SECTION_TERMS.items():
-            section = reference_sections.get(heading)
-            if section:
-                require_terms(project_memory_reference, section, terms, errors)
-
-        role_mapping_section = reference_sections.get("## 角色与记忆文件")
-        if role_mapping_section:
-            for skill_name, memory_file in SKILL_MEMORY_FILES.items():
-                require_terms(
-                    project_memory_reference,
-                    role_mapping_section,
-                    (skill_name, memory_file),
-                    errors,
-                )
-
     delivery_skill = (SKILLS / "delivery" / "SKILL.md").read_text(
         encoding="utf-8"
     )
@@ -806,6 +1546,37 @@ def main() -> int:
         CORE_SKILLS - {"delivery"},
         errors,
     )
+    delivery_memory_section = markdown_section(delivery_skill, "## 项目记忆")
+    if delivery_memory_section:
+        delivery_path = SKILLS / "delivery" / "SKILL.md"
+        route_line = require_single_line_containing(
+            delivery_path,
+            delivery_memory_section,
+            "跨角色总路由",
+            errors,
+        )
+        if route_line:
+            require_term_groups(
+                delivery_path,
+                route_line,
+                DELIVERY_MEMORY_ROUTING_TERM_GROUPS,
+                errors,
+                "cross-role memory routing",
+            )
+            require_ordered_terms(
+                delivery_path,
+                route_line,
+                DELIVERY_MEMORY_ROUTE_SEQUENCE,
+                errors,
+                "cross-role memory route",
+            )
+        reject_terms(
+            delivery_path,
+            delivery_memory_section,
+            DELIVERY_MEMORY_FORBIDDEN_TERMS,
+            errors,
+            "delivery memory ownership",
+        )
 
     discovery_skill = (SKILLS / "discovery" / "SKILL.md").read_text(
         encoding="utf-8"
@@ -844,17 +1615,47 @@ def main() -> int:
                     template_path,
                     owner,
                     errors,
-                    require_current_values=False,
+                    template=True,
                 )
                 require_terms(
                     template_path,
                     template_content,
                     (
                         f"# {owner}",
-                        f"固定责任角色：`{owner}`",
-                        f"docs/product-studio/{owner}.md",
-                        *TEMPLATE_AI_TERMS,
+                        f"../skills/{owner}/{CAPABILITY_REFERENCES[owner][0]}",
                     ),
+                    errors,
+                )
+                validate_template_capability_link(
+                    template_path,
+                    template_content,
+                    owner,
+                    errors,
+                )
+                require_term_groups(
+                    template_path,
+                    template_content,
+                    TEMPLATE_AI_TERM_GROUPS,
+                    errors,
+                    "fact-template lifecycle",
+                )
+                validate_fact_cards(
+                    template_path,
+                    template_content,
+                    owner,
+                    errors,
+                    template=True,
+                )
+                validate_template_family_index(
+                    template_path,
+                    template_content,
+                    owner,
+                    errors,
+                )
+                validate_template_sections(
+                    template_path,
+                    template_content,
+                    sections,
                     errors,
                 )
             for heading in sections:
@@ -865,90 +1666,40 @@ def main() -> int:
         if not memory_path.is_file():
             continue
         memory_content = memory_path.read_text(encoding="utf-8")
-        validate_memory_frontmatter(
+        fields = validate_memory_frontmatter(
             memory_path,
             skill_name,
             errors,
-            require_current_values=True,
+            template=False,
         )
-        require_terms(
-            memory_path,
-            memory_content,
-            (
-                f"# {skill_name}",
-                f"固定责任角色：`{skill_name}`",
-                f"docs/product-studio/{skill_name}.md",
-                "verified_revision",
-                "失效条件",
-            ),
-            errors,
-        )
-        for heading in COMMON_MEMORY_SECTIONS:
-            require_section(memory_path, memory_content, heading, errors)
-        validate_instantiated_memory(memory_path, memory_content, errors)
-        if re.search(r"\|\s*pending\s*\|", memory_content):
-            errors.append(f"Pending memory table status remains: {memory_path.relative_to(ROOT)}")
-
-    delivery_path = product_docs / "delivery.md"
-    if delivery_path.is_file():
-        delivery_content = delivery_path.read_text(encoding="utf-8")
-        require_section(
-            delivery_path,
-            delivery_content,
-            "## 角色记忆收口",
-            errors,
-        )
-        for skill_name, memory_file in SKILL_MEMORY_FILES.items():
-            require_terms(
-                delivery_path,
-                delivery_content,
-                (skill_name, memory_file),
+        require_terms(memory_path, memory_content, (f"# {skill_name}",), errors)
+        if fields.get("schema") == "2":
+            validate_fact_cards(
+                memory_path,
+                memory_content,
+                skill_name,
+                errors,
+                template=False,
+            )
+            validate_schema2_memory_sections(
+                memory_path,
+                memory_content,
                 errors,
             )
-
-    discovery_path = product_docs / "discovery.md"
-    if discovery_path.is_file():
-        discovery_content = discovery_path.read_text(encoding="utf-8")
-        for heading in ("## 原始意图", "## 验收标准", "## 决策记录"):
-            require_section(discovery_path, discovery_content, heading, errors)
-        require_terms(
-            discovery_path,
-            discovery_content,
-            ("AC-001", "AC-006"),
-            errors,
-        )
-
-    verification_path = product_docs / "verification.md"
-    verification_passed = False
-    if verification_path.is_file():
-        verification_content = verification_path.read_text(encoding="utf-8")
-        for heading in ("## 验收对象", "## 要求与证据矩阵", "## 最终结论"):
-            require_section(verification_path, verification_content, heading, errors)
-        verification_passed = "- 结论：通过" in verification_content
-        if not verification_passed:
-            errors.append("Product Studio verification memory is not marked as passed")
-
-    release_path = product_docs / "release.md"
-    if verification_passed and release_path.is_file():
-        release_content = release_path.read_text(encoding="utf-8")
-        require_terms(
-            release_path,
-            release_content,
-            (
-                "对应验收修订：`verification.md` 已",
-                "下一责任角色：无",
-            ),
-            errors,
-        )
-        for stale_term in (
-            "待 `verification.md` 本轮通过",
-            "下一责任角色：`verification` 完成源码验收",
-        ):
-            if stale_term in release_content:
+            if "<!--" in memory_content or "<" + "事实" in memory_content:
                 errors.append(
-                    f"Release memory contradicts passed verification with "
-                    f"'{stale_term}': {release_path.relative_to(ROOT)}"
+                    f"Instantiated schema 2 memory still contains template guidance or "
+                    f"placeholders: {memory_path.relative_to(ROOT)}"
                 )
+            if skill_name == "verification":
+                validate_schema2_verification_conclusion(
+                    memory_path,
+                    memory_content,
+                    errors,
+                )
+        validate_instantiated_memory(memory_path, memory_content, errors)
+        if skill_name == "verification" and fields.get("schema") == "1":
+            validate_verification_conclusion(memory_path, memory_content, errors)
 
     active_legacy_paths = (
         ROOT / "README.md",
@@ -956,7 +1707,6 @@ def main() -> int:
         ROOT / "scripts",
         ROOT / "skills",
         ROOT / "templates",
-        product_docs,
         ROOT / ".codex-plugin",
         ROOT / ".claude-plugin",
         ROOT / ".agents",
@@ -970,6 +1720,7 @@ def main() -> int:
                 content = path.read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 continue
+            reject_removed_root_reference_links(path, content, errors)
             for legacy_term in LEGACY_TERMS:
                 if legacy_term in content:
                     errors.append(
@@ -982,7 +1733,24 @@ def main() -> int:
                         f"Overrestrictive source boundary '{source_term}' remains: "
                         f"{path.relative_to(ROOT)}"
                     )
-
+            for lifecycle_term in LEGACY_MEMORY_LIFECYCLE_TERMS:
+                if lifecycle_term in content:
+                    errors.append(
+                        f"Legacy process-memory lifecycle '{lifecycle_term}' remains: "
+                        f"{path.relative_to(ROOT)}"
+                    )
+            for replacement_term in FULL_REPLACEMENT_MEMORY_TERMS:
+                if replacement_term in content:
+                    errors.append(
+                        f"Full-replacement memory lifecycle '{replacement_term}' remains: "
+                        f"{path.relative_to(ROOT)}"
+                    )
+            for reuse_term in TEMPLATE_REUSE_MEMORY_TERMS:
+                if reuse_term in content:
+                    errors.append(
+                        f"Existing memory must not reuse first-creation template "
+                        f"'{reuse_term}': {path.relative_to(ROOT)}"
+                    )
     for path in ROOT.rglob("*"):
         if path.is_file() and ".git" not in path.parts:
             try:
