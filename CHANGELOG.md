@@ -2,16 +2,12 @@
 
 ## Unreleased
 
-- Moved detailed role responsibilities, core capabilities, and decision sequences out of each `SKILL.md` into expanded, directly referenced role capability guides with evidence expectations and common failure modes.
-- Reframed project-memory source boundaries as attributed facts: explicit links, pages, screenshots, design references, external documents, and other projects may inform the work, while adoption into current-project facts requires current evidence or an explicit decision.
-- Renamed the seven compound skill identifiers to the single-word set `delivery`, `discovery`, `architecture`, `frontend`, `backend`, `verification`, and `release`; explicit callers must migrate to the new `$skill` names.
-- Renamed every project memory and template to exactly match its owning skill, removing all legacy memory aliases and the former singular/plural mismatch.
-- Reworked memory templates around AI recovery: source revision, recovery summary, stable evidence IDs, confidence, supersession, action queues, current verification, and invalidation conditions.
-- Reframed all seven lifecycle skills around role-specific judgment, decision rights, escalation paths, and explicit non-goals.
-- Added direct on-demand invocation and guarded parallel execution with single-owner contract merging.
-- Defined `docs/product-studio/` as repository-scoped, cross-session role memory that never auto-inherits across projects or products.
-- Added `delivery.md` for orchestration recovery and strengthened validation for role prompts, boundaries, invocation, memory isolation, ownership, and templates.
-- Required every authorized vibe-coding completion to refresh the participating or affected roles' project memories before delivery is declared complete.
+- Replaced seven role shells with five callable skills: `router`, `design`, `backend`, `frontend`, and `verification`. Product discovery and system architecture are conditionally loaded modes of `design`; the former release role and standalone deployment capability were removed.
+- Scoped the plugin to product and system design, frontend and backend implementation, and test verification. Actual production deployment, production migration, traffic switching, production configuration changes, and rollback remain outside the plugin and must use the target project's existing operational tooling and ownership.
+- Restored the six active professional capability references verbatim from commit `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194`, preserving their original responsibilities, core capabilities, decision order, evidence, and common-misjudgment guidance.
+- Kept the five-skill topology while mapping the former delivery reference to `router` and the former discovery and architecture references to the two conditional modes of `design`; references contain capability guidance only.
+- Replaced process/history memory with four schema 3 current-code fact stores owned by `design`, `backend`, `frontend`, and `verification`. Facts use semantic keys and record only current implementation, source anchors, consumers, evidence, and recheck conditions; `router` has no memory.
+- Added static gates for the exact five-skill topology, six restored-reference hashes and structure, `design` mode loading, semantic fact keys, code-task routing boundaries, and the absence of legacy role invocations.
 
 ## 0.3.0 - 2026-07-16
 

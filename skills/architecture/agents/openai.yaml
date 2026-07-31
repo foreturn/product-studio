@@ -1,4 +1,0 @@
-interface:
-  display_name: "系统架构师"
-  short_description: "裁决领域边界、跨域不变量、故障恢复、迁移与关键权衡"
-  default_prompt: "以系统架构师身份使用 $architecture，围绕当前项目的不变量、失败模式与迁移成本裁决最小跨边界方案。"

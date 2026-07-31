@@ -1,93 +1,87 @@
 # 产品工作室
 
-产品工作室是一套同时服务 Codex 与 Claude Code 的氛围编程插件。用户只需给出简短意图，插件便会先从仓库证据联想用户旅程、范围、约束与验收标准，再由职责清晰的产品研发角色推进实现，以减少过早编码、隐含假设和后期验收造成的返工。
+产品工作室是一套面向 Codex 与 Claude Code 的氛围编程插件。它用五个可调用 Skill 约束产品与系统设计、前后端编码和测试验证，使 AI 先读取现有仓库和调用链，再在最小范围内修改代码并以证据收口。
 
-扩写不是替用户虚构需求：仓库可查的信息自行查明，可逆细节记录假设后继续，只有会显著改变产品、安全、外部状态或不可逆数据的决策才请求确认。
+## 五个 Skill
 
-## 工作流
+| Skill | 专业能力 |
+|---|---|
+| `router` | 识别任务涉及的产品、系统、后端、前端与验证代码面，选择最短 Skill 链；建立依赖图和输入快照；判断前后端能否并行；锁定共享契约、Schema 与公共组件的唯一合并者；处理代码任务的范围变化、失败隔离和终态收口。 |
+| `design` | 产品模式定义用户、任务、旅程、状态、业务规则、范围、指标与可观察验收标准；系统模式设计领域边界、数据所有权、跨模块契约、质量属性、一致性与故障、安全边界、可观测性、兼容及迁移。局部实现不因流程完整而强制进入设计。 |
+| `backend` | 设计并实现领域状态与不变量、API 请求响应和错误契约、Schema/索引/迁移、身份授权与审计、事务/并发/幂等、缓存与消息一致性、外部集成的超时重试及未知态、可观测信号和服务端测试。 |
+| `frontend` | 设计并实现页面任务流、信息层级、设计令牌、组件变体、布局与响应式规则、loading/empty/error/success/disabled 状态、键盘与读屏可访问性、性能预算，并在真实浏览器中核验主题、视口、身份和数据状态。 |
+| `verification` | 将产品规则追溯到证据，按风险设计分层测试，包括单元、契约、集成、端到端和非功能验证；核验接口、权限、数据不变量、迁移恢复、前端交互与真实渲染；区分失败、阻塞和既有问题，只依据当前制品与环境给出独立结论。 |
 
-端到端任务使用 `delivery`。它作为交付负责人，在过程阶段通过当前会话中的输入、证据与角色交接协调各专项角色；项目记忆不承担过程协调，只在任务终态、适用验证完成并形成可复核结论后，由各受影响角色增量合并本轮已经成立的事实变化：
+每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆和边界；专业判断位于同目录 `references/`。当前六份能力准则逐字恢复自 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194`，其中 `design` 分别加载产品设计与系统架构两卷。每卷沿用“目录—角色职责—核心能力—专业决策顺序—交付证据—常见误判”；`references` 只保存专业能力、判断方法与证据标准，不承载触发、路由、记忆或外部操作规则。
+
+## 路由
+
+明确的单一任务直达专项 Skill，不必先经过网关：
 
 ```text
-delivery
-|-- discovery
-|-- architecture（仅在存在重要架构决策时）
-|-- frontend
-|-- backend
-|-- verification
-`-- release（发布适用且获授权时）
+明确前端改动    frontend -> verification
+明确后端改动    backend -> verification
+仅产品或系统设计 design
 ```
 
-各 Skill 的能力分工如下：
+模糊、跨角色、端到端或高风险代码任务由 `router` 选择最小链：
 
-| Skill | 能力域 | 应具备的核心能力 |
+```text
+清晰全栈功能    router -> backend / frontend -> verification
+边界尚不清晰    router -> design -> backend[冻结具体 API 契约]
+                -> backend / frontend -> verification
+```
+
+前后端只有在公共契约稳定、输入快照一致、依赖独立且写入不冲突时才能并行。同一 API、Schema、迁移代码或公共组件必须串行合并。
+
+本插件不执行生产部署、生产数据库迁移、切流、生产配置写入或回滚。这些外部状态操作应交由项目既有发布工具与运行责任人处理；插件可以设计、实现和验证相关代码，但不得据此宣称线上操作已经执行或生产环境已经健康。
+
+## 当前代码事实
+
+`skills/` 约束 AI 如何工作；`<项目根>/docs/product-studio/` 保存 AI 下一次编码必须知道的当前实现事实。`router` 不拥有记忆，避免编排状态成为第二事实源。只有下列四册可按需存在：
+
+| Owner | 事实键示例 | 保存内容 |
 |---|---|---|
-| `delivery` | 产品交付 | 意图归类、价值切片、依赖协调、风险门禁、变更控制与交付收口 |
-| `discovery` | 产品发现 | 问题定义、用户任务、证据联想、旅程状态、范围优先级与验收口径 |
-| `architecture` | 系统架构 | 系统建模、跨边界契约、质量属性、一致性故障、安全边界与演进约束 |
-| `frontend` | 前端体验 | 任务效率、交互、信息架构、响应式、视觉、可访问性、状态工程与渲染验收 |
-| `backend` | 后端工程 | 领域模型、API、数据迁移、权限、并发一致性、集成可靠性与服务端验证 |
-| `verification` | 独立验收 | 需求追溯、风险建模、分层测试、体验与数据验收、回归及证据审计 |
-| `release` | 发布运行 | 发布策略、制品配置、迁移执行、健康判断、风险回滚、事故处置与反馈闭环 |
+| `design` | `design:product:rule:*`、`design:system:contract:*` | 已实现的用户旅程、业务规则、边界、契约、不变量和迁移阶段 |
+| `backend` | `backend:api:*`、`backend:schema:*`、`backend:auth:*` | 实际 API、Schema、权限、事件、外部集成和运行配置 |
+| `frontend` | `frontend:token:*`、`frontend:component:*`、`frontend:layout:*` | 实际颜色/间距令牌、组件样式与状态、页面布局、断点和交互状态 |
+| `verification` | `verification:check:*`、`verification:coverage:*` | 可重复执行的检查、风险覆盖关系和已证实的验证限制 |
 
-每个 `SKILL.md` 只负责触发、输入、授权、执行、产物、交接与边界，并通过“专业能力来源”直达自身 `references/`。能力手册以“能力目录—核心能力卡—能力组合—完成判据”组织专业判断：目录只负责选择能力，不代替正文；每张适用能力卡都须完整读取，并以“启用、输入、执行、裁决、产出、验证、完成、边界”保存可直接实施的专业规则、证据要求与失败反例。跨能力协作或收口时再读取组合与判据，专业正文不在主提示词重复维护。
+每条事实只含五项：当前实现、源码锚点、关联与消费者、验证证据、重验条件。维护规则如下：
 
-## 调用方式
+- 任务完成且适用验证结束后，只更新本次代码真正改变的事实键；只读、取消、中断、失败在终态前或无事实变化时不写。
+- 同一语义键原位更新；新增代码新增键；代码、路由、组件或契约被删除后移除对应事实。Git 承担历史，不在事实册保存 `superseded` 卡、任务摘要、动作队列或每轮命令流水。
+- 精确 API/路由、OpenAPI、Schema、设计令牌等若能从源码稳定生成，以生成结果为权威；记忆只保留便于编码的语义投影、消费者关系和证据锚点。
+- `templates/` 仅供该角色首次建册。实例化后删除说明、键目录和占位；既有事实册不得再次套用模板。
 
-- 按需直调：用户可显式调用任一 `$skill-name`；单一职责只检查本角色最小输入，不强制经过完整生命周期。
-- 编排调用：跨角色或高风险任务由 `delivery` 选择最小必要角色链路。
-- 安全并行：上游门禁已通过、输入快照一致、依赖独立且文件或章节归属互不冲突时，多个 Skill 可同时推进。
-- 串行收口：同一契约、Schema、迁移、组件或共享环境由固定责任角色合并；并行不得绕过验收或发布授权。
-
-## 项目记忆
-
-`skills/` 与其中的角色能力手册约束 AI 如何工作；`<当前项目根>/docs/product-studio/` 只保存各角色跨轮仍成立的项目事实。当前项目根界定事实归属，每个角色只拥有与 Skill 同名的事实文件。
-
-跨角色的终态收口顺序、受影响角色识别和写入失败隔离由 `skills/delivery/SKILL.md` 的“项目记忆”定义；每个角色写入什么、凭何成立、使用哪些稳定 ID 及如何维护 schema，则由各自 `SKILL.md` 的“项目记忆”完整定义。不存在另行覆盖这些规则的根级共享记忆契约。
-
-过程阶段不更新记忆。任务到达终态且适用验证完成后，仅事实发生变化的角色由各自拥有者增量更新同名文件；未受影响事实、章节、文件和时间戳保持不变，不作整卷覆盖。只读、中断、未终态、无事实增量或明确排除记忆时不写。
-
-Skill、模板和项目记忆采用同一主干名：`skills/<skill>/SKILL.md` → `templates/<skill>.md` → `docs/product-studio/<skill>.md`。`templates/` 只用于首次创建 schema 2 角色事实册，保留事实家族索引与一张十三字段通用骨架；既有 schema 1 或 schema 2 记忆由对应角色依据本角色规则和已有事实卡增量维护，不再套用模板，格式迁移须另获明确授权。
-
-## 目录结构
+## 目录
 
 ```text
 product-studio/
-|-- .agents/plugins/marketplace.json
+|-- skills/
+|   |-- router/
+|   |-- design/
+|   |-- backend/
+|   |-- frontend/
+|   `-- verification/
+|-- templates/             # design/backend/frontend/verification schema 3 母版
+|-- docs/product-studio/   # 当前项目实际存在的代码事实子集
+|-- scripts/validate_project.py
 |-- .codex-plugin/plugin.json
 |-- .claude-plugin/
-|   |-- marketplace.json
-|   `-- plugin.json
-|-- skills/
-|   |-- delivery/
-|   |-- discovery/
-|   |-- architecture/
-|   |-- frontend/
-|   |-- backend/
-|   |-- verification/
-|   `-- release/
-|-- templates/
-|-- scripts/validate_project.py
-|-- docs/product-studio/
-`-- assets/
+`-- .agents/plugins/marketplace.json
 ```
 
 ## 安装
 
-### Codex
-
-从 GitHub 向 Codex 注册 marketplace，再安装其中的插件：
+Codex：
 
 ```powershell
 codex plugin marketplace add foreturn/product-studio
 codex plugin add product-studio@foreturn
 ```
 
-第一条命令只注册 marketplace；第二条命令才会安装 `product-studio`。仓库更新后，可运行 `codex plugin marketplace upgrade foreturn` 刷新 marketplace，再按 Codex 提示升级插件。
-
-### Claude Code
-
-Claude Code 使用独立的 marketplace 清单与安装命令：
+Claude Code：
 
 ```powershell
 claude plugin marketplace add foreturn/product-studio
@@ -96,14 +90,9 @@ claude plugin install product-studio@foreturn
 
 ## 校验
 
-运行项目检查：
-
 ```powershell
 python scripts/validate_project.py
-```
-
-Codex 插件使用内置 `plugin-creator` 校验器。Claude Code 同时严格校验插件与 marketplace 清单：
-
-```powershell
 claude plugin validate --strict C:\Users\root\plugins\product-studio
 ```
+
+项目校验覆盖五技能集合、六份能力准则的来源哈希与六章结构、45 项核心能力、代码路由边界、四份 schema 3 母版、当前事实键和双端 manifest 一致性。静态通过只证明源码契约自洽；真实插件触发、目标项目运行与交互行为仍须取得直接证据。

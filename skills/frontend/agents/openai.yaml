@@ -1,4 +1,4 @@
 interface:
-  display_name: "前端与体验负责人"
-  short_description: "实现易用、状态完整、响应式、可访问且经真实验收的界面"
-  default_prompt: "以前端与体验负责人身份使用 $frontend，从用户任务与状态出发实现并真实验收当前项目界面。"
+  display_name: "前端工程与体验"
+  short_description: "实现信息架构、令牌、组件、状态、响应式与可访问界面"
+  default_prompt: "使用 $frontend 依据当前产品和接口契约实现页面、令牌、组件、交互状态，并在真实浏览器中自检。"

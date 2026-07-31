@@ -1,39 +1,27 @@
 ---
-schema: 2
+schema: 3
 memory: verification
-scope: current-project
+scope: current-project-code
 project_root: ""
 updated_at: ""
 ---
 
-# verification
+# verification 代码事实
 
-<!-- 首建说明：本模板仅用于首次创建 schema 2 记忆。先读 `../skills/verification/references/verification-principles.md` 角色能力手册；一个独立语义一张卡，同家族编号从 `001` 递增，只生成有证据的事实。实例化时删除本说明、事实家族索引与占位内容，只保留实际事实卡；既有 schema 1 或 schema 2 记忆不得读取或套用本模板。示例标题：`VER-AC-001 — 注册失败提示满足已确认验收标准`。 -->
+<!-- 仅在项目首次产生值得跨会话保留的验证事实时复制本模板。实例化后填写项目根和带时区时间，删除本说明、事实键目录、示例与所有占位。同一语义键原位更新，新增代码事实时新增键，源码及消费者删除后删除键；Git 承担历史，既有事实文件不再次套用模板。 -->
 
-## 事实家族
+## 事实键
 
-- `VER-BASE-*`：核验对象、制品与环境基线
-- `VER-AC-*`：验收标准及其证据结果
-- `VER-JOURNEY-*`：端到端关键旅程结果
-- `VER-REC-*`：失败注入与恢复结果
-- `VER-NFR-*`：回归与非功能核验结果
-- `VER-DEFECT-*`：已证实缺陷与证据限制
-- `VER-CONCLUSION-*`：当前验收结论
+- `verification:check:<surface>:<behavior>`：可重复执行的验证目标、入口与终态断言。
+- `verification:coverage:<risk>:<scope>`：风险范围当前由哪些测试或证据覆盖，并明确仍未覆盖的边界。
+- `verification:constraint:<surface>:<invariant>`：必须持续成立的数据、安全、兼容或体验不变量。
 
-## 现行事实
+## 当前代码事实
 
-### VER-<FAMILY>-001 — <可独立理解的事实标题>
+### verification:check:api:order-idempotency
 
-- **事实类型**：<证据所支持的事实来源或性质>
-- **已成立事实**：<主体、前提、行为、结果与边界>
-- **角色专属细节**：<本角色判断所需且不重复事实句的细节>
-- **适用范围**：<对象、版本、环境或边界>
-- **精确定位**：<仓库位置、符号、契约、制品或环境>
-- **成立证据**：<可复核的确认、实现、验证或运行证据>
-- **核验基线**：<revision、制品、环境与核验时间>
-- **关联事实**：<none 或相关稳定 ID>
-- **下游约束**：<后续工作必须维持的事实边界>
-- **状态**：<current / conditional / stale / superseded>
-- **置信度**：<high / medium / low>
-- **取代关系**：<none / supersedes ID / superseded-by ID>
-- **失效条件**：<哪些变化会要求重新核验>
+- **当前实现**：<当前代码库中可重复验证的检查、覆盖或不变量>
+- **源码锚点**：<测试、脚本、配置、被测入口或相关代码的精确定位>
+- **关联与消费者**：<所验证的 design、backend、frontend 事实键及使用者；无则写“无”>
+- **验证证据**：<可复用测试、脚本或夹具，适用环境、关键断言与复现命令；不逐轮刷新单次结果>
+- **重验条件**：<哪些被测代码、测试、环境或依赖变化后证据失效>

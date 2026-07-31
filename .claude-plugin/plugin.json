@@ -1,7 +1,7 @@
 {
   "name": "product-studio",
   "version": "0.3.0",
-  "description": "帮助氛围编程用户将简短提示词扩展为边界清晰、由产品研发角色协作、证据验收并可安全发布的软件增量。",
+  "description": "以路由、产品架构、后端、前端和测试验证五个技能约束 AI，从仓库事实推进可验收的软件增量。",
   "author": {
     "name": "foreturn"
   },
@@ -9,11 +9,12 @@
     "vibe-coding",
     "prompt-enrichment",
     "product-development",
-    "requirements",
+    "product-design",
     "frontend",
     "backend",
     "architecture",
-    "delivery"
+    "router",
+    "verification"
   ],
   "skills": "./skills/"
 }
