@@ -12,7 +12,7 @@
 | `frontend` | 设计并实现页面任务流、信息层级、设计令牌、组件变体、布局与响应式规则、loading/empty/error/success/disabled 状态、键盘与读屏可访问性、性能预算，并在真实浏览器中核验主题、视口、身份和数据状态。 |
 | `verification` | 将产品规则追溯到证据，按风险设计分层测试，包括单元、契约、集成、端到端和非功能验证；核验接口、权限、数据不变量、迁移恢复、前端交互与真实渲染；区分失败、阻塞和既有问题，只依据当前制品与环境给出独立结论。 |
 
-每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆入口和边界；可复用的细分专业判断位于同技能 `references/`。当前五份能力准则以 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，删去了独立的决策顺序与交付证据章节；`design` 的产品模式直接依其 `SKILL.md` 契约执行，系统模式加载架构卷。每卷沿用“目录—角色职责—核心能力—常见误判”。插件根 [项目代码事实记忆契约](references/project-memory.md) 只承载四个 Owner 共用的记忆 schema 与终态同步规则，不参与专业能力判断。
+每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆入口和边界；可复用的细分专业判断位于同技能 `references/`。当前五份能力准则以 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，删去了独立的决策顺序与交付证据章节；`design` 的产品模式直接依其 `SKILL.md` 契约执行，系统模式加载架构卷。每卷沿用“目录—角色职责—核心能力—常见误判”。四个专业 Skill 另以技能自有的 `references/memory.md` 保存本 Owner 唯一的记忆规则与首建骨架；专业能力卷不承载记忆规则，`router` 也不拥有记忆。
 
 ## 路由
 
@@ -47,27 +47,22 @@
 | `frontend` | `frontend:surface:*`、`frontend:state:*`、`frontend:system:*` | 核心界面任务、共享组件、状态恢复、布局、响应式、可访问性和设计系统约束 |
 | `verification` | `verification:check:*`、`verification:coverage:*` | 可重复执行的检查、风险覆盖关系和已证实的验证限制 |
 
-schema 4 的每个键统一为稳定的 `owner:type:slug`，method、path、route、表名、选择器和测试名放入代码定位，不再进入键名。每条事实只含五项：事实摘要、代码定位、依赖与影响、验证入口、失效条件。
+每个专业 Skill 的 `references/memory.md` 是该 Owner 唯一的收录、键型、建册和终态同步规则；首次确有事实时，只把其中的内嵌骨架实例化到当前项目，不在插件根维护共享契约、模板或格式版本号。每个键统一为稳定的 `owner:type:slug`，每条事实只含五项：事实摘要、代码定位、依赖与影响、验证入口、失效条件。
 
 - 每次编码任务进入完成终态，或部分完成中已有独立可用且验证成立的切片时，受影响 Owner 都必须按最终差异执行同步检查；有变化便增改删，无变化报告 `memory: 0 keys changed`，不制造时间戳差异。
-- 事实必须已在代码中成立、后续仍会使用，并具有跨消费者、重查成本或误判风险；不得逐任务、文件、接口、字段、样式值、Symbol 或测试机械建卡。
-- “验证入口”只保存可复用测试、脚本、命令、关键断言与稳定未覆盖边界；本轮通过、临时失败、制品和命令流水留在终态报告。
-- 同一语义原位更新；事实及最后消费者消失时删除，最后一张卡删除后移除整册。Git 承担历史，不保存 `superseded`、待办、方案和过程推理。
-- `templates/` 仅供对应 Owner 首次建册。实例化后删除说明、键目录、示例与占位；现有事实册不得再次套用模板。
+- 实例只保存已在代码中成立、预计仍会使用的总结事实；任务经过、一次性证据、历史版本、秘密与可由源码生成的清单不入册。
+- 同一语义原位更新，跨 Owner 只链接事实键；最后一张卡删除后移除整册，Git 承担历史。
 
 ## 目录
 
 ```text
 product-studio/
 |-- skills/
-|   |-- router/
-|   |-- design/
-|   |-- backend/
-|   |-- frontend/
-|   `-- verification/
-|-- templates/             # design/backend/frontend/verification schema 4 母版
-|-- references/
-|   `-- project-memory.md  # schema 4 总结事实与终态同步契约
+|   |-- router/references/        # 交付编排能力卷，无记忆卷
+|   |-- design/references/        # 架构能力卷 + 技能自有 memory.md
+|   |-- backend/references/       # 后端能力卷 + 技能自有 memory.md
+|   |-- frontend/references/      # 前端能力卷 + 技能自有 memory.md
+|   `-- verification/references/  # 验证能力卷 + 技能自有 memory.md
 |-- docs/product-studio/   # 当前项目实际存在的代码事实子集
 |-- scripts/validate_project.py
 |-- .codex-plugin/plugin.json
@@ -98,4 +93,4 @@ python3 -X utf8 scripts/validate_project.py --self-test
 claude plugin validate --strict .
 ```
 
-项目校验覆盖五技能集合、五份能力准则的裁剪后基线哈希与四章结构、38 项核心能力、代码路由边界、共享记忆契约、四份 schema 4 母版、稳定事实键、五字段摘要和双端 manifest 一致性。静态通过只证明当前快照的源码契约、定位和链接自洽，不能发现锚点仍存在但事实语义已陈旧；语义新鲜度由每次编码终态对照最终差异同步。真实插件触发、目标项目运行与交互行为仍须取得直接证据。
+项目校验覆盖五技能集合、五份能力准则的裁剪后基线哈希与四章结构、38 项核心能力、代码路由边界、四份技能自有记忆卷及内嵌骨架、稳定事实键、五字段摘要和双端 manifest 一致性。静态通过只证明当前快照的源码契约、定位和链接自洽，不能发现锚点仍存在但事实语义已陈旧；语义新鲜度由每次编码终态对照最终差异同步。真实插件触发、目标项目运行与交互行为仍须取得直接证据。

@@ -70,15 +70,7 @@ description: 在编码前消除产品语义或系统边界缺口：产品模式�
 
 ## 项目记忆
 
-开始工作时，若 `<当前项目根>/docs/product-studio/design.md` 存在，只读取命中的事实及直接关联。每次编码任务收口前完整读取[项目代码事实记忆契约](../../references/project-memory.md)，按最终差异同步 `design` 拥有的 schema 4 摘要；没有总结性事实变化时报告 `memory: 0 keys changed`。
-
-本技能只使用下列稳定键：
-
-- `design:journey:<slug>`、`design:rule:<slug>`：代码已支持的核心旅程、恢复路径、业务规则、例外和权限差异。
-- `design:boundary:<slug>`、`design:contract:<slug>`：跨模块边界、数据所有权、权威写入和共享契约。
-- `design:invariant:<slug>`、`design:migration:<slug>`：跨边界不变量和当前仍生效的迁移阶段。
-
-具体 API、Schema、组件和测试资产分别归 `backend`、`frontend`、`verification`；`AC-ID`、ADR、候选取舍、未落地决定和纯设计产物不写入代码事实记忆。首次确有事实时使用 `../../templates/design.md`，不得预建空册。
+开始工作时，若 `<当前项目根>/docs/product-studio/design.md` 存在，只读取命中的事实及直接关联。每次编码任务收口前完整读取 [design 记忆规则与实例骨架](references/memory.md)，仅按最终差异同步 `design` 自己的事实册；首次确有事实时使用其中骨架，不得预建空册。纯设计产物不写入当前代码事实；没有总结性事实变化时报告 `memory: 0 keys changed`。
 
 ## 输出与交接门禁
 

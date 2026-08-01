@@ -45,15 +45,7 @@ description: 设计、实现并验证服务端领域规则、API 与错误契约
 
 ## 当前代码事实记忆
 
-开始工作时，若 `docs/product-studio/backend.md` 存在，只读取命中的事实及直接关联。每次编码任务收口前完整读取[项目代码事实记忆契约](../../references/project-memory.md)，按最终差异同步 `backend` 拥有的 schema 4 摘要；无变化也须报告同步结果。
-
-本技能只使用下列稳定键：
-
-- `backend:domain:<slug>`、`backend:api:<slug>`、`backend:data:<slug>`：领域行为、接口与错误语义、数据生命周期、事务和并发约束。
-- `backend:auth:<slug>`、`backend:event:<slug>`：可信授权谓词，以及事件的生产、顺序、消费、重试和去重契约。
-- `backend:integration:<slug>`、`backend:runtime:<slug>`：外部依赖失败恢复和不含秘密值的运行行为。
-
-method、path、表名和配置键写入“代码定位”，不得成为语义键，也不得为每个接口、字段或测试机械建卡。首次确有事实时使用 `../../templates/backend.md`，不得预建空册。
+开始工作时，若 `<当前项目根>/docs/product-studio/backend.md` 存在，只读取命中的事实及直接关联。每次编码任务收口前完整读取 [backend 记忆规则与实例骨架](references/memory.md)，仅按最终差异同步 `backend` 自己的事实册；首次确有事实时使用其中骨架，不得预建空册。没有总结性事实变化时报告 `memory: 0 keys changed`。
 
 ## 输出与交接
 

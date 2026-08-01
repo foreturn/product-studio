@@ -44,15 +44,7 @@ description: 独立追溯需求并以风险驱动方式验证代码增量，覆�
 
 ## 当前代码事实记忆
 
-开始工作时，若 `docs/product-studio/verification.md` 存在，只读取命中的事实及直接关联。每次编码任务收口前完整读取[项目代码事实记忆契约](../../references/project-memory.md)，按最终差异同步 `verification` 拥有的 schema 4 摘要；单次验收即使通过，也不自动形成长期记忆。
-
-本技能只使用下列稳定键：
-
-- `verification:check:<slug>`：可重复执行的检查入口、关键断言与适用环境。
-- `verification:coverage:<slug>`：风险当前由哪些层级直接覆盖，以及稳定未覆盖边界。
-- `verification:constraint:<slug>`：必须持续守住的数据、安全、兼容、体验或环境不变量。
-
-测试文件、用例名和环境写入“代码定位”或“验证入口”，不得成为语义键，也不得保存某轮通过、临时失败或历史报告。首次确有事实时使用 `../../templates/verification.md`，不得预建空册。
+开始工作时，若 `<当前项目根>/docs/product-studio/verification.md` 存在，只读取命中的事实及直接关联。每次编码任务收口前完整读取 [verification 记忆规则与实例骨架](references/memory.md)，仅按最终差异同步 `verification` 自己的事实册；首次确有事实时使用其中骨架，不得预建空册。单次验收即使通过也不自动形成长期记忆；没有总结性事实变化时报告 `memory: 0 keys changed`。
 
 ## 输出与裁决
 

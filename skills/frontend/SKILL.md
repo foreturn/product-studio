@@ -47,15 +47,7 @@ description: 设计、实现并真实渲染验证 Web 或应用界面的信息�
 
 ## 当前代码事实记忆
 
-开始工作时，若 `docs/product-studio/frontend.md` 存在，只读取命中的事实及直接关联。每次编码任务收口前完整读取[项目代码事实记忆契约](../../references/project-memory.md)，按最终差异同步 `frontend` 拥有的 schema 4 摘要；无变化也须报告同步结果。
-
-本技能只使用下列稳定键：
-
-- `frontend:surface:<slug>`、`frontend:component:<slug>`、`frontend:state:<slug>`：核心界面任务、共享组件契约、异步状态与恢复行为。
-- `frontend:layout:<slug>`、`frontend:responsive:<slug>`：稳定布局、内容优先级、重排、溢出和触控约束。
-- `frontend:a11y:<slug>`、`frontend:system:<slug>`：可访问性约束，以及多消费者共享的令牌和设计系统规则。
-
-route、平台、选择器和令牌名写入“代码定位”，不得成为语义键，也不得为孤立样式值、组件或截图机械建卡。首次确有事实时使用 `../../templates/frontend.md`，不得预建空册。
+开始工作时，若 `<当前项目根>/docs/product-studio/frontend.md` 存在，只读取命中的事实及直接关联。每次编码任务收口前完整读取 [frontend 记忆规则与实例骨架](references/memory.md)，仅按最终差异同步 `frontend` 自己的事实册；首次确有事实时使用其中骨架，不得预建空册。没有总结性事实变化时报告 `memory: 0 keys changed`。
 
 ## 输出与交接
 

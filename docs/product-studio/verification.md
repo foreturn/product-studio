@@ -1,9 +1,7 @@
 ---
-schema: 4
 memory: verification
-scope: current-project-code
 project_root: "."
-updated_at: "2026-08-01T08:39:25+08:00"
+updated_at: "2026-08-01T11:19:41+08:00"
 ---
 
 # verification 代码事实
@@ -12,11 +10,11 @@ updated_at: "2026-08-01T08:39:25+08:00"
 
 ### verification:check:plugin-static-contract
 
-- **事实摘要**：项目以单一 Python 入口静态检查五技能、五份专业能力卷、共享记忆契约、四份 schema 4 模板、实例摘要、代码定位、跨卡链接、路由边界和双端插件清单，并用隔离突变验证关键退化会被拒绝。
+- **事实摘要**：项目以单一 Python 入口静态检查五技能、五份专业能力卷、四份技能自有记忆卷及其无版本号内嵌骨架、实例摘要、代码定位、跨卡链接、路由边界和双端插件清单，并用隔离突变验证关键退化会被拒绝。
 - **代码定位**：`scripts/validate_project.py#validate`；`scripts/validate_project.py#run_negative_self_tests`；`scripts/README.md#校验脚本`
-- **依赖与影响**：五份 Skill、五份专业能力 reference、`references/project-memory.md`、四份模板、当前 design／verification 事实册及插件清单；对应 `design:invariant:summary-memory` 与 `design:invariant:capability-layering`。
-- **验证入口**：在插件根运行 `python3 -X utf8 scripts/validate_project.py --self-test`；关键断言是当前快照无结构错误、无实例事实册仍合法、23 类退化各自命中对应诊断且临时副本不改工作树。该入口不证明事实语义已随最终差异更新，也不证明真实插件触发、目标项目运行或线上行为。
-- **失效条件**：校验器、任一 Skill、专业或共享 reference、模板、实例事实册、README、Codex 或 Claude 清单变化。
+- **依赖与影响**：五份 Skill、五份专业能力 reference、四份技能自有 `references/memory.md`、当前 design／verification 事实册及插件清单；对应 `design:invariant:summary-memory` 与 `design:invariant:capability-layering`。
+- **验证入口**：在插件根运行 `python3 -X utf8 scripts/validate_project.py --self-test`；关键断言是当前快照无结构错误、无实例事实册仍合法、34 类退化各自命中对应诊断且临时副本不改工作树。该入口不证明事实语义已随最终差异更新，也不证明真实插件触发、目标项目运行或线上行为。
+- **失效条件**：校验器、任一 Skill、专业能力卷、技能自有记忆卷、内嵌骨架、实例事实册、README、Codex 或 Claude 清单变化。
 
 ### verification:constraint:external-operation-scope
 

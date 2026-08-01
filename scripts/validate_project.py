@@ -25,11 +25,19 @@ MEMORY_FIELDS = (
     "验证入口",
     "失效条件",
 )
-MEMORY_CONTRACT = "references/project-memory.md"
-MEMORY_CONTRACT_SECTIONS = (
+MEMORY_FRONTMATTER_FIELDS = ("memory", "project_root", "updated_at")
+FORBIDDEN_MEMORY_FRONTMATTER_FIELDS = {
+    "schema",
+    "format",
+    "version",
+    "format_version",
+    "scope",
+}
+MEMORY_REFERENCE = "references/memory.md"
+MEMORY_REFERENCE_SECTIONS = (
     "收录门槛",
-    "Schema 4",
-    "Owner 与事实类型",
+    "事实键",
+    "实例骨架",
     "终态同步",
     "禁止内容",
 )
@@ -127,17 +135,18 @@ MEMORY_KEY_PATTERNS = {
     )
     for owner, types in MEMORY_TYPES.items()
 }
-TEMPLATE_SKELETONS = {
-    "design": "design:contract:order-creation",
-    "backend": "backend:api:order-creation",
-    "frontend": "frontend:state:order-create",
-    "verification": "verification:check:order-idempotency",
+MEMORY_SKELETON_KEYS = {
+    owner: f"{owner}:<type>:<slug>" for owner in MEMORY_OWNERS
 }
 LEGACY_INVOCATION = re.compile(r"\$(?:delivery|discovery|architecture|release)\b")
 LEGACY_ROLE_PATH = re.compile(
     r"(?:skills|templates|docs/product-studio)[\\/]"
     r"(?:delivery|discovery|architecture|release)(?:[\\/.]|\b)",
     re.IGNORECASE,
+)
+LEGACY_MEMORY_PATH = re.compile(
+    r"(?:\.\./\.\./)?references/project-memory\.md"
+    r"|(?:\.\./\.\./)?templates/(?:design|backend|frontend|verification|router)\.md"
 )
 FIELD_LINE_PATTERN = re.compile(r"^-\s+\*\*([^*]+)\*\*：\s*(.*)$")
 PLACEHOLDER_PATTERN = re.compile(r"<[^>]+>|\b(?:TODO|TBD)\b", re.IGNORECASE)
@@ -151,14 +160,16 @@ SECRET_PATTERN = re.compile(
     r")"
 )
 MEMORY_SYNC_DENIAL_PATTERN = re.compile(
-    r"(?:"
+    r"(?m)^[ \t]*(?:[-*]\s+)?(?:"
     r"(?:无需|不必|不再|拒绝).{0,8}(?:同步|更新).{0,12}(?:事实|记忆)"
     r"|(?:不得|禁止).{0,8}(?:同步|更新)(?:任何|全部|所有).{0,12}(?:事实|记忆)"
     r"|(?:不得|禁止).{0,8}(?:记忆同步|事实更新)"
     r")"
 )
 EXTERNAL_WRITE_PERMISSION_PATTERN = re.compile(
-    r"(?:允许|可以|可在).{0,24}(?:生产环境|外部环境).{0,24}(?:外部写入|环境写入|环境操作|生产写入)"
+    r"(?<!不)(?<!不应)(?<!不得)(?:允许|可以|可在)"
+    r".{0,24}(?:生产环境|外部环境)"
+    r".{0,24}(?:外部写入|环境写入|环境操作|生产写入)"
 )
 
 
@@ -210,30 +221,58 @@ def parse_frontmatter(
     return values
 
 
+def mask_fenced_code(content: str) -> str:
+    masked: list[str] = []
+    fence_char: str | None = None
+    fence_length = 0
+    for line in content.splitlines(keepends=True):
+        if fence_char is None:
+            opening = re.match(r"^\s*(`{3,}|~{3,})", line)
+            if not opening:
+                masked.append(line)
+                continue
+            marker = opening.group(1)
+            fence_char = marker[0]
+            fence_length = len(marker)
+        else:
+            closing = re.match(
+                rf"^\s*{re.escape(fence_char)}{{{fence_length},}}[ \t]*(?:\r?\n)?$",
+                line,
+            )
+            if closing:
+                fence_char = None
+                fence_length = 0
+        masked.append("".join(char if char in "\r\n" else " " for char in line))
+    return "".join(masked)
+
+
 def headings(content: str, level: int) -> list[str]:
+    visible = mask_fenced_code(content)
     marks = "#" * level
     return [
         match.group(1).strip()
-        for match in re.finditer(rf"(?m)^{re.escape(marks)}\s+(.+?)\s*$", content)
+        for match in re.finditer(rf"(?m)^{re.escape(marks)}\s+(.+?)\s*$", visible)
     ]
 
 
 def markdown_section(content: str, level: int, title: str) -> str | None:
+    visible = mask_fenced_code(content)
     marks = "#" * level
-    start = re.search(rf"(?m)^{re.escape(marks)}\s+{re.escape(title)}\s*$", content)
+    start = re.search(rf"(?m)^{re.escape(marks)}\s+{re.escape(title)}\s*$", visible)
     if not start:
         return None
-    following = re.search(rf"(?m)^#{{1,{level}}}\s+", content[start.end() :])
+    following = re.search(rf"(?m)^#{{1,{level}}}\s+", visible[start.end() :])
     end = start.end() + following.start() if following else len(content)
     return content[start.end() : end].strip()
 
 
 def heading_blocks(content: str, level: int) -> list[tuple[str, str]]:
+    visible = mask_fenced_code(content)
     marks = "#" * level
-    matches = list(re.finditer(rf"(?m)^{re.escape(marks)}\s+(.+?)\s*$", content))
+    matches = list(re.finditer(rf"(?m)^{re.escape(marks)}\s+(.+?)\s*$", visible))
     blocks: list[tuple[str, str]] = []
     for match in matches:
-        following = re.search(rf"(?m)^#{{1,{level}}}\s+", content[match.end() :])
+        following = re.search(rf"(?m)^#{{1,{level}}}\s+", visible[match.end() :])
         end = match.end() + following.start() if following else len(content)
         blocks.append((match.group(1).strip(), content[match.end() : end].strip()))
     return blocks
@@ -398,59 +437,149 @@ def validate_reference(
     for title, body in cards:
         if len(re.findall(r"(?m)^-\s+", body)) < 5:
             errors.append(f"Capability card is too shallow '{title}': {rel(path, root)}")
-    if "docs/product-studio/" in content or "templates/" in content:
+    if any(
+        term in content
+        for term in (
+            "docs/product-studio/",
+            "templates/",
+            "references/memory.md",
+        )
+    ):
         errors.append(f"Capability reference contains memory/template rules: {rel(path, root)}")
 
 
-def validate_memory_contract(root: Path, errors: list[str]) -> None:
-    path = root / MEMORY_CONTRACT
+def validate_memory_reference(root: Path, owner: str, errors: list[str]) -> None:
+    path = root / "skills" / owner / MEMORY_REFERENCE
+    if not path.is_file():
+        errors.append(f"Missing skill-owned memory reference: {rel(path, root)}")
+        return
     content = read_text(path, root, errors)
-    if tuple(headings(content, 2)) != MEMORY_CONTRACT_SECTIONS:
+    if tuple(headings(content, 2)) != MEMORY_REFERENCE_SECTIONS:
         errors.append(
-            "Project-memory contract sections must be exactly "
-            f"{list(MEMORY_CONTRACT_SECTIONS)}: {rel(path, root)}"
+            f"{owner} memory reference sections must be exactly "
+            f"{list(MEMORY_REFERENCE_SECTIONS)}: {rel(path, root)}"
         )
+
+    require_terms(
+        path,
+        content,
+        (
+            "唯一规则与首建骨架",
+            f"docs/product-studio/{owner}.md",
+            f"只由 `{owner}` 维护",
+        ),
+        root,
+        errors,
+        f"{owner} memory reference",
+    )
     section_terms = {
         "收录门槛": (
-            "已在当前代码中成立",
-            "预计后续编码仍会使用",
-            "唯一 Owner",
-            "不得按任务",
+            "当前代码",
+            "预计后续",
+            "唯一",
+            "不按任务",
         ),
-        "Schema 4": (
-            "schema: 4",
+        "事实键": ("全局唯一", "小写字母", "数字", "短横线"),
+        "实例骨架": (
             'project_root: "."',
-            "owner:type:slug",
-            "仓库相对路径#精确位置",
+            "当前项目根",
+            "不得改为绝对路径或父目录",
             *MEMORY_FIELDS,
         ),
-        "Owner 与事实类型": ("router` 不拥有事实册",),
         "终态同步": (
             "最终差异",
             "updated_at",
             "memory: 0 keys changed",
             "最后一张卡删除后移除整册",
-            "不能判断“锚点仍存在但语义已经陈旧”",
+            "项目校验",
         ),
-        "禁止内容": ("单次命令输出", "其他项目事实", "密钥"),
+        "禁止内容": (
+            "任务摘要",
+            "单轮通过",
+            "其他项目事实",
+            "密钥",
+            "Git",
+            "静态校验只能证明",
+            "语义新鲜度",
+        ),
     }
     for section_name, terms in section_terms.items():
         body = markdown_section(content, 2, section_name)
         if not body:
-            errors.append(
-                f"Empty project-memory contract section '{section_name}': {rel(path, root)}"
-            )
+            errors.append(f"Empty {owner} memory section '{section_name}': {rel(path, root)}")
             continue
-        require_terms(path, body, terms, root, errors, f"project-memory {section_name}")
-    owner_body = markdown_section(content, 2, "Owner 与事实类型") or ""
-    for owner, types in MEMORY_TYPES.items():
-        if f"`{owner}`" not in owner_body:
-            errors.append(f"Project-memory contract omits owner '{owner}': {rel(path, root)}")
-        for type_name in types:
-            if f"`{type_name}`" not in owner_body:
-                errors.append(
-                    f"Project-memory contract omits type '{owner}:{type_name}': {rel(path, root)}"
-                )
+        require_terms(path, body, terms, root, errors, f"{owner} memory {section_name}")
+
+    key_body = markdown_section(content, 2, "事实键") or ""
+    for type_name in MEMORY_TYPES[owner]:
+        expected_key = f"`{owner}:{type_name}:<slug>`"
+        if expected_key not in key_body:
+            errors.append(
+                f"{owner.capitalize()} memory reference omits type "
+                f"'{owner}:{type_name}': {rel(path, root)}"
+            )
+    for other_owner in MEMORY_OWNERS:
+        if other_owner == owner:
+            continue
+        foreign_key = re.search(rf"`{other_owner}:[^`]+`", content)
+        if (
+            f"docs/product-studio/{other_owner}.md" in content
+            or re.search(rf"(?m)^memory:\s*{other_owner}\s*$", content)
+            or foreign_key
+        ):
+            errors.append(
+                f"{owner} memory reference contains foreign owner '{other_owner}': "
+                f"{rel(path, root)}"
+            )
+
+    skeleton_section = markdown_section(content, 2, "实例骨架") or ""
+    skeletons = re.findall(
+        r"(?ms)^```markdown[ \t]*\n(.*?)^```[ \t]*$", skeleton_section
+    )
+    if len(skeletons) != 1:
+        errors.append(
+            f"{owner} memory reference must contain exactly one Markdown skeleton: "
+            f"{rel(path, root)}"
+        )
+    else:
+        skeleton = skeletons[0]
+        fields = parse_frontmatter(path, skeleton, root, errors)
+        expected_frontmatter = {
+            "memory": owner,
+            "project_root": ".",
+            "updated_at": "<带时区 RFC3339 时间>",
+        }
+        forbidden_fields = set(fields) & FORBIDDEN_MEMORY_FRONTMATTER_FIELDS
+        if forbidden_fields:
+            errors.append(
+                f"Memory skeleton contains forbidden metadata fields {sorted(forbidden_fields)}: "
+                f"{rel(path, root)}"
+            )
+        if fields != expected_frontmatter:
+            errors.append(f"Memory skeleton frontmatter is invalid for {owner}: {rel(path, root)}")
+        if tuple(headings(skeleton, 1)) != (f"{owner} 代码事实",):
+            errors.append(f"Memory skeleton title is invalid for {owner}: {rel(path, root)}")
+        if tuple(headings(skeleton, 2)) != ("当前代码事实",):
+            errors.append(f"Memory skeleton sections are invalid for {owner}: {rel(path, root)}")
+        current = markdown_section(skeleton, 2, "当前代码事实") or ""
+        cards = heading_blocks(current, 3)
+        expected_key = MEMORY_SKELETON_KEYS[owner]
+        if len(cards) != 1 or cards[0][0] != expected_key:
+            errors.append(
+                f"Memory skeleton key must be '{expected_key}': {rel(path, root)}"
+            )
+        else:
+            validate_field_block(
+                path,
+                cards[0][1],
+                MEMORY_FIELDS,
+                root,
+                errors,
+                f"{owner} memory skeleton",
+                allow_placeholders=True,
+            )
+    if MEMORY_SYNC_DENIAL_PATTERN.search(content):
+        errors.append(f"Contradictory memory sync rule: {rel(path, root)}")
 
 
 def validate_memory_skill(
@@ -460,13 +589,10 @@ def validate_memory_skill(
         path,
         content,
         (
-            "schema 4",
             f"docs/product-studio/{skill}.md",
-            f"../../templates/{skill}.md",
-            "../../references/project-memory.md",
-            "每次编码任务收口前完整读取[项目代码事实记忆契约]"
-            f"(../../references/project-memory.md)，按最终差异同步 `{skill}` 拥有的 schema 4 摘要",
-            "最终差异",
+            f"[{skill} 记忆规则与实例骨架](references/memory.md)",
+            f"仅按最终差异同步 `{skill}` 自己的事实册",
+            "首次确有事实时使用其中骨架",
             "不得预建空册",
             "memory: 0 keys changed",
         ),
@@ -474,6 +600,8 @@ def validate_memory_skill(
         errors,
         "current-code-memory",
     )
+    if "../../references/project-memory.md" in content or "../../templates/" in content:
+        errors.append(f"Legacy root memory path remains: {rel(path, root)}")
     if MEMORY_SYNC_DENIAL_PATTERN.search(content):
         errors.append(f"Contradictory memory sync rule: {rel(path, root)}")
 
@@ -496,13 +624,17 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
     reference_dir = skill_dir / "references"
     actual_refs = {
         str(item.relative_to(skill_dir)).replace("\\", "/")
-        for item in reference_dir.glob("*.md")
+        for item in reference_dir.rglob("*")
+        if item.is_file()
     }
-    if actual_refs != set(expected_refs):
+    expected_ref_set = set(expected_refs)
+    if skill in MEMORY_OWNERS:
+        expected_ref_set.add(MEMORY_REFERENCE)
+    if actual_refs != expected_ref_set:
         errors.append(
-            f"Capability reference set differs for {skill}: "
-            f"missing={sorted(set(expected_refs) - actual_refs)}, "
-            f"extra={sorted(actual_refs - set(expected_refs))}"
+            f"Skill reference set differs for {skill}: "
+            f"missing={sorted(expected_ref_set - actual_refs)}, "
+            f"extra={sorted(actual_refs - expected_ref_set)}"
         )
     for relative_path, (cards, digest) in expected_refs.items():
         if relative_path not in content:
@@ -516,10 +648,13 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
     if f"${skill}" not in (parse_yaml_value(metadata, "default_prompt") or ""):
         errors.append(f"Metadata does not invoke ${skill}: {rel(metadata_path, root)}")
     if skill in MEMORY_OWNERS:
+        validate_memory_reference(root, skill, errors)
         validate_memory_skill(root, skill, content, path, errors)
     else:
-        if re.search(r"docs/product-studio/router\.md|templates/router\.md|memory:\s*router", content):
-            errors.append("router must not own project memory or a memory template")
+        if (reference_dir / "memory.md").is_file() or re.search(
+            r"docs/product-studio/router\.md|templates/router\.md|memory:\s*router", content
+        ):
+            errors.append("router must not own a project memory reference or fact store")
     if skill == "router":
         require_terms(
             path,
@@ -533,7 +668,8 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
                 "输入快照一致",
                 "写集合",
                 "代码权限不等于生产操作授权",
-                "../../references/project-memory.md",
+                "各自的 `references/memory.md`",
+                "不得替代专项技能判卡或写入",
                 "memory: 0 keys changed",
             ),
             root,
@@ -551,7 +687,7 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
                 "跳过本技能",
                 "产品模式不加载独立 reference",
                 "architecture-principles.md",
-                "纯设计产物不写入代码事实记忆",
+                "纯设计产物不写入当前代码事实",
             ),
             root,
             errors,
@@ -584,60 +720,19 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
             errors.append(f"External write permission contradicts verification boundary: {rel(path, root)}")
 
 
-def validate_template(root: Path, owner: str, errors: list[str]) -> None:
-    path = root / "templates" / f"{owner}.md"
-    content = read_text(path, root, errors)
-    fields = parse_frontmatter(path, content, root, errors)
-    expected = {
-        "schema": "4",
-        "memory": owner,
-        "scope": "current-project-code",
-        "project_root": ".",
-        "updated_at": "",
-    }
-    if fields != expected:
-        errors.append(f"Schema 4 template frontmatter is invalid: {rel(path, root)}")
-    if tuple(headings(content, 2)) != ("事实键", "当前代码事实"):
-        errors.append(f"Template sections are invalid: {rel(path, root)}")
-    require_terms(
-        path,
-        content,
-        (
-            "总结性事实",
-            "同步检查",
-            "memory: 0 keys changed",
-            "最后一张事实删除后移除本文件",
-            "Git",
-        ),
-        root,
-        errors,
-        "template",
-    )
-    current = markdown_section(content, 2, "当前代码事实") or ""
-    cards = heading_blocks(current, 3)
-    if len(cards) != 1 or cards[0][0] != TEMPLATE_SKELETONS[owner]:
-        errors.append(
-            f"Template skeleton must be '{TEMPLATE_SKELETONS[owner]}': {rel(path, root)}"
-        )
-        return
-    if not MEMORY_KEY_PATTERNS[owner].fullmatch(cards[0][0]):
-        errors.append(f"Template skeleton key is invalid for {owner}: {rel(path, root)}")
-    validate_field_block(
-        path,
-        cards[0][1],
-        MEMORY_FIELDS,
-        root,
-        errors,
-        "template fact skeleton",
-        allow_placeholders=True,
-    )
-
-
 def validate_source_anchor(
     root: Path, memory_path: Path, key: str, anchor: str, errors: list[str]
 ) -> bool:
     source_path, separator, fragment = anchor.partition("#")
     if not source_path or "://" in source_path:
+        return False
+    if Path(source_path).is_absolute() or re.match(r"^[A-Za-z]:[\\/]", source_path):
+        errors.append(
+            f"Source anchor must be repository-relative in fact '{key}': {anchor}"
+        )
+        return False
+    if ".." in re.split(r"[\\/]", source_path):
+        errors.append(f"Source anchor escapes project root in fact '{key}': {anchor}")
         return False
     candidate = (root / source_path).resolve()
     try:
@@ -673,12 +768,21 @@ def validate_memory_file(
 ) -> None:
     content = read_text(path, root, errors)
     fields = parse_frontmatter(path, content, root, errors)
-    if set(fields) != {"schema", "memory", "scope", "project_root", "updated_at"}:
+    frontmatter_match = re.match(
+        r"\A---\s*\n.*?\n---\s*(?:\n|\Z)", content, re.DOTALL
+    )
+    body = content[frontmatter_match.end() :].strip() if frontmatter_match else content.strip()
+    if set(fields) != set(MEMORY_FRONTMATTER_FIELDS):
         errors.append(f"Code-memory frontmatter fields are invalid: {rel(path, root)}")
-    if fields.get("schema") != "4" or fields.get("memory") != owner:
-        errors.append(f"Code-memory schema or owner is invalid: {rel(path, root)}")
-    if fields.get("scope") != "current-project-code" or fields.get("project_root") != ".":
-        errors.append(f"Code-memory scope or project_root is invalid: {rel(path, root)}")
+    forbidden_fields = set(fields) & FORBIDDEN_MEMORY_FRONTMATTER_FIELDS
+    if forbidden_fields:
+        errors.append(
+            f"Forbidden metadata field in code-memory frontmatter: {rel(path, root)}"
+        )
+    if fields.get("memory") != owner:
+        errors.append(f"Code-memory owner is invalid: {rel(path, root)}")
+    if fields.get("project_root") != ".":
+        errors.append(f"Code-memory project_root is invalid: {rel(path, root)}")
     if not is_rfc3339_with_offset(fields.get("updated_at", "")):
         errors.append(f"Code-memory updated_at needs RFC3339 offset: {rel(path, root)}")
     if "<!--" in content or PLACEHOLDER_PATTERN.search(content):
@@ -703,9 +807,24 @@ def validate_memory_file(
             errors.append(f"Historical/process memory term '{forbidden}' remains: {rel(path, root)}")
     if "```" in content:
         errors.append(f"Code fence is forbidden in code-memory file: {rel(path, root)}")
-    if tuple(headings(content, 2)) != ("当前代码事实",):
+    if tuple(headings(body, 1)) != (f"{owner} 代码事实",):
+        errors.append(f"Instantiated memory title is invalid: {rel(path, root)}")
+    if tuple(headings(body, 2)) != ("当前代码事实",):
         errors.append(f"Instantiated memory must contain only 当前代码事实: {rel(path, root)}")
-    current_facts = markdown_section(content, 2, "当前代码事实") or ""
+    body_match = re.fullmatch(
+        rf"# {re.escape(owner)} 代码事实[ \t]*\r?\n"
+        r"(?:[ \t]*\r?\n)*"
+        r"## 当前代码事实[ \t]*\r?\n"
+        r"(?P<facts>[\s\S]+)",
+        body,
+    )
+    if not body_match:
+        errors.append(f"Instantiated memory body structure is invalid: {rel(path, root)}")
+    current_facts = (
+        body_match.group("facts").strip()
+        if body_match
+        else markdown_section(content, 2, "当前代码事实") or ""
+    )
     first_card = re.search(r"(?m)^###\s+", current_facts)
     if first_card and current_facts[: first_card.start()].strip():
         errors.append(f"Unexpected content before first code fact: {rel(path, root)}")
@@ -765,11 +884,12 @@ def validate_readme(root: Path, errors: list[str]) -> None:
             "目录—角色职责—核心能力—常见误判",
             "当前代码事实",
             "router` 不拥有记忆",
-            "schema 4",
+            "格式版本号",
             "owner:type:slug",
             "事实摘要、代码定位、依赖与影响、验证入口、失效条件",
             "memory: 0 keys changed",
-            "references/project-memory.md",
+            "技能自有",
+            "`references/memory.md`",
         ),
         root,
         errors,
@@ -797,7 +917,11 @@ def validate_legacy_surfaces(root: Path, errors: list[str]) -> None:
                 content = path.read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 continue
-            for pattern, label in ((LEGACY_INVOCATION, "legacy skill invocation"), (LEGACY_ROLE_PATH, "legacy role path")):
+            for pattern, label in (
+                (LEGACY_INVOCATION, "legacy skill invocation"),
+                (LEGACY_ROLE_PATH, "legacy role path"),
+                (LEGACY_MEMORY_PATH, "legacy memory path"),
+            ):
                 match = pattern.search(content)
                 if match:
                     errors.append(f"{label} '{match.group(0)}' remains: {rel(path, root)}")
@@ -806,38 +930,39 @@ def validate_legacy_surfaces(root: Path, errors: list[str]) -> None:
 def validate(root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     skills_dir = root / "skills"
-    templates_dir = root / "templates"
     docs_dir = root / "docs" / "product-studio"
     actual_skills = {path.name for path in skills_dir.iterdir() if path.is_dir()}
     if actual_skills != SKILLS:
         errors.append(f"Skill directories must be exactly {list(SKILL_ORDER)}")
-    expected_templates = {f"{owner}.md" for owner in MEMORY_OWNERS}
-    if {path.name for path in templates_dir.glob("*.md")} != expected_templates:
-        errors.append("Code-memory templates do not match the four memory owners")
-    root_refs = root / "references"
-    actual_root_refs = (
-        {
-            str(path.relative_to(root)).replace("\\", "/")
-            for path in root_refs.rglob("*.md")
-        }
-        if root_refs.exists()
-        else set()
+    legacy_root_resources = sorted(
+        str(path.relative_to(root)).replace("\\", "/")
+        for directory in (root / "references", root / "templates")
+        if directory.exists()
+        for path in directory.rglob("*")
+        if path.is_file()
     )
-    if actual_root_refs != {MEMORY_CONTRACT}:
+    if legacy_root_resources:
         errors.append(
-            "Shared reference set must contain only the project-memory contract: "
-            f"got={sorted(actual_root_refs)}"
+            "Root-level memory resources must not exist: "
+            f"got={legacy_root_resources}"
         )
     validate_manifests(root, errors)
-    validate_memory_contract(root, errors)
     for skill in SKILL_ORDER:
         validate_skill(root, skill, errors)
-    for owner in MEMORY_OWNERS:
-        validate_template(root, owner, errors)
     allowed_memories = {f"{owner}.md" for owner in MEMORY_OWNERS}
-    actual_memories = {path.name for path in docs_dir.glob("*.md")} if docs_dir.exists() else set()
-    if not actual_memories <= allowed_memories:
-        errors.append(f"Unknown project memory files: {sorted(actual_memories - allowed_memories)}")
+    actual_memory_paths = (
+        {
+            str(path.relative_to(docs_dir)).replace("\\", "/")
+            for path in docs_dir.rglob("*")
+            if path.is_file()
+        }
+        if docs_dir.exists()
+        else set()
+    )
+    unknown_memories = actual_memory_paths - allowed_memories
+    if unknown_memories:
+        errors.append(f"Unknown project memory files: {sorted(unknown_memories)}")
+    actual_memories = actual_memory_paths & allowed_memories
     all_keys: dict[str, Path] = {}
     pending_refs: list[tuple[Path, str]] = []
     for filename in sorted(actual_memories):
@@ -861,6 +986,18 @@ def validate(root: Path = ROOT) -> list[str]:
 
 def run_negative_self_tests() -> list[str]:
     failures: list[str] = []
+    fence_probe = (
+        "## A\r\n"
+        "````markdown\r\n"
+        "````python\r\n"
+        "## 隐藏\r\n"
+        "````\r\n"
+        "## B\r\n"
+    )
+    if headings(fence_probe, 2) != ["A", "B"] or len(mask_fenced_code(fence_probe)) != len(
+        fence_probe
+    ):
+        failures.append("fenced-heading parser exposes content behind a false closing fence")
     with tempfile.TemporaryDirectory(prefix="product-studio-validator-") as temp_dir:
         baseline = Path(temp_dir) / "baseline"
         shutil.copytree(ROOT, baseline, ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"))
@@ -880,6 +1017,27 @@ def run_negative_self_tests() -> list[str]:
                 "optional-memory baseline must remain valid: " + memoryless_errors[0]
             ]
 
+        valid_rule_variants = Path(temp_dir) / "valid-rule-variants"
+        shutil.copytree(memoryless_baseline, valid_rule_variants)
+        backend_skill = valid_rule_variants / "skills" / "backend" / "SKILL.md"
+        backend_skill.write_text(
+            backend_skill.read_text(encoding="utf-8").rstrip()
+            + "\n\n没有最终差异时，不得更新任何事实或记忆。\n",
+            encoding="utf-8",
+        )
+        verification_skill = valid_rule_variants / "skills" / "verification" / "SKILL.md"
+        verification_skill.write_text(
+            verification_skill.read_text(encoding="utf-8").rstrip()
+            + "\n\n本技能不允许在生产环境执行外部写入。\n",
+            encoding="utf-8",
+        )
+        valid_rule_errors = validate(valid_rule_variants)
+        if valid_rule_errors:
+            failures.append(
+                "legitimate memory or external-write prohibition was rejected: "
+                + valid_rule_errors[0]
+            )
+
         def ensure_design_memory(root: Path) -> Path:
             path = root / "docs" / "product-studio" / "design.md"
             if path.is_file():
@@ -887,9 +1045,7 @@ def run_negative_self_tests() -> list[str]:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(
                 """---
-schema: 4
 memory: design
-scope: current-project-code
 project_root: "."
 updated_at: "2026-01-01T00:00:00+08:00"
 ---
@@ -926,7 +1082,20 @@ updated_at: "2026-01-01T00:00:00+08:00"
             shutil.copytree(root / "skills" / "backend", root / "skills" / "release")
 
         def add_router_memory(root: Path) -> None:
-            shutil.copy2(root / "templates" / "backend.md", root / "templates" / "router.md")
+            shutil.copy2(
+                root / "skills" / "backend" / "references" / "memory.md",
+                root / "skills" / "router" / "references" / "memory.md",
+            )
+
+        def add_nested_router_reference(root: Path) -> None:
+            path = root / "skills" / "router" / "references" / "private" / "memory.md"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# hidden router memory\n", encoding="utf-8")
+
+        def add_nested_router_project_memory(root: Path) -> None:
+            path = root / "docs" / "product-studio" / "router" / "memory.md"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# hidden router fact store\n", encoding="utf-8")
 
         def remove_design_reference(root: Path) -> None:
             (root / "skills" / "design" / "references" / "architecture-principles.md").unlink()
@@ -973,12 +1142,30 @@ updated_at: "2026-01-01T00:00:00+08:00"
                 encoding="utf-8",
             )
 
-        def invalid_template_skeleton(root: Path) -> None:
-            path = root / "templates" / "backend.md"
-            path.write_text(path.read_text(encoding="utf-8").replace("backend:api:order-creation", "backend:api:orders", 1), encoding="utf-8")
+        def absolute_anchor(root: Path) -> None:
+            path = ensure_design_memory(root)
+            absolute = root / "README.md"
+            path.write_text(
+                re.sub(
+                    r"(?m)^(- \*\*代码定位\*\*：)`[^`]+`",
+                    rf"\1`{absolute}#五个 Skill`",
+                    path.read_text(encoding="utf-8"),
+                    count=1,
+                ),
+                encoding="utf-8",
+            )
 
-        def remove_memory_contract(root: Path) -> None:
-            (root / MEMORY_CONTRACT).unlink()
+        def invalid_memory_skeleton(root: Path) -> None:
+            path = root / "skills" / "backend" / "references" / "memory.md"
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "backend:<type>:<slug>", "backend:api:orders", 1
+                ),
+                encoding="utf-8",
+            )
+
+        def remove_backend_memory_reference(root: Path) -> None:
+            (root / "skills" / "backend" / "references" / "memory.md").unlink()
 
         def add_session_summary(root: Path) -> None:
             path = ensure_design_memory(root)
@@ -997,7 +1184,7 @@ updated_at: "2026-01-01T00:00:00+08:00"
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").rstrip()
-                + "\n\n- 附记：此项不属于 schema 4。\n",
+                + "\n\n- 附记：此项不属于当前代码事实格式。\n",
                 encoding="utf-8",
             )
 
@@ -1022,11 +1209,52 @@ updated_at: "2026-01-01T00:00:00+08:00"
                 encoding="utf-8",
             )
 
+        def add_memory_header_prose(root: Path) -> None:
+            path = ensure_design_memory(root)
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "# design 代码事实\n\n",
+                    "# design 代码事实\n\n此段正文游离在标题与事实区之间。\n\n",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+
+        def add_memory_trailing_section(root: Path) -> None:
+            path = ensure_design_memory(root)
+            path.write_text(
+                path.read_text(encoding="utf-8").rstrip()
+                + "\n\n# 过程附记\n\n本段不属于当前代码事实。\n",
+                encoding="utf-8",
+            )
+
         def invalid_project_root(root: Path) -> None:
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
                     'project_root: "."', 'project_root: "../another-product"', 1
+                ),
+                encoding="utf-8",
+            )
+
+        def add_legacy_version_field(root: Path) -> None:
+            path = ensure_design_memory(root)
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "---\nmemory: design",
+                    "---\nschema: 4\nmemory: design",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+
+        def add_legacy_scope_field(root: Path) -> None:
+            path = ensure_design_memory(root)
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "---\nmemory: design",
+                    "---\nmemory: design\nscope: current-project-code",
+                    1,
                 ),
                 encoding="utf-8",
             )
@@ -1042,12 +1270,45 @@ updated_at: "2026-01-01T00:00:00+08:00"
                 encoding="utf-8",
             )
 
-        def empty_contract_section(root: Path) -> None:
-            path = root / MEMORY_CONTRACT
+        def empty_backend_memory_section(root: Path) -> None:
+            path = root / "skills" / "backend" / "references" / "memory.md"
             path.write_text(
                 re.sub(
                     r"(?ms)(^## 收录门槛\s*$).*?(?=^## )",
                     r"\1\n\n",
+                    path.read_text(encoding="utf-8"),
+                    count=1,
+                ),
+                encoding="utf-8",
+            )
+
+        def add_legacy_root_contract(root: Path) -> None:
+            path = root / "references" / "project-memory.md"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# legacy shared memory contract\n", encoding="utf-8")
+
+        def add_legacy_root_template(root: Path) -> None:
+            path = root / "templates" / "backend.md"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# legacy backend memory template\n", encoding="utf-8")
+
+        def cross_owner_memory_link(root: Path) -> None:
+            path = root / "skills" / "backend" / "SKILL.md"
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "[backend 记忆规则与实例骨架](references/memory.md)",
+                    "[design 记忆规则与实例骨架](../design/references/memory.md)",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+
+        def remove_backend_memory_type(root: Path) -> None:
+            path = root / "skills" / "backend" / "references" / "memory.md"
+            path.write_text(
+                re.sub(
+                    r"(?m)^- `backend:runtime:<slug>`.*\n",
+                    "",
                     path.read_text(encoding="utf-8"),
                     count=1,
                 ),
@@ -1084,28 +1345,39 @@ updated_at: "2026-01-01T00:00:00+08:00"
 
         cases = (
             ("sixth-skill", add_sixth_skill, "Skill directories must be exactly"),
-            ("router-memory", add_router_memory, "Code-memory templates do not match"),
-            ("missing-design-reference", remove_design_reference, "Capability reference set differs for design"),
-            ("unexpected-reference", add_unexpected_reference, "Capability reference set differs for router"),
+            ("router-memory", add_router_memory, "Skill reference set differs for router"),
+            ("nested-router-reference", add_nested_router_reference, "Skill reference set differs for router"),
+            ("nested-router-project-memory", add_nested_router_project_memory, "Unknown project memory files"),
+            ("missing-design-reference", remove_design_reference, "Skill reference set differs for design"),
+            ("unexpected-reference", add_unexpected_reference, "Skill reference set differs for router"),
             ("modified-reference-content", modify_reference, "Capability reference differs from the curated baseline"),
             ("invalid-memory-field", corrupt_memory_field, "fields must be exactly"),
             ("duplicate-memory-key", duplicate_memory_key, "Duplicate fact key"),
             ("physical-path-memory-key", malformed_memory_key, "Invalid design semantic fact key"),
             ("escaping-source-anchor", escaping_anchor, "Source anchor escapes project root"),
-            ("invalid-template-skeleton", invalid_template_skeleton, "Template skeleton must be"),
-            ("missing-memory-contract", remove_memory_contract, "Shared reference set must contain only"),
+            ("absolute-source-anchor", absolute_anchor, "Source anchor must be repository-relative"),
+            ("invalid-memory-skeleton", invalid_memory_skeleton, "Memory skeleton key must be"),
+            ("missing-owner-memory", remove_backend_memory_reference, "Skill reference set differs for backend"),
             ("session-summary-memory", add_session_summary, "contains a session summary"),
             ("extra-memory-content", add_extra_memory_content, "Unexpected content in code fact"),
             ("fenced-memory-card", fence_memory_card, "Code fence is forbidden"),
             ("prefaced-memory-card", add_memory_preface, "Unexpected content before first code fact"),
-            ("cross-project-memory", invalid_project_root, "scope or project_root is invalid"),
+            ("memory-header-prose", add_memory_header_prose, "Instantiated memory body structure is invalid"),
+            ("memory-trailing-section", add_memory_trailing_section, "Instantiated memory title is invalid"),
+            ("legacy-version-field", add_legacy_version_field, "Forbidden metadata field"),
+            ("legacy-scope-field", add_legacy_scope_field, "Forbidden metadata field"),
+            ("cross-project-memory", invalid_project_root, "project_root is invalid"),
             ("secret-in-memory", add_secret_value, "Possible secret value"),
-            ("empty-memory-contract-section", empty_contract_section, "Empty project-memory contract section"),
+            ("empty-owner-memory-section", empty_backend_memory_section, "Empty backend memory section"),
             ("contradictory-memory-sync", contradict_memory_sync, "Contradictory memory sync rule"),
             ("external-write-overreach", permit_external_writes, "External write permission contradicts"),
             ("legacy-invocation", legacy_invocation, "legacy skill invocation"),
             ("overrouted-terminal-verification", overroute_verification, "Missing router term '不计作跨领域触发条件'"),
             ("missing-api-contract-milestone", remove_api_milestone, "Missing router term '具体 API 契约里程碑'"),
+            ("legacy-root-contract", add_legacy_root_contract, "Root-level memory resources must not exist"),
+            ("legacy-root-template", add_legacy_root_template, "Root-level memory resources must not exist"),
+            ("cross-owner-memory-link", cross_owner_memory_link, "Missing current-code-memory term '[backend 记忆规则与实例骨架](references/memory.md)'"),
+            ("missing-owner-memory-type", remove_backend_memory_type, "Backend memory reference omits type 'backend:runtime'"),
         )
         declared = f"{len(cases)} 类退化"
         declared_paths = [ROOT / "scripts" / "README.md"]
@@ -1130,7 +1402,11 @@ def main() -> int:
         return 1
     suffix = ", negative regressions rejected" if "--self-test" in sys.argv[1:] else ""
     reference_count = sum(len(references) for references in REFERENCE_SPECS.values())
-    print(f"[OK] Product Studio: {len(SKILL_ORDER)} skills, {reference_count} curated capability references, {len(MEMORY_OWNERS)} code-memory templates{suffix}")
+    print(
+        f"[OK] Product Studio: {len(SKILL_ORDER)} skills, "
+        f"{reference_count} curated capability references, "
+        f"{len(MEMORY_OWNERS)} skill-owned memory references{suffix}"
+    )
     return 0
 
 
