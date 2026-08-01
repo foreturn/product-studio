@@ -12,7 +12,7 @@
 | `frontend` | 设计并实现页面任务流、信息层级、设计令牌、组件变体、布局与响应式规则、loading/empty/error/success/disabled 状态、键盘与读屏可访问性、性能预算，并在真实浏览器中核验主题、视口、身份和数据状态。 |
 | `verification` | 将产品规则追溯到证据，按风险设计分层测试，包括单元、契约、集成、端到端和非功能验证；核验接口、权限、数据不变量、迁移恢复、前端交互与真实渲染；区分失败、阻塞和既有问题，只依据当前制品与环境给出独立结论。 |
 
-每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆和边界；可复用的细分专业判断位于同目录 `references/`。当前五份能力准则以 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，删去了独立的决策顺序与交付证据章节；`design` 的产品模式直接依其 `SKILL.md` 契约执行，系统模式加载架构卷。每卷沿用“目录—角色职责—核心能力—常见误判”；`references` 只保存专业能力、判断方法与证据标准，不承载触发、路由、记忆或外部操作规则。
+每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆入口和边界；可复用的细分专业判断位于同技能 `references/`。当前五份能力准则以 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，删去了独立的决策顺序与交付证据章节；`design` 的产品模式直接依其 `SKILL.md` 契约执行，系统模式加载架构卷。每卷沿用“目录—角色职责—核心能力—常见误判”。插件根 [项目代码事实记忆契约](references/project-memory.md) 只承载四个 Owner 共用的记忆 schema 与终态同步规则，不参与专业能力判断。
 
 ## 路由
 
@@ -38,21 +38,22 @@
 
 ## 当前代码事实
 
-`skills/` 约束 AI 如何工作；`<项目根>/docs/product-studio/` 保存 AI 下一次编码必须知道的当前实现事实。`router` 不拥有记忆，避免编排状态成为第二事实源。只有下列四册可按需存在：
+`skills/` 约束 AI 如何工作；`<项目根>/docs/product-studio/` 保存下一次编码真正需要的总结性当前代码事实。源码和可生成清单始终是权威，记忆只保留跨消费者、重查成本高或误判风险大的语义摘要。`router` 不拥有记忆，避免编排状态成为第二事实源；只有下列四册可按需存在：
 
 | Owner | 事实键示例 | 保存内容 |
 |---|---|---|
-| `design` | `design:product:rule:*`、`design:system:contract:*` | 已实现的用户旅程、业务规则、边界、契约、不变量和迁移阶段 |
-| `backend` | `backend:api:*`、`backend:schema:*`、`backend:auth:*` | 实际 API、Schema、权限、事件、外部集成和运行配置 |
-| `frontend` | `frontend:token:*`、`frontend:component:*`、`frontend:layout:*` | 实际颜色/间距令牌、组件样式与状态、页面布局、断点和交互状态 |
+| `design` | `design:rule:*`、`design:contract:*` | 已实现的用户旅程、业务规则、边界、共享契约、不变量和迁移阶段 |
+| `backend` | `backend:domain:*`、`backend:api:*`、`backend:data:*` | 非显然的领域行为、接口语义、数据与并发约束、权限、事件、集成和运行行为 |
+| `frontend` | `frontend:surface:*`、`frontend:state:*`、`frontend:system:*` | 核心界面任务、共享组件、状态恢复、布局、响应式、可访问性和设计系统约束 |
 | `verification` | `verification:check:*`、`verification:coverage:*` | 可重复执行的检查、风险覆盖关系和已证实的验证限制 |
 
-每条事实只含五项：当前实现、源码锚点、关联与消费者、验证证据、重验条件。维护规则如下：
+schema 4 的每个键统一为稳定的 `owner:type:slug`，method、path、route、表名、选择器和测试名放入代码定位，不再进入键名。每条事实只含五项：事实摘要、代码定位、依赖与影响、验证入口、失效条件。
 
-- 任务完成且适用验证结束后，只更新本次代码真正改变的事实键；只读、取消、中断、失败在终态前或无事实变化时不写。
-- 同一语义键原位更新；新增代码新增键；代码、路由、组件或契约被删除后移除对应事实。Git 承担历史，不在事实册保存 `superseded` 卡、任务摘要、动作队列或每轮命令流水。
-- 精确 API/路由、OpenAPI、Schema、设计令牌等若能从源码稳定生成，以生成结果为权威；记忆只保留便于编码的语义投影、消费者关系和证据锚点。
-- `templates/` 仅供该角色首次建册。实例化后删除说明、键目录和占位；既有事实册不得再次套用模板。
+- 每次编码任务进入完成终态，或部分完成中已有独立可用且验证成立的切片时，受影响 Owner 都必须按最终差异执行同步检查；有变化便增改删，无变化报告 `memory: 0 keys changed`，不制造时间戳差异。
+- 事实必须已在代码中成立、后续仍会使用，并具有跨消费者、重查成本或误判风险；不得逐任务、文件、接口、字段、样式值、Symbol 或测试机械建卡。
+- “验证入口”只保存可复用测试、脚本、命令、关键断言与稳定未覆盖边界；本轮通过、临时失败、制品和命令流水留在终态报告。
+- 同一语义原位更新；事实及最后消费者消失时删除，最后一张卡删除后移除整册。Git 承担历史，不保存 `superseded`、待办、方案和过程推理。
+- `templates/` 仅供对应 Owner 首次建册。实例化后删除说明、键目录、示例与占位；现有事实册不得再次套用模板。
 
 ## 目录
 
@@ -64,7 +65,9 @@ product-studio/
 |   |-- backend/
 |   |-- frontend/
 |   `-- verification/
-|-- templates/             # design/backend/frontend/verification schema 3 母版
+|-- templates/             # design/backend/frontend/verification schema 4 母版
+|-- references/
+|   `-- project-memory.md  # schema 4 总结事实与终态同步契约
 |-- docs/product-studio/   # 当前项目实际存在的代码事实子集
 |-- scripts/validate_project.py
 |-- .codex-plugin/plugin.json
@@ -90,9 +93,9 @@ claude plugin install product-studio@foreturn
 
 ## 校验
 
-```powershell
-python scripts/validate_project.py
-claude plugin validate --strict C:\Users\root\plugins\product-studio
+```bash
+python3 -X utf8 scripts/validate_project.py --self-test
+claude plugin validate --strict .
 ```
 
-项目校验覆盖五技能集合、五份能力准则的裁剪后基线哈希与四章结构、38 项核心能力、代码路由边界、四份 schema 3 母版、当前事实键和双端 manifest 一致性。静态通过只证明源码契约自洽；真实插件触发、目标项目运行与交互行为仍须取得直接证据。
+项目校验覆盖五技能集合、五份能力准则的裁剪后基线哈希与四章结构、38 项核心能力、代码路由边界、共享记忆契约、四份 schema 4 母版、稳定事实键、五字段摘要和双端 manifest 一致性。静态通过只证明当前快照的源码契约、定位和链接自洽，不能发现锚点仍存在但事实语义已陈旧；语义新鲜度由每次编码终态对照最终差异同步。真实插件触发、目标项目运行与交互行为仍须取得直接证据。

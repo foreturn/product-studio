@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "product-studio",
     "shortDescription": "用五个专业技能约束 AI 设计、编码与验证。",
-    "longDescription": "按任务边界选择路由、产品架构、后端、前端和测试验证技能；从当前仓库恢复实际契约，依详细专业能力卡完成最小范围代码修改，并用源码锚点、消费者关系和可复现证据增量保存当前代码事实。",
+    "longDescription": "按任务边界选择路由、产品架构、后端、前端和测试验证技能；从当前仓库恢复实际契约，依详细专业能力卡完成最小范围代码修改，并在每次成功编码终态同步带代码定位、依赖影响和验证入口的总结性当前事实。",
     "developerName": "foreturn",
     "category": "Productivity",
     "capabilities": [

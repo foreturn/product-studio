@@ -4,10 +4,10 @@
 
 - Replaced seven role shells with five callable skills: `router`, `design`, `backend`, `frontend`, and `verification`. Product discovery and system architecture are conditionally loaded modes of `design`; the former release role and standalone deployment capability were removed.
 - Scoped the plugin to product and system design, frontend and backend implementation, and test verification. Actual production deployment, production migration, traffic switching, production configuration changes, and rollback remain outside the plugin and must use the target project's existing operational tooling and ownership.
-- Restored the six active professional capability references verbatim from commit `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194`, preserving their original responsibilities, core capabilities, decision order, evidence, and common-misjudgment guidance.
-- Kept the five-skill topology while mapping the former delivery reference to `router` and the former discovery and architecture references to the two conditional modes of `design`; references contain capability guidance only.
-- Replaced process/history memory with four schema 3 current-code fact stores owned by `design`, `backend`, `frontend`, and `verification`. Facts use semantic keys and record only current implementation, source anchors, consumers, evidence, and recheck conditions; `router` has no memory.
-- Added static gates for the exact five-skill topology, six restored-reference hashes and structure, `design` mode loading, semantic fact keys, code-task routing boundaries, and the absence of legacy role invocations.
+- Curated five professional capability references from commit `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194`, retaining role responsibilities, core capabilities, and common-misjudgment guidance while removing the standalone decision-order and delivery-evidence chapters.
+- Mapped delivery orchestration to `router` and system architecture to `design` system mode; product mode now uses the compact downstream contract in `design/SKILL.md` rather than a separate product reference.
+- Replaced process/history memory with four schema 4 summary-code-fact stores owned by `design`, `backend`, `frontend`, and `verification`. Stable `owner:type:slug` cards retain only the fact summary, code locations, dependencies and impact, reusable validation entrypoint, and invalidation conditions; every successful coding terminal reconciles affected cards, while `router` owns no memory.
+- Added static gates for the exact five-skill topology, five curated-reference hashes and structure, `design` mode loading, the shared schema 4 memory contract, stable summary-fact keys, code-task routing boundaries, and the absence of legacy role invocations.
 
 ## 0.3.0 - 2026-07-16
 

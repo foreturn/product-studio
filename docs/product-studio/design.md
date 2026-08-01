@@ -1,43 +1,43 @@
 ---
-schema: 3
+schema: 4
 memory: design
 scope: current-project-code
 project_root: "."
-updated_at: "2026-07-31T21:52:42+08:00"
+updated_at: "2026-08-01T08:39:25+08:00"
 ---
 
 # design 代码事实
 
 ## 当前代码事实
 
-### design:system:boundary:skill-topology
+### design:boundary:skill-topology
 
-- **当前实现**：插件仅注册 `router`、`design`、`backend`、`frontend`、`verification` 五个可调用 Skill；产品与系统设计是 `design` 的两种条件模式，`router` 只编排代码任务，不包含独立发布能力。实际生产部署、生产迁移及生产写操作属于本插件范围之外。
-- **源码锚点**：`skills/router/SKILL.md#编码任务网关`；`skills/design/SKILL.md#产品与系统设计`；`skills/backend/SKILL.md#后端工程`；`skills/frontend/SKILL.md#前端工程与体验`；`skills/verification/SKILL.md#独立验证`；`README.md#五个 Skill`
-- **关联与消费者**：双端插件清单加载整个 `skills/`；最小调用链与四份代码事实模板均以该集合为边界。
-- **验证证据**：`scripts/validate_project.py` 比较技能目录的精确集合，并分别校验五份 Skill 的 frontmatter、引用和默认提示词。
-- **重验条件**：技能目录、Skill 名称、设计模式、router 的代码任务边界或插件清单的 skills 入口变化。
+- **事实摘要**：插件只注册 `router`、`design`、`backend`、`frontend`、`verification` 五个可调用 Skill；产品与系统设计是 `design` 的条件模式，生产部署、迁移和其他生产写操作位于插件边界之外。
+- **代码定位**：`skills/router/SKILL.md#编码任务网关`；`skills/design/SKILL.md#产品与系统设计`；`README.md#五个 Skill`
+- **依赖与影响**：双端插件清单、最小调用链、四份事实模板、`design:contract:router-specialists` 与 `design:invariant:summary-memory` 均依赖该拓扑。
+- **验证入口**：`python3 -X utf8 scripts/validate_project.py --self-test` 检查技能目录精确集合、Skill frontmatter、旧 callable 清除及第六技能负向退化；不证明真实自动触发行为。
+- **失效条件**：技能目录、Skill 名称、`design` 模式、生产操作边界或插件清单的 skills 入口变化。
 
-### design:system:contract:router-specialists
+### design:contract:router-specialists
 
-- **当前实现**：边界清楚的单一前端或后端任务直接进入对应实现技能并交给 `verification`，常规终端验证不触发 `router`；模糊全栈任务先由 `design` 串行完成产品与系统模式，再由 `backend` 或实际契约拥有者冻结具体 API 字段、错误、权限、异步状态、分页与版本，满足契约定版、快照一致、无硬依赖、写集合隔离、共享文件唯一写入和独立可验后，前后端方可并行。生产部署、生产迁移与生产写操作不进入五技能调用链。
-- **源码锚点**：`skills/router/SKILL.md#直达与触发`；`skills/router/SKILL.md#最小调用链`；`skills/router/SKILL.md#编排规则`；`skills/design/SKILL.md#启用判定`；`README.md#路由`
-- **关联与消费者**：`backend`、`frontend`、`verification` 的输入门禁与交接边界；项目既有的环境专属工具或运行责任人只接收已经验收的代码结果，不由本插件编排。
-- **验证证据**：`scripts/validate_project.py` 检查 `router` 能路由四个专项、常规终端验证不被误算为跨领域、模糊全栈保留具体 API 契约里程碑、`design` 分离两种模式，且旧四个 callable 名称不再出现在活跃提示词中；负向自检分别移除两条路由约束并确认门禁拒绝。
-- **重验条件**：专项直达规则、最小技能链、并行条件、设计触发条件或外部操作范围边界变化。
+- **事实摘要**：边界清楚的单一实现任务直达专项 Skill，契约清晰的全栈任务由 `router` 编排后端与前端并以 `verification` 收口；只有产品语义或系统边界未定时才插入 `design`，共享 API 由实际契约 Owner 先冻结。
+- **代码定位**：`skills/router/SKILL.md#直达与触发`；`skills/router/SKILL.md#最小调用链`；`skills/router/SKILL.md#编排规则`
+- **依赖与影响**：`backend`、`frontend`、`verification` 的输入门禁及 `design:boundary:skill-topology`；错误路由会增加无消费者设计或令前后端各自猜测共享契约。
+- **验证入口**：`python3 -X utf8 scripts/validate_project.py --self-test` 检查常规终端验证不触发 router、全栈保留 API 契约里程碑及对应负向退化；真实选链仍需全新上下文试用。
+- **失效条件**：专项直达规则、跨领域触发条件、API 契约 Owner、并行条件、设计启用判定或终态门禁变化。
 
-### design:system:invariant:memory-single-owner
+### design:invariant:summary-memory
 
-- **当前实现**：`router` 不持久化项目记忆；`design`、`backend`、`frontend`、`verification` 只维护自己的 schema 3 当前代码事实。事实按完整语义键原位更新、新增或删除，固定包含当前实现、源码锚点、关联与消费者、验证证据、重验条件，历史由 Git 承担。
-- **源码锚点**：`templates/design.md#当前代码事实`；`templates/backend.md#当前代码事实`；`templates/frontend.md#当前代码事实`；`templates/verification.md#当前代码事实`；`README.md#当前代码事实`
-- **关联与消费者**：四个专业 Skill 的项目记忆章节；`scripts/validate_project.py` 的模板、实例、唯一键与 Owner 校验。
-- **验证证据**：`scripts/validate_project.py` 拒绝 router 记忆、非 Owner 文件、重复或越权语义键、五字段缺失、模板残留及过程／历史字段。
-- **重验条件**：记忆 Owner、schema、语义键家族、事实字段、增删改规则、模板用途或 Git 历史边界变化。
+- **事实摘要**：`design`、`backend`、`frontend`、`verification` 各自维护 schema 4 总结性当前代码事实，稳定键统一为 `owner:type:slug`；每次成功编码终态都检查受影响卡片，但仅五字段变化时落盘，`router` 不拥有事实册。
+- **代码定位**：`references/project-memory.md#Schema 4`；`references/project-memory.md#终态同步`；`skills/router/SKILL.md#终态收口`
+- **依赖与影响**：四个专业 Skill、四份模板、目标项目的 `docs/product-studio/*.md` 与 `verification:check:plugin-static-contract`；跨 Owner 事实通过依赖键链接而不复制正文。
+- **验证入口**：`python3 -X utf8 scripts/validate_project.py --self-test` 检查共享契约、Owner、schema、稳定键、五字段、代码定位、跨卡链接、模板骨架和过程记忆负向退化。
+- **失效条件**：共享记忆契约、Owner、事实类型、字段、终态同步规则、模板、实例校验或 router 记忆所有权变化。
 
-### design:system:invariant:capability-executable-detail
+### design:invariant:capability-layering
 
-- **当前实现**：五个 Skill 共加载五份专业能力 reference，内容以 Git 节点 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，并删去独立的决策顺序与交付证据章节；`router` 使用交付编排卷，`design` 的产品模式依 `SKILL.md` 内置契约执行、系统模式使用系统架构卷，后端、前端、验证各使用本领域卷。五卷均保持目录、角色职责、核心能力、常见误判四章及 38 项核心能力；reference 不保存触发、路由、记忆或外部操作规则。
-- **源码锚点**：`skills/router/references/delivery-capabilities.md#核心能力`；`skills/design/SKILL.md#产品模式的下游契约`；`skills/design/references/architecture-principles.md#核心能力`；`skills/backend/references/backend-design-principles.md#核心能力`；`skills/frontend/references/frontend-design-principles.md#核心能力`；`skills/verification/references/verification-principles.md#核心能力`
-- **关联与消费者**：五份 `SKILL.md` 的条件加载规则与 `scripts/validate_project.py#validate_reference` 的裁剪后内容哈希、章节、能力集合及正文深度门禁。
-- **验证证据**：五份 reference 与 `scripts/validate_project.py` 中固定的规范化 SHA-256 基线逐一相等；校验器另以四章精确顺序、38 项核心能力名称及每项最低正文深度复核，并通过篡改正文的负向用例证明门禁有效。
-- **重验条件**：来源节点、reference 路径或内容、能力名称、四章结构、模式加载方式或哈希门禁发生变化。
+- **事实摘要**：五个 Skill 各加载一份策展后的专业能力卷；`design` 产品模式使用主 Skill 内的下游契约，系统模式加载架构卷，能力 reference 不承载触发、路由或项目记忆规则。
+- **代码定位**：`skills/router/references/delivery-capabilities.md#核心能力`；`skills/design/SKILL.md#条件加载专业能力`；`scripts/validate_project.py#validate_reference`
+- **依赖与影响**：五份 `SKILL.md` 的条件加载、专业判断深度及项目校验；共享项目记忆规则仅来自 `references/project-memory.md`。
+- **验证入口**：`python3 -X utf8 scripts/validate_project.py --self-test` 检查每个 Skill 的精确 reference 集合、策展哈希、四章结构、能力卡名称与最低正文深度；不能证明模型必然正确应用能力卡。
+- **失效条件**：reference 路径或内容、能力名称、章节结构、产品模式契约、加载方式或共享记忆边界变化。
