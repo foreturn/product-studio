@@ -1,4 +1,4 @@
 interface:
-  display_name: "产品与系统设计"
-  short_description: "按需定义产品旅程、验收及跨边界契约、故障与演进约束"
-  default_prompt: "使用 $design，先依证据选择产品模式、系统模式或两者串行，再形成可供 frontend、backend 与 verification 直接执行的明确契约。"
+  display_name: "产品设计"
+  short_description: "定义最短用户旅程、业务闭环、交互体验与可验收产品契约"
+  default_prompt: "使用 $design，从目标用户与业务结果出发，删减无价值步骤，形成最短任务路径、完整业务闭环、状态反馈、恢复体验、范围和可观察验收契约。"

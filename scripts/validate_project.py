@@ -9,7 +9,6 @@ import re
 import shutil
 import sys
 import tempfile
-from datetime import datetime
 from pathlib import Path
 
 
@@ -19,25 +18,15 @@ SKILL_ORDER = ("router", "design", "backend", "frontend", "verification")
 SKILLS = set(SKILL_ORDER)
 MEMORY_OWNERS = ("design", "backend", "frontend", "verification")
 MEMORY_FIELDS = (
-    "事实摘要",
+    "当前事实",
     "代码定位",
-    "依赖与影响",
+    "影响范围",
     "验证入口",
-    "失效条件",
 )
-MEMORY_FRONTMATTER_FIELDS = ("memory", "project_root", "updated_at")
-FORBIDDEN_MEMORY_FRONTMATTER_FIELDS = {
-    "schema",
-    "format",
-    "version",
-    "format_version",
-    "scope",
-}
 MEMORY_REFERENCE = "references/memory.md"
 MEMORY_REFERENCE_SECTIONS = (
     "收录门槛",
-    "事实键",
-    "实例骨架",
+    "实例格式",
     "终态同步",
     "禁止内容",
 )
@@ -62,7 +51,8 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
             "ac34e4102c70f9740260a28fe91caa2c79e33c0b75ee70fc58ff02464c8f953b",
         ),
     },
-    "design": {
+    "design": {},
+    "backend": {
         "references/architecture-principles.md": (
             (
                 "系统建模",
@@ -75,8 +65,6 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
             ),
             "4bad1430de9a25bbe80fe5343817c542eea81bfe99d45a1a7ef83706501317aa",
         ),
-    },
-    "backend": {
         "references/backend-design-principles.md": (
             (
                 "领域建模",
@@ -122,22 +110,20 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
         ),
     },
 }
-MEMORY_TYPES = {
-    "design": ("journey", "rule", "boundary", "contract", "invariant", "migration"),
-    "backend": ("domain", "api", "data", "auth", "event", "integration", "runtime"),
-    "frontend": ("surface", "component", "state", "layout", "responsive", "a11y", "system"),
-    "verification": ("check", "coverage", "constraint"),
-}
-MEMORY_KEY_PATTERNS = {
-    owner: re.compile(
-        rf"^{owner}:(?:{'|'.join(types)}):"
-        r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
-    )
-    for owner, types in MEMORY_TYPES.items()
-}
-MEMORY_SKELETON_KEYS = {
-    owner: f"{owner}:<type>:<slug>" for owner in MEMORY_OWNERS
-}
+FORMAL_FACT_KEY_PATTERN = re.compile(
+    r"^(?:design|backend|frontend|verification):[a-z]+:[a-z0-9][a-z0-9-]*$"
+)
+PROCESS_TOPIC_PATTERN = re.compile(
+    r"(?:迁移|重构|改造|改名|替换|升级|变更)(?:阶段|进度|记录|过程)?"
+    r"|(?:migration|refactor|migrate|change)(?:[-_:/]|$)",
+    re.IGNORECASE,
+)
+PROCESS_FACT_PATTERN = re.compile(
+    r"(?:本次|本轮|此次).{0,24}(?:迁移|重构|改造|改名|替换|升级|变更)"
+    r"|从\s*[^，。；]{1,40}\s*(?:迁移|改为|重构|替换)\s*(?:到|为)"
+    r"|(?:迁移|重构|改造|改名|替换|升级|变更)(?:阶段|进度|记录)",
+    re.IGNORECASE,
+)
 LEGACY_INVOCATION = re.compile(r"\$(?:delivery|discovery|architecture|release)\b")
 LEGACY_ROLE_PATH = re.compile(
     r"(?:skills|templates|docs/product-studio)[\\/]"
@@ -336,14 +322,6 @@ def validate_field_block(
     return values
 
 
-def is_rfc3339_with_offset(value: str) -> bool:
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return False
-    return "T" in value and parsed.tzinfo is not None
-
-
 def validate_manifests(root: Path, errors: list[str]) -> None:
     codex_path = root / ".codex-plugin" / "plugin.json"
     claude_path = root / ".claude-plugin" / "plugin.json"
@@ -365,7 +343,7 @@ def validate_manifests(root: Path, errors: list[str]) -> None:
         require_terms(
             codex_path,
             str(codex.get("description", "")),
-            ("五个技能", "路由", "产品架构", "后端", "前端", "测试验证"),
+            ("五个技能", "路由", "产品设计", "后端架构与实现", "前端", "测试验证"),
             root,
             errors,
             "manifest",
@@ -464,7 +442,7 @@ def validate_memory_reference(root: Path, owner: str, errors: list[str]) -> None
         path,
         content,
         (
-            "唯一规则与首建骨架",
+            "唯一规则与实例格式",
             f"docs/product-studio/{owner}.md",
             f"只由 `{owner}` 维护",
         ),
@@ -474,27 +452,30 @@ def validate_memory_reference(root: Path, owner: str, errors: list[str]) -> None
     )
     section_terms = {
         "收录门槛": (
-            "当前代码",
+            "最终代码",
+            "当前",
             "预计后续",
-            "唯一",
             "不按任务",
+            "重构",
+            "迁移",
+            "不得成为主题或事实正文",
         ),
-        "事实键": ("全局唯一", "小写字母", "数字", "短横线"),
-        "实例骨架": (
-            'project_root: "."',
-            "当前项目根",
-            "不得改为绝对路径或父目录",
+        "实例格式": (
+            "稳定事实主题",
+            "不含 Owner",
             *MEMORY_FIELDS,
         ),
         "终态同步": (
             "最终差异",
-            "updated_at",
-            "memory: 0 keys changed",
-            "最后一张卡删除后移除整册",
+            "原位改写",
+            "memory: 0 facts changed",
+            "最后一个主题删除后移除整册",
             "项目校验",
         ),
         "禁止内容": (
             "任务摘要",
+            "前后对比",
+            "过程事实",
             "单轮通过",
             "其他项目事实",
             "密钥",
@@ -510,63 +491,32 @@ def validate_memory_reference(root: Path, owner: str, errors: list[str]) -> None
             continue
         require_terms(path, body, terms, root, errors, f"{owner} memory {section_name}")
 
-    key_body = markdown_section(content, 2, "事实键") or ""
-    for type_name in MEMORY_TYPES[owner]:
-        expected_key = f"`{owner}:{type_name}:<slug>`"
-        if expected_key not in key_body:
-            errors.append(
-                f"{owner.capitalize()} memory reference omits type "
-                f"'{owner}:{type_name}': {rel(path, root)}"
-            )
     for other_owner in MEMORY_OWNERS:
-        if other_owner == owner:
-            continue
-        foreign_key = re.search(rf"`{other_owner}:[^`]+`", content)
-        if (
-            f"docs/product-studio/{other_owner}.md" in content
-            or re.search(rf"(?m)^memory:\s*{other_owner}\s*$", content)
-            or foreign_key
-        ):
+        if other_owner != owner and f"docs/product-studio/{other_owner}.md" in content:
             errors.append(
                 f"{owner} memory reference contains foreign owner '{other_owner}': "
                 f"{rel(path, root)}"
             )
 
-    skeleton_section = markdown_section(content, 2, "实例骨架") or ""
+    format_section = markdown_section(content, 2, "实例格式") or ""
     skeletons = re.findall(
-        r"(?ms)^```markdown[ \t]*\n(.*?)^```[ \t]*$", skeleton_section
+        r"(?ms)^```markdown[ \t]*\n(.*?)^```[ \t]*$", format_section
     )
     if len(skeletons) != 1:
         errors.append(
-            f"{owner} memory reference must contain exactly one Markdown skeleton: "
+            f"{owner} memory reference must contain exactly one Markdown format: "
             f"{rel(path, root)}"
         )
     else:
         skeleton = skeletons[0]
-        fields = parse_frontmatter(path, skeleton, root, errors)
-        expected_frontmatter = {
-            "memory": owner,
-            "project_root": ".",
-            "updated_at": "<带时区 RFC3339 时间>",
-        }
-        forbidden_fields = set(fields) & FORBIDDEN_MEMORY_FRONTMATTER_FIELDS
-        if forbidden_fields:
+        if re.match(r"\A---\s*$", skeleton, re.MULTILINE):
+            errors.append(f"Memory format must not contain frontmatter: {rel(path, root)}")
+        if tuple(headings(skeleton, 1)) != (f"{owner} 当前代码事实",):
+            errors.append(f"Memory format title is invalid for {owner}: {rel(path, root)}")
+        cards = heading_blocks(skeleton, 2)
+        if len(cards) != 1 or cards[0][0] != "<稳定事实主题>":
             errors.append(
-                f"Memory skeleton contains forbidden metadata fields {sorted(forbidden_fields)}: "
-                f"{rel(path, root)}"
-            )
-        if fields != expected_frontmatter:
-            errors.append(f"Memory skeleton frontmatter is invalid for {owner}: {rel(path, root)}")
-        if tuple(headings(skeleton, 1)) != (f"{owner} 代码事实",):
-            errors.append(f"Memory skeleton title is invalid for {owner}: {rel(path, root)}")
-        if tuple(headings(skeleton, 2)) != ("当前代码事实",):
-            errors.append(f"Memory skeleton sections are invalid for {owner}: {rel(path, root)}")
-        current = markdown_section(skeleton, 2, "当前代码事实") or ""
-        cards = heading_blocks(current, 3)
-        expected_key = MEMORY_SKELETON_KEYS[owner]
-        if len(cards) != 1 or cards[0][0] != expected_key:
-            errors.append(
-                f"Memory skeleton key must be '{expected_key}': {rel(path, root)}"
+                f"Memory format topic must be '<稳定事实主题>': {rel(path, root)}"
             )
         else:
             validate_field_block(
@@ -575,7 +525,7 @@ def validate_memory_reference(root: Path, owner: str, errors: list[str]) -> None
                 MEMORY_FIELDS,
                 root,
                 errors,
-                f"{owner} memory skeleton",
+                f"{owner} memory format",
                 allow_placeholders=True,
             )
     if MEMORY_SYNC_DENIAL_PATTERN.search(content):
@@ -590,11 +540,13 @@ def validate_memory_skill(
         content,
         (
             f"docs/product-studio/{skill}.md",
-            f"[{skill} 记忆规则与实例骨架](references/memory.md)",
-            f"仅按最终差异同步 `{skill}` 自己的事实册",
-            "首次确有事实时使用其中骨架",
+            f"[{skill} 记忆规则与实例格式](references/memory.md)",
+            f"仅按最终代码同步 `{skill}` 自己的事实册",
+            "首次确有事实时使用其中格式",
             "不得预建空册",
-            "memory: 0 keys changed",
+            "重构、迁移",
+            "不入册",
+            "memory: 0 facts changed",
         ),
         root,
         errors,
@@ -661,16 +613,17 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
             content,
             (
                 "明确前端改动",
-                "明确后端改动",
+                "明确系统或后端问题",
                 "模糊或跨边界改动",
+                "仅系统或技术边界未定",
                 "不计作跨领域触发条件",
                 "具体 API 契约里程碑",
                 "输入快照一致",
                 "写集合",
                 "代码权限不等于生产操作授权",
                 "各自的 `references/memory.md`",
-                "不得替代专项技能判卡或写入",
-                "memory: 0 keys changed",
+                "不得替代专项技能判断主题或写入",
+                "memory: 0 facts changed",
             ),
             root,
             errors,
@@ -681,20 +634,56 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
             path,
             content,
             (
-                "只用产品模式",
-                "只用系统模式",
-                "双模式",
+                "产品设计原则",
+                "最短闭环",
+                "业务闭环",
+                "交互与信息",
+                "状态可理解",
+                "异常仍能完成",
+                "克制范围",
                 "跳过本技能",
-                "产品模式不加载独立 reference",
-                "architecture-principles.md",
-                "纯设计产物不写入当前代码事实",
+                "$backend",
+                "$frontend",
+                "$verification",
+                "纯设计产物",
+                "不入册",
             ),
             root,
             errors,
-            "design mode",
+            "product design",
         )
+        for forbidden in ("系统模式", "双模式", "architecture-principles.md"):
+            if forbidden in content:
+                errors.append(
+                    f"Design must not own system architecture term '{forbidden}': "
+                    f"{rel(path, root)}"
+                )
     elif skill == "backend":
-        require_terms(path, content, ("API", "Schema", "权限", "并发", "幂等", "$verification", "$router"), root, errors, "backend")
+        require_terms(
+            path,
+            content,
+            (
+                "architecture-principles.md",
+                "backend-design-principles.md",
+                "系统架构",
+                "数据所有权",
+                "跨边界契约",
+                "质量属性",
+                "故障",
+                "演进",
+                "API",
+                "Schema",
+                "权限",
+                "并发",
+                "幂等",
+                "$design",
+                "$verification",
+                "$router",
+            ),
+            root,
+            errors,
+            "backend architecture and implementation",
+        )
     elif skill == "frontend":
         require_terms(path, content, ("设计令牌", "响应式", "可访问性", "真实浏览器", "$verification"), root, errors, "frontend")
     elif skill == "verification":
@@ -762,29 +751,12 @@ def validate_memory_file(
     root: Path,
     owner: str,
     path: Path,
-    all_keys: dict[str, Path],
-    pending_refs: list[tuple[Path, str]],
     errors: list[str],
 ) -> None:
     content = read_text(path, root, errors)
-    fields = parse_frontmatter(path, content, root, errors)
-    frontmatter_match = re.match(
-        r"\A---\s*\n.*?\n---\s*(?:\n|\Z)", content, re.DOTALL
-    )
-    body = content[frontmatter_match.end() :].strip() if frontmatter_match else content.strip()
-    if set(fields) != set(MEMORY_FRONTMATTER_FIELDS):
-        errors.append(f"Code-memory frontmatter fields are invalid: {rel(path, root)}")
-    forbidden_fields = set(fields) & FORBIDDEN_MEMORY_FRONTMATTER_FIELDS
-    if forbidden_fields:
-        errors.append(
-            f"Forbidden metadata field in code-memory frontmatter: {rel(path, root)}"
-        )
-    if fields.get("memory") != owner:
-        errors.append(f"Code-memory owner is invalid: {rel(path, root)}")
-    if fields.get("project_root") != ".":
-        errors.append(f"Code-memory project_root is invalid: {rel(path, root)}")
-    if not is_rfc3339_with_offset(fields.get("updated_at", "")):
-        errors.append(f"Code-memory updated_at needs RFC3339 offset: {rel(path, root)}")
+    body = content.strip()
+    if re.match(r"\A---\s*$", body, re.MULTILINE):
+        errors.append(f"Frontmatter is forbidden in final code memory: {rel(path, root)}")
     if "<!--" in content or PLACEHOLDER_PATTERN.search(content):
         errors.append(f"Template guidance or placeholder remains: {rel(path, root)}")
     if SECRET_PATTERN.search(content):
@@ -796,6 +768,10 @@ def validate_memory_file(
         "恢复摘要",
         "动作队列",
         "取代关系",
+        "迁移进度",
+        "迁移阶段",
+        "重构记录",
+        "变更记录",
         "superseded",
         "置信度",
         "过程日志",
@@ -807,15 +783,12 @@ def validate_memory_file(
             errors.append(f"Historical/process memory term '{forbidden}' remains: {rel(path, root)}")
     if "```" in content:
         errors.append(f"Code fence is forbidden in code-memory file: {rel(path, root)}")
-    if tuple(headings(body, 1)) != (f"{owner} 代码事实",):
+    if tuple(headings(body, 1)) != (f"{owner} 当前代码事实",):
         errors.append(f"Instantiated memory title is invalid: {rel(path, root)}")
-    if tuple(headings(body, 2)) != ("当前代码事实",):
-        errors.append(f"Instantiated memory must contain only 当前代码事实: {rel(path, root)}")
     body_match = re.fullmatch(
-        rf"# {re.escape(owner)} 代码事实[ \t]*\r?\n"
+        rf"# {re.escape(owner)} 当前代码事实[ \t]*\r?\n"
         r"(?:[ \t]*\r?\n)*"
-        r"## 当前代码事实[ \t]*\r?\n"
-        r"(?P<facts>[\s\S]+)",
+        r"(?P<facts>## [\s\S]+)",
         body,
     )
     if not body_match:
@@ -823,48 +796,60 @@ def validate_memory_file(
     current_facts = (
         body_match.group("facts").strip()
         if body_match
-        else markdown_section(content, 2, "当前代码事实") or ""
+        else body
     )
-    first_card = re.search(r"(?m)^###\s+", current_facts)
+    first_card = re.search(r"(?m)^##\s+", current_facts)
     if first_card and current_facts[: first_card.start()].strip():
         errors.append(f"Unexpected content before first code fact: {rel(path, root)}")
-    cards = heading_blocks(current_facts, 3)
+    if headings(body, 3):
+        errors.append(f"Nested sections are forbidden in code-memory file: {rel(path, root)}")
+    cards = heading_blocks(current_facts, 2)
     if not cards:
         errors.append(f"Empty code-memory file must not exist: {rel(path, root)}")
-    for key, block in cards:
-        if not MEMORY_KEY_PATTERNS[owner].fullmatch(key):
-            errors.append(f"Invalid {owner} semantic fact key '{key}': {rel(path, root)}")
-        if key in all_keys:
-            errors.append(f"Duplicate fact key '{key}': {rel(path, root)}")
-        all_keys[key] = path
-        values = validate_field_block(path, block, MEMORY_FIELDS, root, errors, f"code fact '{key}'", allow_placeholders=False)
+    seen_topics: set[str] = set()
+    for topic, block in cards:
+        if topic in seen_topics:
+            errors.append(f"Duplicate fact topic '{topic}': {rel(path, root)}")
+        seen_topics.add(topic)
+        if FORMAL_FACT_KEY_PATTERN.fullmatch(topic):
+            errors.append(f"Formal fact key is forbidden as topic '{topic}': {rel(path, root)}")
+        if PROCESS_TOPIC_PATTERN.search(topic):
+            errors.append(f"Process/change topic is forbidden '{topic}': {rel(path, root)}")
+        if len(topic) > 48 or "`" in topic or "/" in topic or "\\" in topic:
+            errors.append(f"Fact topic must be concise human-readable semantics '{topic}': {rel(path, root)}")
+        values = validate_field_block(
+            path,
+            block,
+            MEMORY_FIELDS,
+            root,
+            errors,
+            f"code fact topic '{topic}'",
+            allow_placeholders=False,
+        )
         for field in MEMORY_FIELDS:
             value = values.get(field, "")
-            if field == "依赖与影响" and value == "无":
+            if field == "影响范围" and value == "无":
                 continue
             if len(value) < 12:
-                errors.append(f"Code fact '{key}' field '{field}' is too terse: {rel(path, root)}")
-        summary = values.get("事实摘要", "")
-        if len(summary) > 600:
-            errors.append(f"Code fact '{key}' summary is not concise: {rel(path, root)}")
-        if SESSION_SUMMARY_PATTERN.match(summary):
-            errors.append(f"Code fact '{key}' contains a session summary: {rel(path, root)}")
+                errors.append(f"Code fact topic '{topic}' field '{field}' is too terse: {rel(path, root)}")
+        current_fact = values.get("当前事实", "")
+        if len(current_fact) > 600:
+            errors.append(f"Code fact topic '{topic}' is not concise: {rel(path, root)}")
+        if SESSION_SUMMARY_PATTERN.match(current_fact):
+            errors.append(f"Code fact topic '{topic}' contains a session summary: {rel(path, root)}")
+        if PROCESS_FACT_PATTERN.search(current_fact):
+            errors.append(f"Code fact topic '{topic}' contains migration/refactor history: {rel(path, root)}")
         anchors = re.findall(r"`([^`]+)`", values.get("代码定位", ""))
         if len(anchors) > 3:
-            errors.append(f"Code fact '{key}' has more than three code anchors: {rel(path, root)}")
+            errors.append(f"Code fact topic '{topic}' has more than three code anchors: {rel(path, root)}")
         resolved_anchors = [
-            validate_source_anchor(root, path, key, anchor, errors) for anchor in anchors
+            validate_source_anchor(root, path, topic, anchor, errors) for anchor in anchors
         ]
         if not any(resolved_anchors):
-            errors.append(f"Code fact '{key}' needs a repository source anchor: {rel(path, root)}")
+            errors.append(f"Code fact topic '{topic}' needs a repository source anchor: {rel(path, root)}")
         validation_entry = values.get("验证入口", "")
         if SESSION_SUMMARY_PATTERN.match(validation_entry):
-            errors.append(f"Code fact '{key}' contains transient validation evidence: {rel(path, root)}")
-        for linked in re.findall(
-            r"`((?:design|backend|frontend|verification):[a-z]+:[a-z0-9][a-z0-9-]*)`",
-            values.get("依赖与影响", ""),
-        ):
-            pending_refs.append((path, linked))
+            errors.append(f"Code fact topic '{topic}' contains transient validation evidence: {rel(path, root)}")
 
 
 def validate_readme(root: Path, errors: list[str]) -> None:
@@ -885,9 +870,10 @@ def validate_readme(root: Path, errors: list[str]) -> None:
             "当前代码事实",
             "router` 不拥有记忆",
             "格式版本号",
-            "owner:type:slug",
-            "事实摘要、代码定位、依赖与影响、验证入口、失效条件",
-            "memory: 0 keys changed",
+            "人类可读主题",
+            "当前事实、代码定位、影响范围和验证入口",
+            "重构、迁移、改名和实现变更",
+            "memory: 0 facts changed",
             "技能自有",
             "`references/memory.md`",
         ),
@@ -963,14 +949,9 @@ def validate(root: Path = ROOT) -> list[str]:
     if unknown_memories:
         errors.append(f"Unknown project memory files: {sorted(unknown_memories)}")
     actual_memories = actual_memory_paths & allowed_memories
-    all_keys: dict[str, Path] = {}
-    pending_refs: list[tuple[Path, str]] = []
     for filename in sorted(actual_memories):
         owner = filename.removesuffix(".md")
-        validate_memory_file(root, owner, docs_dir / filename, all_keys, pending_refs, errors)
-    for source, linked in pending_refs:
-        if linked not in all_keys:
-            errors.append(f"Dangling fact-key reference '{linked}': {rel(source, root)}")
+        validate_memory_file(root, owner, docs_dir / filename, errors)
     validate_readme(root, errors)
     validate_legacy_surfaces(root, errors)
     for path in root.rglob("*"):
@@ -1044,23 +1025,14 @@ def run_negative_self_tests() -> list[str]:
                 return path
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(
-                """---
-memory: design
-project_root: "."
-updated_at: "2026-01-01T00:00:00+08:00"
----
+                """# design 当前代码事实
 
-# design 代码事实
+## 插件职责边界
 
-## 当前代码事实
-
-### design:boundary:self-test-fixture
-
-- **事实摘要**：插件文档定义五个技能的固定拓扑，并由静态校验守住该边界。
+- **当前事实**：插件文档定义五个技能的固定拓扑，并由静态校验守住该边界。
 - **代码定位**：`README.md#五个 Skill`
-- **依赖与影响**：无
+- **影响范围**：插件清单、技能路由和项目静态校验均依赖这项职责边界。
 - **验证入口**：运行项目静态校验并断言五个技能目录与插件清单保持一致。
-- **失效条件**：技能目录、插件清单或 README 中的公开拓扑发生变化。
 """,
                 encoding="utf-8",
             )
@@ -1097,8 +1069,16 @@ updated_at: "2026-01-01T00:00:00+08:00"
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("# hidden router fact store\n", encoding="utf-8")
 
-        def remove_design_reference(root: Path) -> None:
-            (root / "skills" / "design" / "references" / "architecture-principles.md").unlink()
+        def remove_backend_architecture_reference(root: Path) -> None:
+            (root / "skills" / "backend" / "references" / "architecture-principles.md").unlink()
+
+        def restore_design_system_mode(root: Path) -> None:
+            path = root / "skills" / "design" / "SKILL.md"
+            path.write_text(
+                path.read_text(encoding="utf-8").rstrip()
+                + "\n\n## 系统模式\n\n加载 architecture-principles.md 裁定系统架构。\n",
+                encoding="utf-8",
+            )
 
         def add_unexpected_reference(root: Path) -> None:
             (root / "skills" / "router" / "references" / "extra.md").write_text("# extra\n", encoding="utf-8")
@@ -1109,21 +1089,21 @@ updated_at: "2026-01-01T00:00:00+08:00"
 
         def corrupt_memory_field(root: Path) -> None:
             path = ensure_design_memory(root)
-            path.write_text(path.read_text(encoding="utf-8").replace("**失效条件**", "**复查条件**", 1), encoding="utf-8")
+            path.write_text(path.read_text(encoding="utf-8").replace("**影响范围**", "**依赖范围**", 1), encoding="utf-8")
 
-        def duplicate_memory_key(root: Path) -> None:
+        def duplicate_memory_topic(root: Path) -> None:
             path = ensure_design_memory(root)
             content = path.read_text(encoding="utf-8")
-            card = re.search(r"(?ms)^### design:[a-z]+:[a-z0-9-]+\s*$.*?(?=^### |\Z)", content)
+            card = re.search(r"(?ms)^## 插件职责边界\s*$.*?(?=^## |\Z)", content)
             if card:
                 path.write_text(content.rstrip() + "\n\n" + card.group(0).rstrip() + "\n", encoding="utf-8")
 
-        def malformed_memory_key(root: Path) -> None:
+        def add_formal_fact_key(root: Path) -> None:
             path = ensure_design_memory(root)
             path.write_text(
                 re.sub(
-                    r"(?m)^### design:[a-z]+:[a-z0-9-]+$",
-                    "### design:boundary:skills/router",
+                    r"(?m)^## 插件职责边界$",
+                    "## design:migration:memory-template",
                     path.read_text(encoding="utf-8"),
                     count=1,
                 ),
@@ -1159,7 +1139,7 @@ updated_at: "2026-01-01T00:00:00+08:00"
             path = root / "skills" / "backend" / "references" / "memory.md"
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    "backend:<type>:<slug>", "backend:api:orders", 1
+                    "## <稳定事实主题>", "## backend:migration:orders", 1
                 ),
                 encoding="utf-8",
             )
@@ -1172,8 +1152,8 @@ updated_at: "2026-01-01T00:00:00+08:00"
             content = path.read_text(encoding="utf-8")
             path.write_text(
                 re.sub(
-                    r"(?m)^- \*\*事实摘要\*\*：.*$",
-                    "- **事实摘要**：本轮完成了技能拓扑与记忆模板重构，并修改了相关文件。",
+                    r"(?m)^- \*\*当前事实\*\*：.*$",
+                    "- **当前事实**：本轮完成了技能拓扑与记忆模板重构，并修改了相关文件。",
                     content,
                     count=1,
                 ),
@@ -1192,8 +1172,8 @@ updated_at: "2026-01-01T00:00:00+08:00"
             path = ensure_design_memory(root)
             content = path.read_text(encoding="utf-8")
             content = content.replace(
-                "### design:boundary:self-test-fixture",
-                "```markdown\n### design:boundary:self-test-fixture",
+                "## 插件职责边界",
+                "```markdown\n## 插件职责边界",
                 1,
             )
             path.write_text(content, encoding="utf-8")
@@ -1202,19 +1182,19 @@ updated_at: "2026-01-01T00:00:00+08:00"
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    "## 当前代码事实\n\n",
-                    "## 当前代码事实\n\n此段游离正文不属于任何事实卡。\n\n",
+                    "# design 当前代码事实\n\n",
+                    "# design 当前代码事实\n\n此段游离正文不属于任何事实主题。\n\n",
                     1,
                 ),
                 encoding="utf-8",
             )
 
-        def add_memory_header_prose(root: Path) -> None:
+        def add_nested_memory_section(root: Path) -> None:
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    "# design 代码事实\n\n",
-                    "# design 代码事实\n\n此段正文游离在标题与事实区之间。\n\n",
+                    "- **验证入口**：运行项目静态校验并断言五个技能目录与插件清单保持一致。",
+                    "- **验证入口**：运行项目静态校验并断言五个技能目录与插件清单保持一致。\n\n### 过程附记",
                     1,
                 ),
                 encoding="utf-8",
@@ -1228,32 +1208,29 @@ updated_at: "2026-01-01T00:00:00+08:00"
                 encoding="utf-8",
             )
 
-        def invalid_project_root(root: Path) -> None:
+        def add_process_topic(root: Path) -> None:
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    'project_root: "."', 'project_root: "../another-product"', 1
+                    "## 插件职责边界", "## 记忆模板迁移阶段", 1
                 ),
                 encoding="utf-8",
             )
 
-        def add_legacy_version_field(root: Path) -> None:
+        def add_legacy_frontmatter(root: Path) -> None:
             path = ensure_design_memory(root)
             path.write_text(
-                path.read_text(encoding="utf-8").replace(
-                    "---\nmemory: design",
-                    "---\nschema: 4\nmemory: design",
-                    1,
-                ),
+                "---\nmemory: design\nproject_root: \".\"\n---\n\n"
+                + path.read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
 
-        def add_legacy_scope_field(root: Path) -> None:
+        def add_migration_history(root: Path) -> None:
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    "---\nmemory: design",
-                    "---\nmemory: design\nscope: current-project-code",
+                    "插件文档定义五个技能的固定拓扑",
+                    "本轮完成了从共享模板迁移到技能自有记忆卷",
                     1,
                 ),
                 encoding="utf-8",
@@ -1296,21 +1273,20 @@ updated_at: "2026-01-01T00:00:00+08:00"
             path = root / "skills" / "backend" / "SKILL.md"
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    "[backend 记忆规则与实例骨架](references/memory.md)",
-                    "[design 记忆规则与实例骨架](../design/references/memory.md)",
+                    "[backend 记忆规则与实例格式](references/memory.md)",
+                    "[design 记忆规则与实例格式](../design/references/memory.md)",
                     1,
                 ),
                 encoding="utf-8",
             )
 
-        def remove_backend_memory_type(root: Path) -> None:
+        def remove_final_state_rule(root: Path) -> None:
             path = root / "skills" / "backend" / "references" / "memory.md"
             path.write_text(
-                re.sub(
-                    r"(?m)^- `backend:runtime:<slug>`.*\n",
-                    "",
-                    path.read_text(encoding="utf-8"),
-                    count=1,
+                path.read_text(encoding="utf-8").replace(
+                    "不得成为主题或事实正文",
+                    "可以作为主题或事实正文",
+                    1,
                 ),
                 encoding="utf-8",
             )
@@ -1341,32 +1317,38 @@ updated_at: "2026-01-01T00:00:00+08:00"
 
         def remove_api_milestone(root: Path) -> None:
             path = root / "skills" / "router" / "SKILL.md"
-            path.write_text(path.read_text(encoding="utf-8").replace("具体 API 契约里程碑", "接口约定", 1), encoding="utf-8")
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "具体 API 契约里程碑", "接口约定"
+                ),
+                encoding="utf-8",
+            )
 
         cases = (
             ("sixth-skill", add_sixth_skill, "Skill directories must be exactly"),
             ("router-memory", add_router_memory, "Skill reference set differs for router"),
             ("nested-router-reference", add_nested_router_reference, "Skill reference set differs for router"),
             ("nested-router-project-memory", add_nested_router_project_memory, "Unknown project memory files"),
-            ("missing-design-reference", remove_design_reference, "Skill reference set differs for design"),
+            ("missing-backend-architecture-reference", remove_backend_architecture_reference, "Skill reference set differs for backend"),
+            ("design-system-mode-overreach", restore_design_system_mode, "Design must not own system architecture term"),
             ("unexpected-reference", add_unexpected_reference, "Skill reference set differs for router"),
             ("modified-reference-content", modify_reference, "Capability reference differs from the curated baseline"),
             ("invalid-memory-field", corrupt_memory_field, "fields must be exactly"),
-            ("duplicate-memory-key", duplicate_memory_key, "Duplicate fact key"),
-            ("physical-path-memory-key", malformed_memory_key, "Invalid design semantic fact key"),
+            ("duplicate-memory-topic", duplicate_memory_topic, "Duplicate fact topic"),
+            ("formal-fact-key", add_formal_fact_key, "Formal fact key is forbidden"),
             ("escaping-source-anchor", escaping_anchor, "Source anchor escapes project root"),
             ("absolute-source-anchor", absolute_anchor, "Source anchor must be repository-relative"),
-            ("invalid-memory-skeleton", invalid_memory_skeleton, "Memory skeleton key must be"),
+            ("invalid-memory-format", invalid_memory_skeleton, "Memory format topic must be"),
             ("missing-owner-memory", remove_backend_memory_reference, "Skill reference set differs for backend"),
             ("session-summary-memory", add_session_summary, "contains a session summary"),
             ("extra-memory-content", add_extra_memory_content, "Unexpected content in code fact"),
             ("fenced-memory-card", fence_memory_card, "Code fence is forbidden"),
             ("prefaced-memory-card", add_memory_preface, "Unexpected content before first code fact"),
-            ("memory-header-prose", add_memory_header_prose, "Instantiated memory body structure is invalid"),
+            ("nested-memory-section", add_nested_memory_section, "Nested sections are forbidden"),
             ("memory-trailing-section", add_memory_trailing_section, "Instantiated memory title is invalid"),
-            ("legacy-version-field", add_legacy_version_field, "Forbidden metadata field"),
-            ("legacy-scope-field", add_legacy_scope_field, "Forbidden metadata field"),
-            ("cross-project-memory", invalid_project_root, "project_root is invalid"),
+            ("legacy-memory-frontmatter", add_legacy_frontmatter, "Frontmatter is forbidden"),
+            ("process-memory-topic", add_process_topic, "Process/change topic is forbidden"),
+            ("migration-history-memory", add_migration_history, "contains a session summary"),
             ("secret-in-memory", add_secret_value, "Possible secret value"),
             ("empty-owner-memory-section", empty_backend_memory_section, "Empty backend memory section"),
             ("contradictory-memory-sync", contradict_memory_sync, "Contradictory memory sync rule"),
@@ -1376,8 +1358,8 @@ updated_at: "2026-01-01T00:00:00+08:00"
             ("missing-api-contract-milestone", remove_api_milestone, "Missing router term '具体 API 契约里程碑'"),
             ("legacy-root-contract", add_legacy_root_contract, "Root-level memory resources must not exist"),
             ("legacy-root-template", add_legacy_root_template, "Root-level memory resources must not exist"),
-            ("cross-owner-memory-link", cross_owner_memory_link, "Missing current-code-memory term '[backend 记忆规则与实例骨架](references/memory.md)'"),
-            ("missing-owner-memory-type", remove_backend_memory_type, "Backend memory reference omits type 'backend:runtime'"),
+            ("cross-owner-memory-link", cross_owner_memory_link, "Missing current-code-memory term '[backend 记忆规则与实例格式](references/memory.md)'"),
+            ("missing-final-state-rule", remove_final_state_rule, "Missing backend memory 收录门槛 term '不得成为主题或事实正文'"),
         )
         declared = f"{len(cases)} 类退化"
         declared_paths = [ROOT / "scripts" / "README.md"]
