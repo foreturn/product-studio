@@ -1,8 +1,8 @@
 # 产品工作室
 
-产品工作室是一套面向 Codex 与 Claude Code 的氛围编程插件。它用六个可调用 Skill 约束路由编排、产品设计、架构设计、前后端编码和测试验证，使 AI 先读取现有仓库和调用链，再在最小范围内修改代码并以证据收口。
+产品工作室是一套面向 Codex 与 Claude Code 的氛围编程插件。它用七个可调用 Skill 约束路由编排、产品设计、架构设计、前后端编码、测试验证和发布运行，使 AI 先读取现有仓库和调用链，再在最小范围内修改代码并以证据收口。
 
-## 六个 Skill
+## 七个 Skill
 
 | Skill | 专业能力 |
 |---|---|
@@ -12,8 +12,9 @@
 | `backend` | 依据产品与适用架构契约实现领域状态与不变量、具体 API、Schema/索引/迁移代码、身份授权、事务/并发/幂等、缓存消息、外部集成和服务端开发测试。 |
 | `frontend` | 设计并实现页面任务流、信息层级、设计令牌、组件变体、布局与响应式规则、loading/empty/error/success/disabled 状态、键盘与读屏可访问性、性能预算，并在真实浏览器中核验主题、视口、身份和数据状态。 |
 | `verification` | 将产品、架构与实现契约追溯到证据，按风险设计、补充并执行测试用例，包括单元、契约、集成、端到端和非功能验证；核验接口、权限、数据不变量、迁移恢复、前端交互与真实渲染，只依据当前制品与环境给出独立结论。 |
+| `release` | 接收已验收且可追溯的制品，分别裁定发布就绪、当前授权、实际执行与运行健康；管理制品配置、发布策略、迁移编排、观测门禁、停止回滚、事故恢复和反馈闭环，只有明确授权覆盖当前制品、环境、范围、动作与时窗时才执行外部变更。 |
 
-每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆入口和边界；可复用的细分专业判断位于同技能 `references/principles.md`。六份能力准则以 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，删去独立的决策顺序与交付证据章节，并统一使用“目录—角色职责—核心能力—常见误判”四章。五个专业 Skill 另以技能自有的 `references/memory.md` 保存本 Owner 唯一的记忆规则与实例格式；能力准则不承载记忆规则，`router` 也不拥有记忆。
+每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆入口和边界；可复用的细分专业判断位于同技能 `references/principles.md`，并统一使用“目录—角色职责—核心能力—常见误判”四章。六个专业 Skill 另以技能自有的 `references/memory.md` 保存本 Owner 唯一的记忆规则与实例格式；能力准则不承载记忆规则，`router` 也不拥有记忆。
 
 ## 路由
 
@@ -24,6 +25,7 @@
 明确后端改动    backend -> verification
 仅产品设计      design
 仅系统架构      architecture
+已验收制品发布  release
 ```
 
 模糊、跨角色、端到端或高风险代码任务由 `router` 选择最小链：
@@ -34,15 +36,17 @@
                 -> backend / frontend -> verification
 技术边界未定    router -> architecture
                 -> backend / frontend -> verification
+实现并发布      router -> [design / architecture 按需]
+                -> backend / frontend -> verification -> release
 ```
 
 前后端只有在公共契约稳定、输入快照一致、依赖独立且写入不冲突时才能并行。同一 API、Schema、迁移代码或公共组件必须串行合并。
 
-本插件不执行生产部署、生产数据库迁移、切流、生产配置写入或回滚。这些外部状态操作应交由项目既有发布工具与运行责任人处理；插件可以设计、实现和验证相关代码，但不得据此宣称线上操作已经执行或生产环境已经健康。
+生产部署、生产数据库迁移、切流、生产配置写入、回滚与故障处置只由 `release` 在明确授权覆盖当前制品、目标环境、范围、动作与有效时窗时，使用项目既有且已核验的运行工具执行。其余 Skill 的代码权限、验收结论、方案或历史许可均不构成生产授权；缺少授权时 `release` 只给出就绪、缺口和下一动作，不得宣称线上操作已经执行或生产环境已经健康。
 
-## 当前代码事实
+## 当前项目事实
 
-`skills/` 约束 AI 如何工作；`<项目根>/docs/product-studio/` 保存下一次编码真正需要的总结性当前代码事实。源码和可生成清单始终是权威，记忆只保留跨消费者、重查成本高或误判风险大的语义摘要。`router` 不拥有记忆，避免编排状态成为第二事实源；只有下列五册可按需存在：
+`skills/` 约束 AI 如何工作；`<项目根>/docs/product-studio/` 保存下一次编码或发布真正需要的总结性当前事实。源码、权威 Schema、流水线、制品库和环境查询始终是权威，记忆只保留跨消费者、重查成本高或误判风险大的语义摘要。`router` 不拥有记忆，避免编排状态成为第二事实源；只有下列六册可按需存在：
 
 | Owner | 保存的最终代码事实 |
 |---|---|
@@ -51,12 +55,13 @@
 | `backend` | 非显然的领域、具体接口、数据、权限、事务并发、事件、缓存、集成和服务端运行行为 |
 | `frontend` | 核心界面任务、共享组件、状态恢复、布局、响应式、可访问性和设计系统约束 |
 | `verification` | 可重复执行的检查能力、稳定风险覆盖关系和持续验证约束 |
+| `release` | 可复用的制品识别、环境契约、部署迁移顺序、健康与业务信号、停止恢复入口和运行限制；易变状态必须绑定当前环境、制品、核验时点与失效条件 |
 
 每个专业 Skill 的 `references/memory.md` 是该 Owner 唯一的收录、实例格式和终态同步规则；首次确有事实时按其中格式创建当前项目事实册，不在插件根维护共享契约、模板或格式版本号，事实册也不使用 frontmatter。每个事实使用简短的人类可读主题，只含当前事实、代码定位、影响范围和验证入口。
 
-- 只在编码任务完成且最终代码取得相称验证后同步；有变化便原位增改删主题，无变化报告 `memory: 0 facts changed`。
+- 只在编码或发布任务形成终态且取得相称验证后同步；有变化便原位增改删主题，无变化报告 `memory: 0 facts changed`。
 - 重构、迁移、改名和实现变更只是重新核对记忆的触发器，不得成为主题、阶段记录或前后对比；未完成状态与临时兼容路径不入册。
-- 实例只保存预计后续仍会使用的最终代码事实；任务经过、一次性证据、历史版本、秘密与可由源码生成的清单不入册。最后一个主题删除后移除整册，Git 承担历史。
+- 实例只保存预计后续仍会使用的当前事实；任务经过、执行流水、一次性指标样本、历史版本、授权、秘密与可由权威来源生成的清单不入册。最后一个主题删除后移除整册，Git、流水线、制品库与事件系统承担历史。
 
 ## 目录
 
@@ -68,9 +73,9 @@ product-studio/
 |   |-- architecture/references/  # principles.md + memory.md
 |   |-- backend/references/       # principles.md + memory.md
 |   |-- frontend/references/      # principles.md + memory.md
-|   `-- verification/references/  # principles.md + memory.md
+|   |-- verification/references/  # principles.md + memory.md
+|   `-- release/references/       # principles.md + memory.md
 |-- docs/product-studio/   # 当前项目实际存在的代码事实子集
-|-- scripts/validate_project.py
 |-- .codex-plugin/plugin.json
 |-- .claude-plugin/
 `-- .agents/plugins/marketplace.json
@@ -95,8 +100,7 @@ claude plugin install product-studio@foreturn
 ## 校验
 
 ```bash
-python3 -X utf8 scripts/validate_project.py --self-test
 claude plugin validate --strict .
 ```
 
-项目校验覆盖六技能集合、六份 `principles.md` 的裁剪后基线哈希与四章结构、45 项核心能力、代码路由边界、五份技能自有记忆卷及实例格式、人类可读事实主题、四字段摘要和双端 manifest 一致性。静态通过只证明当前快照的源码契约和定位自洽，不能发现锚点仍存在但事实语义已陈旧；语义新鲜度由每次编码终态对照最终代码同步。真实插件触发、目标项目运行与交互行为仍须取得直接证据。
+Claude 严格校验负责清单与目录格式；Codex 侧以 marketplace 实际安装和新线程中的技能发现为准。平台格式校验不证明路由选择、专业判断或目标项目行为，须使用未提示技能名的全新上下文作正反向试用，并将输入、输出、当前版本和越权情况绑定为直接证据。

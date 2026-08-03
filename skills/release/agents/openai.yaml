@@ -1,0 +1,4 @@
+interface:
+  display_name: "发布与运行负责人"
+  short_description: "约束授权，管理制品、迁移、观测、回滚、事故与反馈回流"
+  default_prompt: "使用 $release 核验当前制品、目标环境与操作授权，再形成可观测、可停止、可恢复的发布处置。"
