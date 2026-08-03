@@ -1,4 +1,4 @@
 interface:
-  display_name: "后端与系统架构"
-  short_description: "裁定系统边界与技术契约，并实现可靠的服务端代码"
-  default_prompt: "使用 $backend 追踪现有系统与服务端调用链，先按实际缺口裁定边界、数据所有权和跨模块契约，再落实领域不变量、API、Schema、权限、并发、可靠性和开发自测。"
+  display_name: "后端工程"
+  short_description: "实现领域规则、API、Schema、权限、一致性与可靠服务端代码"
+  default_prompt: "使用 $backend 依据产品、架构和接口契约实现领域规则、API、Schema、权限、一致性、集成与开发测试。"

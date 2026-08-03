@@ -1,18 +1,19 @@
 # 产品工作室
 
-产品工作室是一套面向 Codex 与 Claude Code 的氛围编程插件。它用五个可调用 Skill 约束产品设计、系统架构、前后端编码和测试验证，使 AI 先读取现有仓库和调用链，再在最小范围内修改代码并以证据收口。
+产品工作室是一套面向 Codex 与 Claude Code 的氛围编程插件。它用六个可调用 Skill 约束路由编排、产品设计、架构设计、前后端编码和测试验证，使 AI 先读取现有仓库和调用链，再在最小范围内修改代码并以证据收口。
 
-## 五个 Skill
+## 六个 Skill
 
 | Skill | 专业能力 |
 |---|---|
 | `router` | 识别任务涉及的产品设计、系统架构、后端、前端与验证代码面，选择最短 Skill 链；建立依赖图和输入快照；判断前后端能否并行；锁定共享契约、Schema 与公共组件的唯一合并者；处理代码任务的范围变化、失败隔离和终态收口。 |
 | `design` | 从目标用户与业务结果出发，删减无价值步骤，定义最短任务路径、必要信息与动作、交互状态、反馈恢复、端到端业务闭环、范围、指标和可观察验收标准；不承担系统架构或界面代码设计。 |
-| `backend` | 按需设计领域与服务边界、数据所有权、跨模块契约、质量属性、故障安全、可观测性和演进方案，再实现领域状态与不变量、API、Schema/索引/迁移、身份授权、事务/并发/幂等、缓存消息、外部集成和服务端测试。 |
+| `architecture` | 只在真实跨边界风险存在时裁定系统与领域边界、数据所有权、共享不变量、跨边界契约语义、质量属性、故障安全、信任边界、可观测性和演进方案；不代替实现技能编码。 |
+| `backend` | 依据产品与适用架构契约实现领域状态与不变量、具体 API、Schema/索引/迁移代码、身份授权、事务/并发/幂等、缓存消息、外部集成和服务端开发测试。 |
 | `frontend` | 设计并实现页面任务流、信息层级、设计令牌、组件变体、布局与响应式规则、loading/empty/error/success/disabled 状态、键盘与读屏可访问性、性能预算，并在真实浏览器中核验主题、视口、身份和数据状态。 |
-| `verification` | 将产品规则追溯到证据，按风险设计分层测试，包括单元、契约、集成、端到端和非功能验证；核验接口、权限、数据不变量、迁移恢复、前端交互与真实渲染；区分失败、阻塞和既有问题，只依据当前制品与环境给出独立结论。 |
+| `verification` | 将产品、架构与实现契约追溯到证据，按风险设计、补充并执行测试用例，包括单元、契约、集成、端到端和非功能验证；核验接口、权限、数据不变量、迁移恢复、前端交互与真实渲染，只依据当前制品与环境给出独立结论。 |
 
-每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆入口和边界；可复用的细分专业判断位于同技能 `references/`。当前五份能力准则以 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，删去了独立的决策顺序与交付证据章节；`design` 直接依其 `SKILL.md` 完成产品设计，`backend` 按缺口加载架构卷和后端工程卷。每卷沿用“目录—角色职责—核心能力—常见误判”。四个专业 Skill 另以技能自有的 `references/memory.md` 保存本 Owner 唯一的记忆规则与实例格式；专业能力卷不承载记忆规则，`router` 也不拥有记忆。
+每个 `SKILL.md` 保存触发、能力加载、执行顺序、输入输出、记忆入口和边界；可复用的细分专业判断位于同技能 `references/principles.md`。六份能力准则以 `9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194` 的对应原卷为基线，删去独立的决策顺序与交付证据章节，并统一使用“目录—角色职责—核心能力—常见误判”四章。五个专业 Skill 另以技能自有的 `references/memory.md` 保存本 Owner 唯一的记忆规则与实例格式；能力准则不承载记忆规则，`router` 也不拥有记忆。
 
 ## 路由
 
@@ -22,16 +23,16 @@
 明确前端改动    frontend -> verification
 明确后端改动    backend -> verification
 仅产品设计      design
-仅系统架构      backend
+仅系统架构      architecture
 ```
 
 模糊、跨角色、端到端或高风险代码任务由 `router` 选择最小链：
 
 ```text
 清晰全栈功能    router -> backend / frontend -> verification
-产品语义未定    router -> design -> backend[形成系统与具体 API 契约]
+产品语义未定    router -> design -> architecture[按风险启用]
                 -> backend / frontend -> verification
-技术边界未定    router -> backend[先架构后实现]
+技术边界未定    router -> architecture
                 -> backend / frontend -> verification
 ```
 
@@ -41,12 +42,13 @@
 
 ## 当前代码事实
 
-`skills/` 约束 AI 如何工作；`<项目根>/docs/product-studio/` 保存下一次编码真正需要的总结性当前代码事实。源码和可生成清单始终是权威，记忆只保留跨消费者、重查成本高或误判风险大的语义摘要。`router` 不拥有记忆，避免编排状态成为第二事实源；只有下列四册可按需存在：
+`skills/` 约束 AI 如何工作；`<项目根>/docs/product-studio/` 保存下一次编码真正需要的总结性当前代码事实。源码和可生成清单始终是权威，记忆只保留跨消费者、重查成本高或误判风险大的语义摘要。`router` 不拥有记忆，避免编排状态成为第二事实源；只有下列五册可按需存在：
 
 | Owner | 保存的最终代码事实 |
 |---|---|
 | `design` | 已实现的目标用户与业务结果、用户旅程、业务规则、交互闭环、范围和体验约束 |
-| `backend` | 系统边界、数据所有权、跨模块契约，以及非显然的领域、接口、数据、权限、并发、事件、集成和运行行为 |
+| `architecture` | 系统边界、数据所有权、共享不变量、跨边界契约语义、质量约束、故障恢复、信任边界和演进条件 |
+| `backend` | 非显然的领域、具体接口、数据、权限、事务并发、事件、缓存、集成和服务端运行行为 |
 | `frontend` | 核心界面任务、共享组件、状态恢复、布局、响应式、可访问性和设计系统约束 |
 | `verification` | 可重复执行的检查能力、稳定风险覆盖关系和持续验证约束 |
 
@@ -61,11 +63,12 @@
 ```text
 product-studio/
 |-- skills/
-|   |-- router/references/        # 交付编排能力卷，无记忆卷
-|   |-- design/references/        # 产品设计技能自有 memory.md
-|   |-- backend/references/       # 架构卷 + 后端能力卷 + 技能自有 memory.md
-|   |-- frontend/references/      # 前端能力卷 + 技能自有 memory.md
-|   `-- verification/references/  # 验证能力卷 + 技能自有 memory.md
+|   |-- router/references/        # principles.md，无记忆卷
+|   |-- design/references/        # principles.md + memory.md
+|   |-- architecture/references/  # principles.md + memory.md
+|   |-- backend/references/       # principles.md + memory.md
+|   |-- frontend/references/      # principles.md + memory.md
+|   `-- verification/references/  # principles.md + memory.md
 |-- docs/product-studio/   # 当前项目实际存在的代码事实子集
 |-- scripts/validate_project.py
 |-- .codex-plugin/plugin.json
@@ -96,4 +99,4 @@ python3 -X utf8 scripts/validate_project.py --self-test
 claude plugin validate --strict .
 ```
 
-项目校验覆盖五技能集合、五份能力准则的裁剪后基线哈希与四章结构、38 项核心能力、代码路由边界、四份技能自有记忆卷及实例格式、人类可读事实主题、四字段摘要和双端 manifest 一致性。静态通过只证明当前快照的源码契约和定位自洽，不能发现锚点仍存在但事实语义已陈旧；语义新鲜度由每次编码终态对照最终代码同步。真实插件触发、目标项目运行与交互行为仍须取得直接证据。
+项目校验覆盖六技能集合、六份 `principles.md` 的裁剪后基线哈希与四章结构、45 项核心能力、代码路由边界、五份技能自有记忆卷及实例格式、人类可读事实主题、四字段摘要和双端 manifest 一致性。静态通过只证明当前快照的源码契约和定位自洽，不能发现锚点仍存在但事实语义已陈旧；语义新鲜度由每次编码终态对照最终代码同步。真实插件触发、目标项目运行与交互行为仍须取得直接证据。

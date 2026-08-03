@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Product Studio's five-skill and current-code-memory contracts."""
+"""Validate Product Studio's six-skill and current-code-memory contracts."""
 
 from __future__ import annotations
 
@@ -14,9 +14,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE_BASE_COMMIT = "9efef58ddb3f3a4bebcf856f6c2eef7ca7a53194"
-SKILL_ORDER = ("router", "design", "backend", "frontend", "verification")
+SKILL_ORDER = ("router", "design", "architecture", "backend", "frontend", "verification")
 SKILLS = set(SKILL_ORDER)
-MEMORY_OWNERS = ("design", "backend", "frontend", "verification")
+MEMORY_OWNERS = ("design", "architecture", "backend", "frontend", "verification")
 MEMORY_FIELDS = (
     "当前事实",
     "代码定位",
@@ -38,7 +38,7 @@ REFERENCE_SECTIONS = (
 )
 REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
     "router": {
-        "references/delivery-capabilities.md": (
+        "references/principles.md": (
             (
                 "意图归类",
                 "切片与排程",
@@ -51,9 +51,22 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
             "ac34e4102c70f9740260a28fe91caa2c79e33c0b75ee70fc58ff02464c8f953b",
         ),
     },
-    "design": {},
-    "backend": {
-        "references/architecture-principles.md": (
+    "design": {
+        "references/principles.md": (
+            (
+                "问题定义",
+                "用户与任务建模",
+                "证据化联想",
+                "旅程与状态设计",
+                "范围与优先级",
+                "成功衡量",
+                "澄清沟通",
+            ),
+            "a95bca7105a835bb3a5bac4b7495326c769ebdc8239db24e66fa4c8219bb7f6a",
+        ),
+    },
+    "architecture": {
+        "references/principles.md": (
             (
                 "系统建模",
                 "边界与契约设计",
@@ -65,7 +78,9 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
             ),
             "4bad1430de9a25bbe80fe5343817c542eea81bfe99d45a1a7ef83706501317aa",
         ),
-        "references/backend-design-principles.md": (
+    },
+    "backend": {
+        "references/principles.md": (
             (
                 "领域建模",
                 "API 与错误契约",
@@ -80,7 +95,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
         ),
     },
     "frontend": {
-        "references/frontend-design-principles.md": (
+        "references/principles.md": (
             (
                 "易用性与任务效率",
                 "交互设计",
@@ -95,7 +110,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
         ),
     },
     "verification": {
-        "references/verification-principles.md": (
+        "references/principles.md": (
             (
                 "需求追溯",
                 "风险建模",
@@ -111,7 +126,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
     },
 }
 FORMAL_FACT_KEY_PATTERN = re.compile(
-    r"^(?:design|backend|frontend|verification):[a-z]+:[a-z0-9][a-z0-9-]*$"
+    r"^(?:design|architecture|backend|frontend|verification):[a-z]+:[a-z0-9][a-z0-9-]*$"
 )
 PROCESS_TOPIC_PATTERN = re.compile(
     r"(?:迁移|重构|改造|改名|替换|升级|变更)(?:阶段|进度|记录|过程)?"
@@ -124,15 +139,15 @@ PROCESS_FACT_PATTERN = re.compile(
     r"|(?:迁移|重构|改造|改名|替换|升级|变更)(?:阶段|进度|记录)",
     re.IGNORECASE,
 )
-LEGACY_INVOCATION = re.compile(r"\$(?:delivery|discovery|architecture|release)\b")
+LEGACY_INVOCATION = re.compile(r"\$(?:delivery|discovery|release)\b")
 LEGACY_ROLE_PATH = re.compile(
     r"(?:skills|templates|docs/product-studio)[\\/]"
-    r"(?:delivery|discovery|architecture|release)(?:[\\/.]|\b)",
+    r"(?:delivery|discovery|release)(?:[\\/.]|\b)",
     re.IGNORECASE,
 )
 LEGACY_MEMORY_PATH = re.compile(
     r"(?:\.\./\.\./)?references/project-memory\.md"
-    r"|(?:\.\./\.\./)?templates/(?:design|backend|frontend|verification|router)\.md"
+    r"|(?:\.\./\.\./)?templates/(?:design|architecture|backend|frontend|verification|router)\.md"
 )
 FIELD_LINE_PATTERN = re.compile(r"^-\s+\*\*([^*]+)\*\*：\s*(.*)$")
 PLACEHOLDER_PATTERN = re.compile(r"<[^>]+>|\b(?:TODO|TBD)\b", re.IGNORECASE)
@@ -343,7 +358,7 @@ def validate_manifests(root: Path, errors: list[str]) -> None:
         require_terms(
             codex_path,
             str(codex.get("description", "")),
-            ("五个技能", "路由", "产品设计", "后端架构与实现", "前端", "测试验证"),
+            ("六个技能", "路由", "产品设计", "架构设计", "后端编码", "前端编码", "测试验证"),
             root,
             errors,
             "manifest",
@@ -415,6 +430,12 @@ def validate_reference(
     for title, body in cards:
         if len(re.findall(r"(?m)^-\s+", body)) < 5:
             errors.append(f"Capability card is too shallow '{title}': {rel(path, root)}")
+    common = markdown_section(content, 2, "常见误判") or ""
+    common_lines = [line.strip() for line in common.splitlines() if line.strip()]
+    if len(common_lines) < 5 or any(not line.startswith("- ") for line in common_lines):
+        errors.append(
+            f"Common-misjudgment section must be a flat bullet list: {rel(path, root)}"
+        )
     if any(
         term in content
         for term in (
@@ -612,11 +633,13 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
             path,
             content,
             (
-                "明确前端改动",
-                "明确系统或后端问题",
-                "模糊或跨边界改动",
-                "仅系统或技术边界未定",
+                "明确架构设计",
+                "明确后端编码",
+                "明确前端编码",
+                "明确测试验收",
+                "系统或技术边界未定",
                 "不计作跨领域触发条件",
+                "架构契约里程碑",
                 "具体 API 契约里程碑",
                 "输入快照一致",
                 "写集合",
@@ -634,14 +657,19 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
             path,
             content,
             (
-                "产品设计原则",
-                "最短闭环",
+                "产品设计能力准则",
+                "references/principles.md",
+                "问题定义",
+                "用户与任务建模",
+                "证据化联想",
+                "旅程与状态设计",
+                "范围与优先级",
+                "成功衡量",
+                "澄清沟通",
                 "业务闭环",
                 "交互与信息",
-                "状态可理解",
-                "异常仍能完成",
-                "克制范围",
                 "跳过本技能",
+                "$architecture",
                 "$backend",
                 "$frontend",
                 "$verification",
@@ -652,40 +680,60 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
             errors,
             "product design",
         )
-        for forbidden in ("系统模式", "双模式", "architecture-principles.md"):
+        for forbidden in ("系统模式", "双模式", "负责系统架构"):
             if forbidden in content:
                 errors.append(
                     f"Design must not own system architecture term '{forbidden}': "
                     f"{rel(path, root)}"
                 )
+    elif skill == "architecture":
+        require_terms(
+            path,
+            content,
+            (
+                "references/principles.md",
+                "系统架构",
+                "数据所有权",
+                "共享不变量",
+                "跨边界契约",
+                "质量属性",
+                "故障",
+                "演进",
+                "$design",
+                "$backend",
+                "$frontend",
+                "$verification",
+                "$router",
+                "不得擅自进入代码实现",
+            ),
+            root,
+            errors,
+            "system architecture",
+        )
     elif skill == "backend":
         require_terms(
             path,
             content,
             (
-                "architecture-principles.md",
-                "backend-design-principles.md",
-                "系统架构",
-                "数据所有权",
-                "跨边界契约",
-                "质量属性",
-                "故障",
-                "演进",
+                "references/principles.md",
                 "API",
                 "Schema",
                 "权限",
                 "并发",
                 "幂等",
                 "$design",
+                "$architecture",
                 "$verification",
                 "$router",
             ),
             root,
             errors,
-            "backend architecture and implementation",
+            "backend implementation",
         )
+        if "负责系统架构" in content:
+            errors.append(f"Backend must not own system architecture: {rel(path, root)}")
     elif skill == "frontend":
-        require_terms(path, content, ("设计令牌", "响应式", "可访问性", "真实浏览器", "$verification"), root, errors, "frontend")
+        require_terms(path, content, ("设计令牌", "响应式", "可访问性", "真实浏览器", "$architecture", "$backend", "$verification"), root, errors, "frontend")
     elif skill == "verification":
         require_terms(
             path,
@@ -699,6 +747,8 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
                 "阻塞",
                 "既有问题",
                 "$router",
+                "$architecture",
+                "测试用例",
                 "不执行外部环境写入或环境操作",
             ),
             root,
@@ -859,9 +909,10 @@ def validate_readme(root: Path, errors: list[str]) -> None:
         path,
         content,
         (
-            "五个 Skill",
+            "六个 Skill",
             "`router`",
             "`design`",
+            "`architecture`",
             "`backend`",
             "`frontend`",
             "`verification`",
@@ -1029,10 +1080,10 @@ def run_negative_self_tests() -> list[str]:
 
 ## 插件职责边界
 
-- **当前事实**：插件文档定义五个技能的固定拓扑，并由静态校验守住该边界。
-- **代码定位**：`README.md#五个 Skill`
+- **当前事实**：插件文档定义六个技能的固定拓扑，并由静态校验守住该边界。
+- **代码定位**：`README.md#六个 Skill`
 - **影响范围**：插件清单、技能路由和项目静态校验均依赖这项职责边界。
-- **验证入口**：运行项目静态校验并断言五个技能目录与插件清单保持一致。
+- **验证入口**：运行项目静态校验并断言六个技能目录与插件清单保持一致。
 """,
                 encoding="utf-8",
             )
@@ -1050,7 +1101,7 @@ def run_negative_self_tests() -> list[str]:
                     f"'{expected_error}'; observed: {observed}"
                 )
 
-        def add_sixth_skill(root: Path) -> None:
+        def add_seventh_skill(root: Path) -> None:
             shutil.copytree(root / "skills" / "backend", root / "skills" / "release")
 
         def add_router_memory(root: Path) -> None:
@@ -1069,14 +1120,25 @@ def run_negative_self_tests() -> list[str]:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("# hidden router fact store\n", encoding="utf-8")
 
-        def remove_backend_architecture_reference(root: Path) -> None:
-            (root / "skills" / "backend" / "references" / "architecture-principles.md").unlink()
+        def remove_architecture_reference(root: Path) -> None:
+            (root / "skills" / "architecture" / "references" / "principles.md").unlink()
+
+        def remove_design_reference(root: Path) -> None:
+            (root / "skills" / "design" / "references" / "principles.md").unlink()
+
+        def claim_backend_architecture_ownership(root: Path) -> None:
+            path = root / "skills" / "backend" / "SKILL.md"
+            path.write_text(
+                path.read_text(encoding="utf-8").rstrip()
+                + "\n\n负责系统架构并裁定系统边界。\n",
+                encoding="utf-8",
+            )
 
         def restore_design_system_mode(root: Path) -> None:
             path = root / "skills" / "design" / "SKILL.md"
             path.write_text(
                 path.read_text(encoding="utf-8").rstrip()
-                + "\n\n## 系统模式\n\n加载 architecture-principles.md 裁定系统架构。\n",
+                + "\n\n## 系统模式\n\n负责系统架构并裁定系统边界。\n",
                 encoding="utf-8",
             )
 
@@ -1084,7 +1146,7 @@ def run_negative_self_tests() -> list[str]:
             (root / "skills" / "router" / "references" / "extra.md").write_text("# extra\n", encoding="utf-8")
 
         def modify_reference(root: Path) -> None:
-            path = root / "skills" / "backend" / "references" / "backend-design-principles.md"
+            path = root / "skills" / "backend" / "references" / "principles.md"
             path.write_text(path.read_text(encoding="utf-8").replace("领域建模", "领域模型", 1), encoding="utf-8")
 
         def corrupt_memory_field(root: Path) -> None:
@@ -1128,7 +1190,7 @@ def run_negative_self_tests() -> list[str]:
             path.write_text(
                 re.sub(
                     r"(?m)^(- \*\*代码定位\*\*：)`[^`]+`",
-                    rf"\1`{absolute}#五个 Skill`",
+                    lambda match: f"{match.group(1)}`{absolute}#六个 Skill`",
                     path.read_text(encoding="utf-8"),
                     count=1,
                 ),
@@ -1193,8 +1255,8 @@ def run_negative_self_tests() -> list[str]:
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    "- **验证入口**：运行项目静态校验并断言五个技能目录与插件清单保持一致。",
-                    "- **验证入口**：运行项目静态校验并断言五个技能目录与插件清单保持一致。\n\n### 过程附记",
+                    "- **验证入口**：运行项目静态校验并断言六个技能目录与插件清单保持一致。",
+                    "- **验证入口**：运行项目静态校验并断言六个技能目录与插件清单保持一致。\n\n### 过程附记",
                     1,
                 ),
                 encoding="utf-8",
@@ -1229,7 +1291,7 @@ def run_negative_self_tests() -> list[str]:
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    "插件文档定义五个技能的固定拓扑",
+                    "插件文档定义六个技能的固定拓扑",
                     "本轮完成了从共享模板迁移到技能自有记忆卷",
                     1,
                 ),
@@ -1240,8 +1302,8 @@ def run_negative_self_tests() -> list[str]:
             path = ensure_design_memory(root)
             path.write_text(
                 path.read_text(encoding="utf-8").replace(
-                    "插件文档定义五个技能的固定拓扑",
-                    "插件文档定义五个技能的固定拓扑，password=synthetic-secret-123",
+                    "插件文档定义六个技能的固定拓扑",
+                    "插件文档定义六个技能的固定拓扑，password=synthetic-secret-123",
                     1,
                 ),
                 encoding="utf-8",
@@ -1324,12 +1386,23 @@ def run_negative_self_tests() -> list[str]:
                 encoding="utf-8",
             )
 
+        def remove_architecture_milestone(root: Path) -> None:
+            path = root / "skills" / "router" / "SKILL.md"
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "架构契约里程碑", "架构约定", 1
+                ),
+                encoding="utf-8",
+            )
+
         cases = (
-            ("sixth-skill", add_sixth_skill, "Skill directories must be exactly"),
+            ("seventh-skill", add_seventh_skill, "Skill directories must be exactly"),
             ("router-memory", add_router_memory, "Skill reference set differs for router"),
             ("nested-router-reference", add_nested_router_reference, "Skill reference set differs for router"),
             ("nested-router-project-memory", add_nested_router_project_memory, "Unknown project memory files"),
-            ("missing-backend-architecture-reference", remove_backend_architecture_reference, "Skill reference set differs for backend"),
+            ("missing-architecture-reference", remove_architecture_reference, "Skill reference set differs for architecture"),
+            ("missing-design-reference", remove_design_reference, "Skill reference set differs for design"),
+            ("backend-architecture-overreach", claim_backend_architecture_ownership, "Backend must not own system architecture"),
             ("design-system-mode-overreach", restore_design_system_mode, "Design must not own system architecture term"),
             ("unexpected-reference", add_unexpected_reference, "Skill reference set differs for router"),
             ("modified-reference-content", modify_reference, "Capability reference differs from the curated baseline"),
@@ -1356,6 +1429,7 @@ def run_negative_self_tests() -> list[str]:
             ("legacy-invocation", legacy_invocation, "legacy skill invocation"),
             ("overrouted-terminal-verification", overroute_verification, "Missing router term '不计作跨领域触发条件'"),
             ("missing-api-contract-milestone", remove_api_milestone, "Missing router term '具体 API 契约里程碑'"),
+            ("missing-architecture-contract-milestone", remove_architecture_milestone, "Missing router term '架构契约里程碑'"),
             ("legacy-root-contract", add_legacy_root_contract, "Root-level memory resources must not exist"),
             ("legacy-root-template", add_legacy_root_template, "Root-level memory resources must not exist"),
             ("cross-owner-memory-link", cross_owner_memory_link, "Missing current-code-memory term '[backend 记忆规则与实例格式](references/memory.md)'"),

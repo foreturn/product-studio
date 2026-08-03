@@ -1,0 +1,4 @@
+interface:
+  display_name: "系统架构设计"
+  short_description: "裁定系统边界、数据所有权、跨域契约、故障恢复与演进"
+  default_prompt: "使用 $architecture 核验当前系统事实，裁定最小边界、数据所有权、跨域契约、质量约束、故障恢复与演进方案。"
