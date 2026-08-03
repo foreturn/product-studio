@@ -2,9 +2,9 @@
 
 ## 六技能职责拓扑
 
-- **当前事实**：插件只注册 `router`、`design`、`architecture`、`backend`、`frontend`、`verification` 六个可调用 Skill；产品设计、系统架构、服务端实现、界面实现和独立验收分别拥有唯一职责，生产写操作位于插件边界之外。
+- **当前事实**：插件只注册 `router`、`design`、`architecture`、`backend`、`frontend`、`verification` 六个可调用 Skill；`router` 只负责选链、依赖、并行、失败隔离与停止编排，最终结果由 `verification` 独立裁决；产品设计、系统架构、服务端实现和界面实现各有唯一职责，生产写操作位于插件边界之外。
 - **代码定位**：`skills/router/SKILL.md#裁决边界`；`skills/architecture/SKILL.md#系统架构设计`；`README.md#六个 Skill`
-- **影响范围**：双端插件清单、最小调用链、五份技能自有记忆卷、专业能力加载和完成判定均依赖该职责边界。
+- **影响范围**：双端插件清单、最小调用链、五份技能自有记忆卷、专业能力加载、编排停止条件和独立验收结论均依赖该职责边界。
 - **验证入口**：`python3 -X utf8 scripts/validate_project.py --self-test` 检查技能目录精确集合、Skill frontmatter、职责关键词、旧 callable 清除及第七技能退化；不证明真实自动触发行为。
 
 ## 架构与后端交接

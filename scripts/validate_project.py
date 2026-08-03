@@ -48,7 +48,7 @@ REFERENCE_SPECS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
                 "决策与变更控制",
                 "交付沟通",
             ),
-            "ac34e4102c70f9740260a28fe91caa2c79e33c0b75ee70fc58ff02464c8f953b",
+            "c103483eabdd691f50f862f646ad30c1cd4b8a77a3841b35e45e07149ababa2b",
         ),
     },
     "design": {
@@ -643,15 +643,28 @@ def validate_skill(root: Path, skill: str, errors: list[str]) -> None:
                 "具体 API 契约里程碑",
                 "输入快照一致",
                 "写集合",
+                "里程碑解锁条件",
+                "停止编排",
+                "最终结果由 `$verification` 独立裁决",
+                "事实同步由实际命中的专业 Skill 各自完成",
                 "代码权限不等于生产操作授权",
-                "各自的 `references/memory.md`",
-                "不得替代专项技能判断主题或写入",
-                "memory: 0 facts changed",
             ),
             root,
             errors,
             "router",
         )
+        for forbidden in (
+            "## 终态收口",
+            "终态类别",
+            "`部分完成`",
+            "references/memory.md",
+            "memory: 0 facts changed",
+        ):
+            if forbidden in content:
+                errors.append(
+                    f"Router must not own terminal closure or memory synchronization term "
+                    f"'{forbidden}': {rel(path, root)}"
+                )
     elif skill == "design":
         require_terms(
             path,
@@ -1377,6 +1390,14 @@ def run_negative_self_tests() -> list[str]:
             path = root / "skills" / "router" / "SKILL.md"
             path.write_text(path.read_text(encoding="utf-8").replace("不计作跨领域触发条件", "计作跨领域触发条件", 1), encoding="utf-8")
 
+        def restore_router_terminal_closure(root: Path) -> None:
+            path = root / "skills" / "router" / "SKILL.md"
+            path.write_text(
+                path.read_text(encoding="utf-8").rstrip()
+                + "\n\n## 终态收口\n\n由 router 判定完成、部分完成、阻塞或失败。\n",
+                encoding="utf-8",
+            )
+
         def remove_api_milestone(root: Path) -> None:
             path = root / "skills" / "router" / "SKILL.md"
             path.write_text(
@@ -1428,6 +1449,7 @@ def run_negative_self_tests() -> list[str]:
             ("external-write-overreach", permit_external_writes, "External write permission contradicts"),
             ("legacy-invocation", legacy_invocation, "legacy skill invocation"),
             ("overrouted-terminal-verification", overroute_verification, "Missing router term '不计作跨领域触发条件'"),
+            ("router-terminal-closure", restore_router_terminal_closure, "Router must not own terminal closure"),
             ("missing-api-contract-milestone", remove_api_milestone, "Missing router term '具体 API 契约里程碑'"),
             ("missing-architecture-contract-milestone", remove_architecture_milestone, "Missing router term '架构契约里程碑'"),
             ("legacy-root-contract", add_legacy_root_contract, "Root-level memory resources must not exist"),

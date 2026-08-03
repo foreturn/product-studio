@@ -8,6 +8,7 @@
 - Normalized every skill-owned capability filename to the single word `principles.md`; each Skill loads only its own curated reference.
 - Replaced process/history memory with five final-code-fact stores owned by `design`, `architecture`, `backend`, `frontend`, and `verification`. Each professional Skill owns its sole `references/memory.md`; human-readable semantic topics retain only the current fact, code locations, impact scope, and reusable validation entrypoint. Refactors, migrations, renames, temporary compatibility stages, and change history only trigger reconciliation and never become memory content; `router` owns no memory.
 - Added static gates for the exact six-skill topology, six curated-reference hashes and structure, product-versus-architecture-versus-backend ownership, five skill-owned memory references and inline formats, human-readable fact topics, code-task routing boundaries, and the absence of legacy role invocations or root-level memory resources.
+- Removed router-owned terminal closure and centralized memory synchronization. The router now stops orchestration when promised artifacts are ready or a hard dependency prevents continuation; `verification` owns the final verdict, while each invoked specialist owns its own fact synchronization.
 
 ## 0.3.0 - 2026-07-16
 
