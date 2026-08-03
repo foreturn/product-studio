@@ -1,6 +1,6 @@
 {
   "name": "product-studio",
-  "version": "1.0.0+codex.20260803075526",
+  "version": "1.0.1",
   "description": "以路由编排、产品设计、架构设计、后端编码、前端编码、测试验证和发布运行七个技能约束 AI，从仓库事实推进可验收、可控发布的软件增量。",
   "author": {
     "name": "foreturn"

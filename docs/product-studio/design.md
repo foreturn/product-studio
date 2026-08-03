@@ -9,7 +9,7 @@
 
 ## 产品设计职责
 
-- **当前事实**：`design` 通过自有 `references/principles.md` 的问题定义、用户与任务建模、证据化联想、旅程与状态设计、范围与优先级、成功衡量及澄清沟通七项能力，从目标用户与业务结果定义可实现、可验收的产品契约；不裁定系统架构、具体 API、Schema、组件或视觉实现。
-- **代码定位**：`skills/design/SKILL.md#专业能力`；`skills/design/references/principles.md#核心能力`；`skills/design/SKILL.md#产品契约`
+- **当前事实**：`design` 通过自有 `references/principles.md` 的现状与问题定义、用户角色任务建模、业务规则与闭环、任务旅程与信息动作、状态异常与恢复、范围与优先级、成功衡量与验收、假设未决与决策管理八项能力，形成下游可直接消费的产品设计结论；不裁定系统架构、具体 API、Schema、组件或视觉实现。
+- **代码定位**：`skills/design/SKILL.md#专业能力`；`skills/design/references/principles.md#核心能力`；`skills/design/SKILL.md#输出与交接`
 - **影响范围**：`architecture` 接收共享规则与质量期望，`frontend` 接收任务顺序、信息、动作和状态契约，`backend` 接收业务动作与结果，`verification` 接收验收条件和异常路径。
-- **验证入口**：以未指定技术方案的产品请求调用 `design`，核对输出能追到用户、问题、旅程、范围与验收，且不擅自决定 API、Schema、组件或视觉实现；结论只对绑定的上下文与输出成立。
+- **验证入口**：以未指定技术方案的产品请求调用 `design`，核对命中的能力能形成下游直接消费的产品设计结论，且不擅自决定 API、Schema、组件或视觉实现；结论只对绑定的上下文与输出成立。
