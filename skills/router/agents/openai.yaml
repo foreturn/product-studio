@@ -1,4 +1,4 @@
 interface:
   display_name: "代码任务路由网关"
-  short_description: "按产物缺口编排产品、系统架构、前后端实现与测试验收门禁"
-  default_prompt: "使用 $router 为这项模糊或跨角色编码请求选择 design、architecture、backend、frontend 与 verification 的最小技能链。"
+  short_description: "按产物缺口编排设计、架构、实现、验收与发布的最小技能链"
+  default_prompt: "使用 $router 为这项模糊或跨专业请求建立 design、architecture、backend、frontend、verification 与 release 的最小依赖链。"
