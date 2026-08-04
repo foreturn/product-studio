@@ -4,6 +4,7 @@
 
 ## 1.0.1 - 2026-08-03
 
+- Reorganized backend engineering into nine concrete capabilities, separating data modeling and queries from migration and data evolution. Assigned API idempotency semantics, transaction enforcement, asynchronous delivery, and performance evidence to a single capability each, and simplified the Skill workflow so it no longer repeats detailed capability rules.
 - Reorganized system architecture into nine non-overlapping capabilities, separating architecture-context gating, boundary responsibilities, data ownership and invariants, cross-boundary interactions, quality decisions, failure recovery, security, operability, and evolution/delivery slicing. Simplified the Skill workflow so it no longer repeats the detailed capability rules.
 - Reorganized product design into eight concrete capabilities: current-state problem definition, user-role-task modeling, business rules and closure, task journey and information actions, state and recovery, scope, success and acceptance, and assumption/decision management. Removed the standalone product-contract section, assigned risk handling, permission semantics, prioritization, and unknowns to a single capability each, and simplified the Skill workflow so it no longer repeats detailed capability rules.
 - Removed duplicated capability-selection maps from the six professional `SKILL.md` files. Each Skill now keeps only the progressive-loading entry to its `principles.md`; router routing rules remain unchanged.
