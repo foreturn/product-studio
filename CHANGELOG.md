@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 1.0.2 - 2026-08-06
+
+- Redefined the six specialist fact stores as cumulative, project-wide views of each Owner's currently verified facts. A task now synchronizes only its actually inspected scope without treating the task, final diff, or most recent code change as the fact boundary, and read-only work reports candidate memory changes unless fact-store writes are authorized.
+- Standardized every fact-store template and the fourteen existing Product Studio facts on four fields: current fact, authoritative evidence, impact boundary, and revalidation entry. Fact stores now use current-project titles without frontmatter, Owner metadata, status, timestamps, or format versions; volatile release facts still bind environment, artifact, verification time, and invalidation conditions.
+- Clarified that Router owns no fact store, architecture memory retains only implemented evolution, migration, and compatibility constraints rather than temporary delivery slices, and each specialist remains the sole Owner of its fact text.
+- Added durable verification and release facts for the distinct Codex and Claude Code distribution surfaces, their evidence limits, and the production-operation authorization boundary.
+
 ## 1.0.1 - 2026-08-03
 
 - Reorganized frontend engineering into nine concrete capabilities, merging duplicated task and information-architecture rules, assigning interaction state, interface integration, accessibility, security, performance, and real-browser evidence to a single capability each, and simplifying the Skill workflow and completion gates so they no longer repeat detailed capability rules.
