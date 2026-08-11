@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.0.3 - 2026-08-11
+
+- Scoped each specialist fact store to `docs/product-studio/<product-id>/<owner>.md` using a repository-unique, directory-safe product ID that may span multiple project roots; multi-product work now resolves and synchronizes every affected product separately without duplicating authoritative facts.
+
 ## 1.0.2 - 2026-08-06
 
 - Redefined the six specialist fact stores as cumulative, project-wide views of each Owner's currently verified facts. A task now synchronizes only its actually inspected scope without treating the task, final diff, or most recent code change as the fact boundary, and read-only work reports candidate memory changes unless fact-store writes are authorized.

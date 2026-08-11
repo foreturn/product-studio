@@ -1,4 +1,4 @@
-# verification 当前项目事实
+# verification 当前产品事实
 
 ## 验证与发布交接
 
@@ -9,7 +9,7 @@
 
 ## 插件校验与行为证据
 
-- **当前事实**：当前仓库以 `claude plugin validate --strict .` 检查 Claude Code 清单与目录格式；Codex 侧须通过 marketplace 实际安装和新线程中的技能发现验证分发。平台格式校验不证明真实路由选择、专业判断或目标项目行为，这些行为须在未提示技能名的全新上下文中作正反向试用。
+- **当前事实**：当前仓库以 `claude plugin validate --strict .` 检查 Claude Code 清单与目录格式；Codex 侧须通过 marketplace 实际安装和新线程中的技能发现验证分发。平台格式校验不证明真实路由选择、专业判断或目标产品行为，这些行为须在未提示技能名的全新上下文中作正反向试用。
 - **权威依据**：`README.md#校验`；`.claude-plugin/marketplace.json#plugins[0].source`；`.agents/plugins/marketplace.json#plugins[0].source`
 - **影响边界**：Claude Code 与 Codex 两套插件分发面、七个 Skill 的发现、路由触发、专业边界及后续验收结论；任一平台的静态通过不得外推为另一平台可安装或行为正确。
 - **复核入口**：先运行 `claude plugin validate --strict .`；再分别执行 Codex marketplace 安装与新线程技能发现，并用未提示技能名的明确单项、跨专业、验收和发布请求作正反向试用，绑定当前版本、输入、输出和越权情况。

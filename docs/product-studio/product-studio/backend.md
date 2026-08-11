@@ -1,4 +1,4 @@
-# backend 当前项目事实
+# backend 当前产品事实
 
 ## 后端实现职责
 
@@ -10,6 +10,6 @@
 ## 服务端事实记忆
 
 - **当前事实**：`backend` 的 `references/memory.md` 只收录最终代码当前执行的领域、具体接口、数据、权限、事务并发、事件、缓存、集成和服务端运行事实；事实是否在本次被修改不影响收录，最终差异只用于定位变化与回归风险。系统边界、数据所有权、共享不变量与跨边界语义由 `architecture` 事实册保存。
-- **权威依据**：`skills/backend/references/memory.md#收录门槛`；`skills/backend/SKILL.md#当前项目事实记忆`；`skills/architecture/references/memory.md#收录门槛`
-- **影响边界**：目标项目的 `docs/product-studio/backend.md` 与 `docs/product-studio/architecture.md`、后续检索和终态事实同步；同一事实正文只由一个 Owner 保存。
+- **权威依据**：`skills/backend/references/memory.md#收录门槛`；`skills/backend/SKILL.md#当前产品事实记忆`；`skills/architecture/references/memory.md#收录门槛`
+- **影响边界**：目标产品的 `docs/product-studio/<product-id>/backend.md` 与 `docs/product-studio/<product-id>/architecture.md`、后续检索和终态事实同步；同一事实正文只由一个 Owner 保存。
 - **复核入口**：在隔离样例中分别核验本次改动形成的事实与本次未触及但已由当前代码证实的既有事实，核对两者按同一门槛决定是否更新 `backend.md`；主题保持人类可读且只含当前事实、权威依据、影响边界和复核入口，不复制架构 Owner 的事实。

@@ -1,4 +1,4 @@
-# frontend 当前项目事实
+# frontend 当前产品事实
 
 ## 前端实现职责
 
