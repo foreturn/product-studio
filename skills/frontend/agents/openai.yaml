@@ -1,4 +1,0 @@
-interface:
-  display_name: "前端工程与体验"
-  short_description: "实现接口集成、组件交互、响应式、安全与真实浏览器验证"
-  default_prompt: "使用 $frontend 依据当前产品和接口契约实现页面、请求适配、组件与交互状态，并在真实浏览器中验证响应式、可访问性、安全和性能。"

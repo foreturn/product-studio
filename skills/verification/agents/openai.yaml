@@ -1,4 +1,0 @@
-interface:
-  display_name: "测试与独立验收"
-  short_description: "设计并执行测试用例，追溯要求并以当前证据独立裁决结论"
-  default_prompt: "使用 $verification 从原始要求、架构契约和完整差异设计并执行风险驱动测试用例，再以当前直接证据独立裁决。"

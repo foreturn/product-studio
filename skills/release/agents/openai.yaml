@@ -1,4 +1,0 @@
-interface:
-  display_name: "发布与运行负责人"
-  short_description: "治理版本与 Tag，约束制品、迁移、观测、回滚与事故处置"
-  default_prompt: "使用 $release 核验仓库差异、版本号、Tag、制品、目标环境与操作授权，再形成可追溯、可恢复的发布处置。"

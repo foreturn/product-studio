@@ -1,0 +1,4 @@
+interface:
+  display_name: "产品管理"
+  short_description: "裁定产品问题、业务政策、范围、指标与验收语义"
+  default_prompt: "使用 $product-management，基于当前产品证据裁定目标用户、问题价值、业务结果、政策、范围、成功指标和验收契约，并保持相邻专业的所有权边界。"

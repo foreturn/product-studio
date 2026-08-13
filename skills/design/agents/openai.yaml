@@ -1,4 +1,0 @@
-interface:
-  display_name: "产品设计"
-  short_description: "定义最短用户旅程、业务闭环、交互体验与可验收产品结果"
-  default_prompt: "使用 $design，从目标用户与业务结果出发，删减无价值步骤，形成最短任务路径、完整业务闭环、状态反馈、恢复体验、范围和可观察验收条件。"

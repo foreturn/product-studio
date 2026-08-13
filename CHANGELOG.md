@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Replaced the central `router` and fixed handoff chains with ten independently discoverable professional skills; Codex now chooses the applicable skills and working order from their trigger descriptions, current repository facts, and task risk.
+- Separated each professional capability into a detailed `SKILL.md` for what to do and how to do it, a domain-only `principles.md` for professional judgment, and a fact-only `memory.md` whose domain-specific fact types define admission, merge keys, wording, authority, impact, revalidation, four-state changes, and exclusions.
+- Added `fact-sync` as a non-semantic terminal gate: verified terminal work must reconcile each affected owner's current facts as `ADD`, `UPDATE`, `DELETE`, or `NO_CHANGE`, while source code, authoritative schemas, artifacts, pipelines, and environment evidence remain authoritative.
+- Preserved `design.md`, `architecture.md`, `backend.md`, `frontend.md`, `verification.md`, and `release.md` as stable fact locators so existing project memory does not become unreachable when skills are renamed.
+
 ## 1.0.3 - 2026-08-11
 
 - Scoped each specialist fact store to `docs/product-studio/<product-id>/<owner>.md` using a repository-unique, directory-safe product ID that may span multiple project roots; multi-product work now resolves and synchronizes every affected product separately without duplicating authoritative facts.

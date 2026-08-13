@@ -1,0 +1,4 @@
+interface:
+  display_name: "数据库工程"
+  short_description: "裁定物理 Schema、约束、查询计划、事务并发、迁移与恢复"
+  default_prompt: "使用 $database-engineering 基于目标数据库证据设计并验证物理 Schema、索引计划、事务锁、迁移回填、容量和备份恢复。"

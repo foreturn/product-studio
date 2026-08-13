@@ -1,0 +1,4 @@
+interface:
+  display_name: "前端工程"
+  short_description: "实现页面、组件、状态、响应式与真实浏览器行为"
+  default_prompt: "使用 $frontend-engineering 依据当前产品、体验、API 与安全契约实现界面，给出状态矩阵、响应式、可访问性与真实渲染的当前证据。"

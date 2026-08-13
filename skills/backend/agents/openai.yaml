@@ -1,4 +1,0 @@
-interface:
-  display_name: "后端工程"
-  short_description: "实现领域规则、API、Schema、权限、一致性与可靠服务端代码"
-  default_prompt: "使用 $backend 依据产品、架构和接口契约实现领域规则、API、Schema、权限、一致性、集成与开发测试。"

@@ -1,15 +1,15 @@
-# design 当前产品事实
+# product-management 当前产品事实
 
-## 最短产品使用路径
+## 产品管理裁决边界
 
-- **当前事实**：边界清楚的单一任务直达对应专业 Skill；只有目标用户、业务闭环、产品规则、交互体验、范围或验收仍不明确时才加入 `design`，系统架构由 `architecture` 承接，具体服务端实现由 `backend` 承接。
-- **权威依据**：`skills/router/SKILL.md#直达与触发`；`skills/router/SKILL.md#最小调用链`；`README.md#路由`
-- **影响边界**：使用插件的编码者、`router` 选链、`architecture`、`backend` 与 `frontend` 输入门禁；错误路由会增加无消费者设计或让下游猜测产品语义。
-- **复核入口**：分别用明确单项、产品语义未定和跨端高风险三类原始请求作全新上下文试用，核对实际命中的 Skill 链、直达路径与越界情况；平台格式校验不证明真实选链。
+- **当前事实**：`product-management` 唯一裁定当前增量的目标用户与问题、期望业务结果、产品层业务政策、范围与优先级、成功指标、非目标和验收语义；用户旅程、信息架构、内容、可见状态与无障碍体验由 `product-experience` 裁定，技术方案和质量结论分别由相应专业 Owner 承担。
+- **权威依据**：`skills/product-management/SKILL.md#唯一决策权`；`skills/product-management/references/principles.md#静态所有权边界`；`skills/product-experience/SKILL.md#唯一决策权`
+- **影响边界**：产品、体验、架构、前后端、数据库、安全与质量技能消费同一套目标、业务政策、范围和 `AC-ID`，不得因实现成本或现状代码静默改变产品意图。
+- **复核入口**：以“增加审批按钮”“提升转化率”“纯接口重构”和“管理员删除记录”等未点名 Skill 的场景，检查只在产品语义会令下游猜测时触发，并核对输出含依据、消费者、失效条件与可观察验收而不指定 UI、API、Schema 或测试结论。
 
-## 产品设计职责
+## 产品事实稳定入口
 
-- **当前事实**：`design` 通过自有 `references/principles.md` 的现状与问题定义、用户角色任务建模、业务规则与闭环、任务旅程与信息动作、状态异常与恢复、范围与优先级、成功衡量与验收、假设未决与决策管理八项能力，形成下游可直接消费的产品设计结论；不裁定系统架构、具体 API、Schema、组件或视觉实现。
-- **权威依据**：`skills/design/SKILL.md#专业能力`；`skills/design/references/principles.md#核心能力`；`skills/design/SKILL.md#输出与交接`
-- **影响边界**：`architecture` 接收共享规则与质量期望，`frontend` 接收任务顺序、信息、动作和状态契约，`backend` 接收业务动作与结果，`verification` 接收验收条件和异常路径。
-- **复核入口**：以未指定技术方案的产品请求调用 `design`，核对命中的能力能形成下游直接消费的产品设计结论，且不擅自决定 API、Schema、组件或视觉实现；结论只对绑定的上下文与输出成立。
+- **当前事实**：`product-management` 的累计当前事实继续使用 `docs/product-studio/<product-id>/design.md` 作为稳定 locator；文件名不随 Skill 名变化，也不另建 `product-management.md` 复制同一事实。纯产品方案、候选范围和未实现假设不入册。
+- **权威依据**：`skills/product-management/SKILL.md#当前产品事实`；`skills/product-management/references/memory.md#事实册所有权与稳定位置`
+- **影响边界**：外部项目既有 `design.md` 的读取与终态同步保持可达；产品体验事实进入 `product-experience.md`，其余专业事实进入各自唯一事实册。
+- **复核入口**：核对产品管理事实规则将 `design.md` 定义为稳定 locator，并以既有 `design.md`、新产品首次产生事实、质量失败和 `NO_CHANGE` 四类场景验证不机械迁移、不提前落盘且零变化不触碰文件。

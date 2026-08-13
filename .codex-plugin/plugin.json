@@ -1,7 +1,7 @@
 {
   "name": "product-studio",
   "version": "1.0.3",
-  "description": "以路由编排、产品设计、架构设计、后端编码、前端编码、测试验证和发布运行七个技能约束 AI，从仓库事实推进可验收、可控发布的软件增量。",
+  "description": "以十项软件工程专业技能约束产品、体验、架构、前后端、数据库、安全、质量、发布和终态事实同步，由 Codex 从仓库事实完成可验证的软件增量。",
   "author": {
     "name": "foreturn"
   },
@@ -9,20 +9,23 @@
     "vibe-coding",
     "prompt-enrichment",
     "product-development",
-    "product-design",
-    "frontend",
-    "backend",
-    "architecture",
-    "router",
-    "verification",
-    "release",
+    "product-management",
+    "product-experience",
+    "software-architecture",
+    "backend-engineering",
+    "frontend-engineering",
+    "database-engineering",
+    "security-engineering",
+    "quality-engineering",
+    "release-engineering",
+    "fact-sync",
     "deployment"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "product-studio",
-    "shortDescription": "用七个专业技能约束 AI 设计、编码、验证与发布。",
-    "longDescription": "按任务边界选择路由编排、产品设计、架构设计、后端编码、前端编码、测试验证和发布运行技能；从当前仓库恢复实际契约，以最短用户路径确定产品行为，按风险裁定系统边界，完成最小代码修改与独立验收，并在精确授权内处理可观测、可停止、可恢复的环境操作。",
+    "shortDescription": "以十项专业技能约束 Codex 编码、验证、发布与事实同步。",
+    "longDescription": "通过精确触发描述和专业所有权边界，由 Codex 根据请求、仓库事实与风险自主选择产品管理、产品体验、软件架构、前后端、数据库、安全、质量、发布与事实同步能力；专业正文详述做法，原则只约束判断，记忆只保存当前项目事实。",
     "developerName": "foreturn",
     "category": "Productivity",
     "capabilities": [
@@ -31,10 +34,9 @@
       "Write"
     ],
     "defaultPrompt": [
-      "做一个团队知识库，请选择最小技能链并推进到可验收版本。",
-      "给订单增加批量退款，先设计最短用户路径，再按风险形成架构契约并完成前后端实现和验证。",
-      "检查这个功能的 API、页面状态和数据约束是否真正完成，并逐项给出证据。",
-      "核验已验收变更的仓库差异、版本号、Tag 与生产发布条件；未获精确授权时只报告门禁、风险与下一动作。"
+      "实现一个完整功能，根据当前请求、仓库事实与风险自主选择所需专业技能，完成编码、验证和终态事实检查。",
+      "检查这项改动的产品、体验、架构、数据库和安全边界，再给出可追溯证据。",
+      "核验已验收制品的版本、Tag 与发布条件；未获精确授权时只报告门禁。"
     ]
   }
 }

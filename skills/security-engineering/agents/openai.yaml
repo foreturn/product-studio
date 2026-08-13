@@ -1,0 +1,4 @@
+interface:
+  display_name: "安全工程"
+  short_description: "裁定威胁、身份授权、秘密加密、隐私、供应链与漏洞证据"
+  default_prompt: "使用 $security-engineering 基于当前资产与攻击面裁定威胁模型、安全政策、控制位置、漏洞证据和验证门槛。"

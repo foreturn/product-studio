@@ -1,22 +1,22 @@
-# architecture 当前产品事实
+# software-architecture 当前产品事实
 
-## 七技能职责拓扑
+## 十技能自主发现拓扑
 
-- **当前事实**：插件注册 `router`、`design`、`architecture`、`backend`、`frontend`、`verification`、`release` 七个可调用 Skill；`router` 只负责触发与选链、纵向切片、依赖与契约传播、并行与写集合隔离、风险探针与失败隔离、里程碑解锁及停止编排，实现结果由 `verification` 独立裁决，发布就绪、授权、执行与健康由 `release` 独立裁决；其余专业职责各有唯一 Owner。
-- **权威依据**：`skills/router/SKILL.md#裁决边界`；`skills/release/SKILL.md#边界`；`README.md#七个 Skill`
-- **影响边界**：双端插件清单、最小调用链、纵向里程碑、契约传播、并行写集合、六份技能自有记忆卷、编排停止条件、独立验收与发布运行结论均依赖该职责边界。
-- **复核入口**：核对插件清单与 `skills/` 只暴露七项约定 Skill，并在新线程用明确单项、跨端、高风险与发布请求检查直达、编排、独立验收及授权边界；平台清单校验不证明真实自动触发行为。
+- **当前事实**：插件暴露 `product-management`、`product-experience`、`software-architecture`、`backend-engineering`、`frontend-engineering`、`database-engineering`、`security-engineering`、`quality-engineering`、`release-engineering` 与 `fact-sync` 十项 Skill，不设中央 Router 或固定技能链；各技能的触发描述共同构成发现面，Codex 依据任务、仓库事实、风险和缺失判断自主选择适用能力与工作顺序。
+- **权威依据**：`README.md#十项 Skill`；`.codex-plugin/plugin.json#skills`；`skills/*/SKILL.md#frontmatter`
+- **影响边界**：Codex 与 Claude Code 的技能发现、专业判断、实现验证、发布和事实同步均依赖该拓扑；静态描述可触发不等于已在真实新上下文中证明自主选择正确。
+- **复核入口**：核对 `skills/` 恰有十个与 frontmatter 同名的目录且不存在 `router`，并扫描专业资料不含固定调用链；再于安装当前源快照后的全新上下文，以未点名 Skill 的单域、跨域、数据库、安全、验收和发布场景检查实际命中、顺序判断与越权。
 
-## 架构与后端交接
+## 专业所有权边界
 
-- **当前事实**：`architecture` 只在真实跨边界风险存在时判定架构问题与系统上下文，裁定边界职责、数据所有权与共享不变量、跨边界交互、质量方案、故障恢复、安全与信任、可观测与可运行、演进迁移及交付切片；`backend` 依据这些决定落实具体 API、Schema、事务和服务端代码，局部实现不强制经过架构设计。
-- **权威依据**：`skills/architecture/SKILL.md#输入门禁`；`skills/architecture/SKILL.md#输出与交接`；`skills/backend/SKILL.md#输入门禁`
-- **影响边界**：`router` 对技术任务的选链，`design`、`frontend`、`backend`、`verification` 的回退路径，以及架构卷与后端工程卷的唯一加载位置。
-- **复核入口**：用同时涉及数据所有权与具体 API 的全新任务检查 `architecture` 先裁定跨边界语义、`backend` 再落实字段与实现，并以局部后端任务确认不会强制经过架构设计。
+- **当前事实**：产品管理唯一裁定为何、为谁、做什么与何谓成功，产品体验唯一裁定用户如何完成；软件架构拥有跨边界职责、数据主权、共享不变量和系统质量权衡，数据库工程拥有物理 Schema、约束、索引、隔离锁和数据库迁移，安全工程拥有威胁、身份授权、秘密隐私和风险政策；前后端落实代码，质量工程给出独立完成裁决，发布工程拥有生产执行与健康，事实同步只机械应用专业 Owner 的事实裁决。
+- **权威依据**：`skills/software-architecture/SKILL.md#专业边界`；`skills/product-management/SKILL.md#唯一决策权`；`skills/fact-sync/SKILL.md#边界`
+- **影响边界**：API、Schema、事务、授权、迁移、浏览器行为、质量结论、生产操作与事实正文均只有一个裁决来源；遇到缺失的专业语义时应暴露缺口，不得就地补写第二套规则，后续能力与顺序仍由 Codex 按任务决定。
+- **复核入口**：以同时涉及业务资格、移动端体验、跨服务一致性、表约束、租户越权和发布迁移的场景逐项核对唯一 Owner 与越权停止条件；检查工程技能不得改写数据库或安全政策，`fact-sync` 不得产生事实语义，也不得由专业资料预设完整调用链。
 
-## 专业能力与事实记忆分层
+## 终态事实同步架构
 
-- **当前事实**：七份策展能力卷统一命名为各 Skill 自有的 `references/principles.md`，只承载专业判断；六个专业 Skill 的独立 `memory.md` 只承载本 Owner 的当前事实收录与同步规则，其目标事实册位于 `<Git仓库根>/docs/product-studio/<product-id>/<owner>.md`，分别形成对应 Owner 对该产品的累计专业事实视图，不是单轮任务摘要或相互复制的产品总览。`product-id` 在仓库内唯一、稳定且可安全作为单级目录名，优先复用已确认属于同一产品的既有事实目录，不从任一项目目录名机械推导；首次确有事实时，产品目录与首册同次创建，产品归属或 `product-id` 无法唯一确定时不读取或写入任何候选事实册，也不创建目录。同一 Git 仓库内的多个产品分别维护事实册，一个产品可覆盖一个或多个相关项目根，跨产品任务逐产品读取和同步；事实正文只保存在拥有权威实现或契约的产品，无法确认权威产品归属的共享事实仍以原权威来源为准。每个事实统一使用“当前事实、权威依据、影响边界、复核入口”四栏，不另设 frontmatter、Owner、状态、更新时间或格式版本。单轮只增量同步实际核验范围，整册不以该范围、最近差异或最后一次修改为边界，也不要求每轮扫描全库；`router` 只传播命中的 `product-id` 集合，不拥有事实册。事实是否收录取决于当前是否成立、Owner 归属与复用价值，只读任务未获事实册写入授权时只报告候选事实。`release` 的易变运行事实还必须绑定环境、制品、核验时点与失效条件。
-- **权威依据**：`skills/architecture/SKILL.md#当前产品事实记忆`；`skills/architecture/references/memory.md#实例格式`；`README.md#当前产品事实`
-- **影响边界**：七份 `SKILL.md` 的条件加载、Router 的产品集合传播、六位 Owner 按产品隔离的事实积累、本轮增量取材、终态同步、后续事实检索及只读授权边界；专业能力卷与技能记忆卷保持职责分离。
-- **复核入口**：核对每个 Skill 只从本目录加载 `principles.md`，六个专业 Skill 另各自拥有唯一 `memory.md`，且 `router` 不拥有事实册；再检查所有事实册均位于 `docs/product-studio/<product-id>/`、六份实例模板及现有事实册均只含统一四栏，并以单产品、跨产品、产品归属不明和未授权只读审查四类任务，确认事实册逐产品加载同步、归属不明时不创建目录且未授权任务不写文件；是否正确应用仍须绑定具体任务输出判断。
+- **当前事实**：源码、权威 Schema、流水线、制品库和环境查询始终是事实权威；九个专业 Owner 的 `memory.md` 按本专业事实类型分别规定入册条件、主题合并键、四栏写法、证据、影响、复核、四态变更和专属禁项。每次可写实现、验收或发布形成经验证终态后必须执行事实同步检查，只有事实新增、改变或消失才最小落盘；`fact-sync` 没有 `memory.md` 或自身事实册，也不裁定事实语义。
+- **权威依据**：`README.md#当前项目事实`；`skills/software-architecture/references/memory.md#共同定位与写入契约`；`skills/fact-sync/SKILL.md#不可绕过的规则`
+- **影响边界**：各产品事实位于 `docs/product-studio/<product-id>/` 并按产品和 Owner 隔离；旧 `design.md`、`architecture.md`、`backend.md`、`frontend.md`、`verification.md` 与 `release.md` 是稳定 locator，技能改名不机械迁移这些文件。
+- **复核入口**：检查九份专业 `memory.md` 均定义唯一语义 Owner、locator、四栏格式，并将每种专业事实写成含八项规则的独立类型，`fact-sync` 无 `memory.md`；以终态通过、验证失败、事实删除、路径搬移、零变化、多产品和 `product-id` 歧义场景检查写入、阻塞及不触碰文件行为。
