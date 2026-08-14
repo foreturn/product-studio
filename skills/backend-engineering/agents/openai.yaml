@@ -1,4 +1,4 @@
 interface:
   display_name: "后端工程"
-  short_description: "实现领域、API、事务、异步集成与可靠服务端行为"
-  default_prompt: "使用 $backend-engineering 依据当前产品、架构、数据库与安全契约实现服务端行为，给出接口、事务、并发、故障恢复与开发验证的当前证据。"
+  short_description: "实现可靠的领域、接口、事务与服务端行为"
+  default_prompt: "使用 $backend-engineering 基于当前代码与契约证据实现服务端行为，验证状态、副作用、并发和故障边界，并完成事实终态检查。"

@@ -1,25 +1,26 @@
 {
   "name": "product-studio",
-  "version": "1.0.3",
-  "description": "以十项软件工程专业技能约束产品、体验、架构、前后端、数据库、安全、质量、发布和终态事实同步，由编码代理从仓库事实完成可验证的软件增量。",
+  "version": "2.0.0",
+  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并以终态 Hook 守住当前项目事实闭环。",
   "author": {
     "name": "foreturn"
   },
   "keywords": [
     "vibe-coding",
-    "prompt-enrichment",
     "product-development",
     "product-management",
-    "product-experience",
     "software-architecture",
     "backend-engineering",
-    "frontend-engineering",
+    "web-engineering",
+    "android-engineering",
+    "ios-engineering",
     "database-engineering",
+    "platform-engineering",
     "security-engineering",
     "quality-engineering",
     "release-engineering",
-    "fact-sync",
-    "deployment"
+    "current-facts",
+    "terminal-hook"
   ],
   "skills": "./skills/"
 }

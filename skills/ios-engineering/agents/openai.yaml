@@ -1,0 +1,4 @@
+interface:
+  display_name: "iOS 工程"
+  short_description: "实现 iOS 生命周期、界面、数据、隐私与系统集成"
+  default_prompt: "使用 $ios-engineering 审查或实现当前产品的 iOS 客户端行为，并给出相称的设备证据。"

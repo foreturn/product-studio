@@ -1,4 +1,0 @@
-interface:
-  display_name: "产品体验"
-  short_description: "裁定任务旅程、信息、交互状态、恢复与无障碍体验"
-  default_prompt: "使用 $product-experience，在已确认的产品意图和业务政策内，基于真实入口设计可完成、可理解、可恢复且可验收的用户旅程、信息架构、动作、内容、状态、响应式与无障碍体验契约。"

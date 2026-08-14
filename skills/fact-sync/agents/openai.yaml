@@ -1,4 +1,0 @@
-interface:
-  display_name: "当前项目事实同步"
-  short_description: "依据终态验证与专业裁决包同步当前事实"
-  default_prompt: "使用 $fact-sync 核验当前、独立、风险相称的终态验证、product-id 与专业事实裁决包，再机械应用 ADD、UPDATE、DELETE 或 NO_CHANGE；不得自行撰写专业事实。"

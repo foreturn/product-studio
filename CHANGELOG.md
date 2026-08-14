@@ -1,11 +1,17 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 - 2026-08-14
 
-- Replaced the central `router` and fixed handoff chains with ten independently discoverable professional skills; Codex now chooses the applicable skills and working order from their trigger descriptions, current repository facts, and task risk.
-- Separated each professional capability into a detailed `SKILL.md` for what to do and how to do it, a domain-only `principles.md` for professional judgment, and a fact-only `memory.md` whose domain-specific fact types define admission, merge keys, wording, authority, impact, revalidation, four-state changes, and exclusions.
-- Added `fact-sync` as a non-semantic terminal gate: verified terminal work must reconcile each affected owner's current facts as `ADD`, `UPDATE`, `DELETE`, or `NO_CHANGE`, while source code, authoritative schemas, artifacts, pipelines, and environment evidence remain authoritative.
-- Preserved `design.md`, `architecture.md`, `backend.md`, `frontend.md`, `verification.md`, and `release.md` as stable fact locators so existing project memory does not become unreachable when skills are renamed.
+- Rebuilt the plugin as eleven independently discoverable professional skills spanning product management, architecture, backend, Web, Android, iOS, database, platform, security, quality, and release engineering; the coding agent chooses and orders applicable skills from the request, repository evidence, and risk.
+- Standardized every `SKILL.md` as an execution contract with hit-only fact loading and authority revalidation, every `principles.md` as broad professional categories containing framework-neutral invariants and trade-off constraints, and every `memory.md` as five to nine owner-specific semantic terminal fact types with explicit admission, merging, wording, authority, revalidation, change, and exclusion rules.
+- Removed applicability, non-applicability, and required-input sections from every Skill so the coding agent retains discovery and input-selection autonomy; frontmatter descriptions are now concise Chinese professional summaries.
+- Tightened fact admission to require current terminal truth, stability, non-obviousness, decision relevance, rediscovery cost, unique ownership, revalidatability, and safe retention; source summaries, plans, migration progress, runtime snapshots, generated inventories, and one-run results remain turn evidence rather than project memory.
+- Consolidated product intent and product experience under one product-management owner, while giving Web, Android, iOS, and platform engineering independent platform-specific boundaries.
+- Replaced callable terminal synchronization with `UserPromptSubmit`, paired `PreToolUse`/`PostToolUse`, and `Stop` hooks that journal observed repository changes and validation commands, stream content fingerprints across unborn repositories, hidden index flags and nested worktrees, isolate concurrent sessions, bind exact fact-book paths, accept `SYNCED`, `NO_CHANGE`, `DEFERRED`, or `BLOCKED` receipts, delete accepted or rejected envelopes, and bound continuation to one retry.
+- Bound validation evidence from observed `Bash`, `exec_command`, and `shell_command` completions while treating edit tools solely as mutation evidence.
+- Split full-repository and implementation fingerprints so verified implementation evidence survives a later owner fact-book update, excluded protocol-control commands from validation evidence, and allowed only the sole observed `record` control to close its own ToolUse envelope.
+- Made fact-book expression semantic rather than template-driven: topics retain stable merge keys, current truth, authority, scope, and revalidation meaning without requiring fixed Markdown headings, four labeled fields, order, or sentence counts.
+- Adopted owner-named fact locators under `docs/product-studio/<product-id>/`, with no compatibility aliases or duplicate fact stores.
 
 ## 1.0.3 - 2026-08-11
 

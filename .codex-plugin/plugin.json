@@ -1,31 +1,32 @@
 {
   "name": "product-studio",
-  "version": "1.0.3",
-  "description": "以十项软件工程专业技能约束产品、体验、架构、前后端、数据库、安全、质量、发布和终态事实同步，由 Codex 从仓库事实完成可验证的软件增量。",
+  "version": "2.0.0",
+  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并以终态 Hook 守住当前项目事实闭环。",
   "author": {
     "name": "foreturn"
   },
   "keywords": [
     "vibe-coding",
-    "prompt-enrichment",
     "product-development",
     "product-management",
-    "product-experience",
     "software-architecture",
     "backend-engineering",
-    "frontend-engineering",
+    "web-engineering",
+    "android-engineering",
+    "ios-engineering",
     "database-engineering",
+    "platform-engineering",
     "security-engineering",
     "quality-engineering",
     "release-engineering",
-    "fact-sync",
-    "deployment"
+    "current-facts",
+    "terminal-hook"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "product-studio",
-    "shortDescription": "以十项专业技能约束 Codex 编码、验证、发布与事实同步。",
-    "longDescription": "通过精确触发描述和专业所有权边界，由 Codex 根据请求、仓库事实与风险自主选择产品管理、产品体验、软件架构、前后端、数据库、安全、质量、发布与事实同步能力；专业正文详述做法，原则只约束判断，记忆只保存当前项目事实。",
+    "shortDescription": "十一项专业技能约束编码，以终态 Hook 沉淀当前事实。",
+    "longDescription": "编码代理依请求、仓库证据与风险自主发现十一项专业技能；SKILL 规定执行契约，principles 承载详细专业能力，memory 规定各 Owner 记住哪些当前事实及如何原位增改删。终态 Hook 只核验仓库变化与证据回执，不参与技能编排或事实裁决。",
     "developerName": "foreturn",
     "category": "Productivity",
     "capabilities": [
@@ -34,9 +35,9 @@
       "Write"
     ],
     "defaultPrompt": [
-      "实现一个完整功能，根据当前请求、仓库事实与风险自主选择所需专业技能，完成编码、验证和终态事实检查。",
-      "检查这项改动的产品、体验、架构、数据库和安全边界，再给出可追溯证据。",
-      "核验已验收制品的版本、Tag 与发布条件；未获精确授权时只报告门禁。"
+      "依据当前请求、仓库事实与风险，自主选择必要的专业技能，完成最小实现、相称验证与终态事实检查。",
+      "检查这项改动命中的专业边界，按各自 principles 作判断，并按 memory 只沉淀确有变化的当前事实。",
+      "核验版本、制品、目标环境与授权；未获精确授权时保持外部状态不变。"
     ]
   }
 }
