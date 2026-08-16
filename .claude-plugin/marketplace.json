@@ -8,7 +8,7 @@
     {
       "name": "product-studio",
       "source": "./",
-      "description": "以十一项自主发现的软件工程专业技能约束产品开发，并由各 Skill 的终态提示契约维护当前项目事实。"
+      "description": "以十一项自主发现的软件工程专业技能约束产品开发，并由各 Skill 读取和维护项目核心记忆。"
     }
   ]
 }

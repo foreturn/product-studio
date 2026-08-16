@@ -1,4 +1,4 @@
 interface:
   display_name: "产品管理"
   short_description: "裁定产品与完整用户体验的当前语义"
-  default_prompt: "使用 $product-management 基于当前仓库与产品证据，裁定本次工作涉及的产品问题、范围、验收及用户体验，并在验证后完成终态事实检查。"
+  default_prompt: "使用 $product-management 基于当前仓库与产品证据，裁定本次工作涉及的产品问题、范围、验收及用户体验，并读取、维护相关项目核心记忆。"

@@ -1,7 +1,7 @@
 {
   "name": "product-studio",
-  "version": "2.1.0",
-  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并由各 Skill 的终态提示契约维护当前项目事实。",
+  "version": "2.1.1",
+  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并由各 Skill 读取和维护项目核心记忆。",
   "author": {
     "name": "foreturn"
   },
@@ -20,13 +20,13 @@
     "quality-engineering",
     "release-engineering",
     "current-facts",
-    "terminal-memory"
+    "project-memory"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "product-studio",
-    "shortDescription": "十一项专业技能约束编码，以终态提示维护当前事实。",
-    "longDescription": "编码代理依请求、仓库证据与风险自主发现十一项专业技能；SKILL 规定执行契约与最终答复前的终态记忆，principles 承载详细专业能力，memory 规定各 Owner 记住哪些当前事实及如何原位增改删。插件不注册客户端 Hook，事实闭环依各 Skill 的提示契约执行。",
+    "shortDescription": "十一项专业技能约束编码，并维护项目核心记忆。",
+    "longDescription": "编码代理依请求、仓库证据与风险自主发现十一项专业技能；SKILL 规定执行契约与项目记忆提示，principles 承载详细专业能力，memory 只列各 Owner 应记住的项目核心认知。工作前读取相关事实，当前权威优先，核心认知变化时更新或移除旧内容。",
     "developerName": "foreturn",
     "category": "Productivity",
     "capabilities": [
@@ -35,8 +35,8 @@
       "Write"
     ],
     "defaultPrompt": [
-      "依据当前请求、仓库事实与风险，自主选择必要的专业技能，完成最小实现、相称验证与终态事实检查。",
-      "检查这项改动命中的专业边界，按各自 principles 作判断，并按 memory 只沉淀确有变化的当前事实。",
+      "依据当前请求、仓库事实与风险，自主选择必要的专业技能，完成最小实现、相称验证并维护项目核心记忆。",
+      "检查这项改动命中的专业边界，按各自 principles 作判断，并读取、维护相关 memory。",
       "核验版本、制品、目标环境与授权；未获精确授权时保持外部状态不变。"
     ]
   }

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.1 - 2026-08-16
+
+- Simplified every professional memory reference to five to nine core project-knowledge topics, so future agents read only the durable product-specific context that changes engineering judgment.
+- Removed the shared terminal-memory protocol and its action/result vocabulary; each Skill now reads relevant project memory before work and updates or removes stale knowledge only when core understanding changes.
+
 ## 2.1.0 - 2026-08-16
 
 - Removed the terminal Hook registration, state machine, receipt fixture, and Hook-specific test suite so terminal fact closure no longer depends on client Hook trust, event delivery, or per-session runtime state.

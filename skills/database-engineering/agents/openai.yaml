@@ -1,4 +1,4 @@
 interface:
   display_name: "数据库工程"
   short_description: "裁定物理模型、事务迁移、查询性能、恢复与高可用边界"
-  default_prompt: "使用 $database-engineering 基于当前 Schema、目标引擎与运行证据裁定数据库实现和验证要求，并在验证后完成终态事实检查。"
+  default_prompt: "使用 $database-engineering 基于当前 Schema、目标引擎与运行证据裁定数据库实现和验证要求，并读取、维护相关项目核心记忆。"

@@ -32,12 +32,13 @@ const REMOVED_FACT_BOOKS = [
   "verification.md",
   "release.md",
 ];
-const REMOVED_HOOK_ASSETS = [
+const REMOVED_RUNTIME_ASSETS = [
   "hooks",
   "hooks/hooks.json",
   "scripts/terminal-hook.mjs",
   "tests/terminal-hook.test.mjs",
   "tests/fixtures/terminal-envelope.json",
+  "references/terminal-protocol.md",
 ];
 
 const SKILL_HEADINGS = [
@@ -48,7 +49,7 @@ const SKILL_HEADINGS = [
   "停止条件",
   "权限与边界规则",
   "参考资料",
-  "终态记忆",
+  "项目记忆",
 ];
 const PRINCIPLE_HEADINGS = [
   "能力索引",
@@ -69,34 +70,18 @@ const PROHIBITED_PRINCIPLE_FIELDS = [
   "反模式",
   "验收要点",
 ];
-const MEMORY_HEADINGS = [
-  "所有权与稳定位置",
-  "事实类型索引",
-  "通用入册门禁",
-  "主题表达规则",
-  "动作语义",
-  "事实类型",
-  "全册安全与删除规则",
-];
-const FACT_FIELDS = [
-  "入册条件",
-  "主题合并键",
-  "当前事实写法",
-  "权威依据",
-  "影响边界",
-  "复核入口",
-  "变更规则",
-  "排除项",
-];
-const MEMORY_ADMISSION_CONCEPTS = [
-  ["current terminal state", /当前|终态/],
-  ["stability", /稳定|长期/],
-  ["non-obviousness", /非显然|不能.*(?:直接|低成本).*(?:推导|生成|重建)/],
-  ["decision relevance", /决策|判断/],
-  ["rediscovery cost", /重查|重新发现|重新推导|重建.*成本|推导.*代价/],
-  ["unique owner", /唯一\s*Owner|唯一所有者/],
-  ["authoritative revalidation", /权威.*(?:复核|支撑)|复核.*权威/],
-  ["safe content", /秘密|密钥|凭据|令牌/],
+const MEMORY_HEADINGS = ["使用方式", "核心记忆"];
+const LEGACY_MEMORY_PATTERNS = [
+  ["shared terminal protocol", /terminal-protocol\.md|终态记忆协议/],
+  ["terminal-memory wording", /终态记忆|terminal-memory/],
+  [
+    "admission-gate schema",
+    /^(?:##|###)\s+(?:通用入册门禁|动作语义|结果语义)\s*$|^-\s+\*\*(?:入册条件|主题合并键|当前事实写法|变更规则|排除项)\*\*[：:]/m,
+  ],
+  [
+    "memory action or result schema",
+    /(?:事实动作|记忆动作|动作(?:仍)?只有|结果优先级|互斥结果|每个\s+Owner.{0,20}结果).{0,160}\b(?:ADD|UPDATE|DELETE|NO_CHANGE|SYNCED|DEFERRED|BLOCKED)\b/s,
+  ],
 ];
 const FIXED_ORCHESTRATION_PATTERNS = [
   /(?:必须|应当|需要).{0,24}(?:先|后|再).{0,36}(?:Skill|技能)/,
@@ -176,37 +161,6 @@ function numberedIndex(markdown, parentHeading) {
   );
 }
 
-function levelTwoBlocks(markdown) {
-  return markdown
-    .split(/^## /m)
-    .slice(1)
-    .map((block) => {
-      const newline = block.indexOf("\n");
-      return {
-        title: (newline === -1 ? block : block.slice(0, newline)).trim(),
-        body: newline === -1 ? "" : block.slice(newline + 1),
-      };
-    });
-}
-
-function assertFields(path, kind, entries, expectedFields) {
-  if (entries.length === 0) {
-    fail(path, `must define at least one ${kind}`);
-    return;
-  }
-  for (const entry of entries) {
-    const found = [
-      ...entry.body.matchAll(/^- \*\*([^*]+)\*\*[：:]\s*/gm),
-    ].map((match) => match[1].trim());
-    if (JSON.stringify(found) !== JSON.stringify(expectedFields)) {
-      fail(
-        path,
-        `${kind} "${entry.title}" fields must be exactly ${expectedFields.join(" | ")}; found ${found.join(" | ")}`,
-      );
-    }
-  }
-}
-
 function assertConstraintLists(path, entries) {
   if (entries.length < 8 || entries.length > 16) {
     fail(path, `must define 8-16 broad professional constraint categories; found ${entries.length}`);
@@ -227,6 +181,41 @@ function assertConstraintLists(path, entries) {
       if (practice.slice(2).trim().length < 15) {
         fail(path, `constraint category "${entry.title}" contains an underspecified rule: ${practice}`);
       }
+    }
+  }
+}
+
+function assertCoreMemoryLists(path, entries) {
+  if (entries.length < 5 || entries.length > 9) {
+    fail(path, `must define 5-9 core memory topics; found ${entries.length}`);
+  }
+  if (new Set(entries.map((entry) => entry.title)).size !== entries.length) {
+    fail(path, "core memory topic titles must be unique");
+  }
+  for (const entry of entries) {
+    const lines = entry.body
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const memories = lines.filter((line) => /^- (?!\*\*)\S/.test(line));
+    if (lines.length !== memories.length) {
+      fail(path, `core memory topic "${entry.title}" must contain only plain bullets`);
+    }
+    if (memories.length < 1 || memories.length > 3) {
+      fail(path, `core memory topic "${entry.title}" must contain 1-3 bullets; found ${memories.length}`);
+    }
+    for (const memory of memories) {
+      if (memory.slice(2).trim().length < 15) {
+        fail(path, `core memory topic "${entry.title}" contains an underspecified item: ${memory}`);
+      }
+    }
+  }
+}
+
+function rejectLegacyMemoryContract(path, markdown) {
+  for (const [label, pattern] of LEGACY_MEMORY_PATTERNS) {
+    if (pattern.test(markdown)) {
+      fail(path, `must not retain ${label}`);
     }
   }
 }
@@ -282,10 +271,10 @@ function validateSkill(skill) {
     fail(skillPath, "execution protocol must contain exactly six ordered contract steps");
   }
   for (const [label, pattern] of [
-    ["indexed fact loading", /事实.*(?:类型)?索引|类型索引/],
-    ["hit-only fact loading", /只读.*命中|命中.*主题/],
-    ["authority revalidation", /权威.*复核|沿.*权威/],
-    ["full admission-gate closure", /全部入册门禁|逐项检查.*(?:稳定|非显然)/],
+    ["fact-book identity resolution", /唯一确认目标 Git 根与 `product-id`/],
+    ["project memory loading", /阅读.*项目记忆/],
+    ["owner fact-book loading", new RegExp(`docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["core-memory maintenance", /核心认知.*更新或移除/],
   ]) {
     if (!pattern.test(executionSection)) {
       fail(skillPath, `execution protocol must cover ${label}`);
@@ -295,43 +284,30 @@ function validateSkill(skill) {
     "references/principles.md",
     "能力索引",
     "references/memory.md",
-    "../../references/terminal-protocol.md",
   ]) {
     if (!skillDoc.includes(token)) {
       fail(skillPath, `execution contract must reference ${token}`);
     }
   }
-  const terminalMemorySection = section(skillDoc, "终态记忆");
+  const projectMemorySection = section(skillDoc, "项目记忆");
   for (const [label, pattern] of [
-    ["mandatory final-answer execution", /最终答复前.*(?:主动|必须).*执行/],
+    ["fact-book identity resolution", /唯一确认目标 Git 根与 `product-id`/],
+    ["unsafe identity boundary", /归属不唯一或名称不安全时不猜测或创建事实册/],
+    ["pre-work loading", /工作前读取/],
     ["owner fact-book locator", new RegExp(`docs/product-studio/<product-id>/${skill}\\.md`)],
-    ["human-readable final report", /最终答复.*报告/],
-    ["authoritative deletion", /当前权威.*消失.*DELETE/],
-    ["unresolved action boundary", /未安全收束.*不强判事实动作.*DEFERRED/],
-    ["exclusive result priority", /BLOCKED.*DEFERRED.*SYNCED.*NO_CHANGE/],
+    ["current-authority precedence", /以当前权威为准/],
+    ["stale-memory maintenance", /更新或移除旧内容/],
+    ["write-authority boundary", /不得因本节扩大写入范围/],
+    ["secret exclusion", /秘密/],
+    ["user-data exclusion", /用户数据/],
+    ["task-process exclusion", /任务过程/],
+    ["one-off-result exclusion", /一次性结果/],
   ]) {
-    if (!pattern.test(terminalMemorySection)) {
-      fail(skillPath, `terminal memory prompt must cover ${label}`);
+    if (!pattern.test(projectMemorySection)) {
+      fail(skillPath, `project memory prompt must cover ${label}`);
     }
   }
-  for (const token of [
-    "ADD",
-    "UPDATE",
-    "DELETE",
-    "NO_CHANGE",
-    "SYNCED",
-    "DEFERRED",
-    "BLOCKED",
-  ]) {
-    if (!terminalMemorySection.includes(token)) {
-      fail(skillPath, `terminal memory prompt must define ${token}`);
-    }
-  }
-  for (const forbidden of ["Hook", "回执", "指纹", "sessionId", "toolUseId"]) {
-    if (terminalMemorySection.includes(forbidden)) {
-      fail(skillPath, `terminal memory prompt must not depend on ${forbidden}`);
-    }
-  }
+  rejectLegacyMemoryContract(skillPath, skillDoc);
   assertAutonomousOrchestration(skillPath, skillDoc, skill);
 
   assertExactHeadings(principlesPath, principles, PRINCIPLE_HEADINGS);
@@ -355,50 +331,44 @@ function validateSkill(skill) {
   assertAutonomousOrchestration(principlesPath, principles, skill);
 
   assertExactHeadings(memoryPath, memory, MEMORY_HEADINGS);
-  const factTypes = blocks(memory, "事实类型");
-  if (factTypes.length < 5 || factTypes.length > 9) {
-    fail(memoryPath, `must define 5-9 semantic terminal fact types; found ${factTypes.length}`);
+  const memoryTitles = headings(memory, 1);
+  if (memoryTitles.length !== 1 || !memoryTitles[0].endsWith("项目记忆")) {
+    fail(memoryPath, "must contain exactly one level-one title ending in 项目记忆");
   }
-  assertFields(
-    memoryPath,
-    "fact type",
-    factTypes,
-    FACT_FIELDS,
-  );
-  if (
-    JSON.stringify(numberedIndex(memory, "事实类型索引")) !==
-    JSON.stringify(factTypes.map((entry) => entry.title))
-  ) {
-    fail(memoryPath, "fact-type index must exactly match fact-type titles");
-  }
-  const actionSection = section(memory, "动作语义");
-  for (const action of ["ADD", "UPDATE", "DELETE", "NO_CHANGE"]) {
-    if (!actionSection.includes(action)) {
-      fail(memoryPath, `action semantics must define ${action}`);
-    }
-  }
-  const admissionSection = section(memory, "通用入册门禁");
-  for (const [label, pattern] of MEMORY_ADMISSION_CONCEPTS) {
-    if (!pattern.test(admissionSection)) {
-      fail(memoryPath, `common admission gate must cover ${label}`);
-    }
-  }
-  const safetySection = section(memory, "全册安全与删除规则");
-  const safetyConcepts = [
-    ["secrets or credentials", /秘密|密钥|凭据|密码|令牌|签名材料/],
-    ["personal or user data", /用户数据|个人数据|客户数据|生产数据|生产样本/],
-    ["deletion", /删除|DELETE/],
-  ];
-  for (const [label, pattern] of safetyConcepts) {
-    if (!pattern.test(safetySection)) {
-      fail(memoryPath, `whole-book safety rules must cover ${label}`);
-    }
-  }
-  assertAutonomousOrchestration(memoryPath, memory, skill);
+  const coreMemories = blocks(memory, "核心记忆");
+  assertCoreMemoryLists(memoryPath, coreMemories);
   const locator = `docs/product-studio/<product-id>/${skill}.md`;
   if (!memory.includes(locator)) {
     fail(memoryPath, `must declare owner locator ${locator}`);
   }
+  const usageSection = section(memory, "使用方式");
+  for (const [label, pattern] of [
+    ["fact-book identity resolution", /唯一确认目标 Git 根与 `product-id`/],
+    ["unsafe identity boundary", /归属不唯一或名称不安全时不猜测或创建事实册/],
+    ["identity evidence", /用户范围.*产品入口与元数据.*相关项目根.*目标代码.*调用链/],
+    ["safe single-level product id", /`product-id`.*仓库内唯一、稳定.*安全单级目录名/],
+    ["pre-work loading", /开始.*工作前[，,]?\s*读取/],
+    ["current-authority precedence", /当前.*权威.*旧事实|旧事实.*当前权威/],
+    ["core-memory focus", /持续影响后续判断.*难从局部代码直接看清/],
+    ["source-inventory exclusion", /不复制源码、配置或可生成清单/],
+    ["stale-memory maintenance", /核心认知改变时更新或移除旧内容/],
+    ["current-facts only", /只保留当前仍成立的事实/],
+    ["secret exclusion", /秘密/],
+    ["user-data exclusion", /用户数据/],
+    ["task-process exclusion", /任务过程/],
+    ["one-off-result exclusion", /一次性结果/],
+  ]) {
+    if (!pattern.test(usageSection)) {
+      fail(memoryPath, `memory usage must cover ${label}`);
+    }
+  }
+  for (const token of ["非 `.` 或 `..`", "不含 `/` 或 `\\`"]) {
+    if (!usageSection.includes(token)) {
+      fail(memoryPath, `memory usage must reject unsafe product-id token: ${token}`);
+    }
+  }
+  rejectLegacyMemoryContract(memoryPath, memory);
+  assertAutonomousOrchestration(memoryPath, memory, skill);
 
   for (const key of ["interface:", "display_name:", "short_description:", "default_prompt:"]) {
     if (!agent.includes(key)) fail(agentPath, `missing ${key}`);
@@ -406,9 +376,10 @@ function validateSkill(skill) {
   if (!agent.includes(`$${skill}`)) {
     fail(agentPath, `default_prompt must invoke $${skill}`);
   }
-  if (!/default_prompt:.*终态.*事实/.test(agent)) {
-    fail(agentPath, "default_prompt must request a terminal fact check");
+  if (!/default_prompt:.*读取、维护.*项目核心记忆/.test(agent)) {
+    fail(agentPath, "default_prompt must request reading and maintaining core project memory");
   }
+  rejectLegacyMemoryContract(agentPath, agent);
 }
 
 function validateTopology() {
@@ -462,45 +433,10 @@ function validateTopology() {
   }
 }
 
-function validateTerminalMemoryContract() {
-  const protocolPath = join(PROJECT_ROOT, "references", "terminal-protocol.md");
-  const protocolText = read(protocolPath);
-  for (const asset of REMOVED_HOOK_ASSETS) {
+function validateRemovedRuntimeAssets() {
+  for (const asset of REMOVED_RUNTIME_ASSETS) {
     const path = join(PROJECT_ROOT, asset);
-    if (existsSync(path)) fail(path, "removed terminal Hook asset must not exist");
-  }
-  for (const token of [
-    "提示契约",
-    "docs/product-studio/<product-id>/<owner>.md",
-    "ADD",
-    "UPDATE",
-    "DELETE",
-    "NO_CHANGE",
-    "SYNCED",
-    "DEFERRED",
-    "BLOCKED",
-    "最终答复",
-    "BLOCKED` > `DEFERRED` > `SYNCED` > `NO_CHANGE",
-  ]) {
-    if (!protocolText.includes(token)) {
-      fail(protocolPath, `terminal memory protocol must describe ${token}`);
-    }
-  }
-  for (const forbidden of [
-    "terminal-hook.mjs",
-    "UserPromptSubmit",
-    "PreToolUse",
-    "PostToolUse",
-    "--data-dir",
-    "sessionId",
-    "toolUseId",
-    "inputDigest",
-    "commandHash",
-    "envelopePath",
-  ]) {
-    if (protocolText.includes(forbidden)) {
-      fail(protocolPath, `terminal memory protocol must not depend on ${forbidden}`);
-    }
+    if (existsSync(path)) fail(path, "removed runtime or shared memory-protocol asset must not exist");
   }
 }
 
@@ -572,9 +508,12 @@ function validateDocumentationAndManifests() {
     if (!description?.includes("十一")) {
       fail(path, "description must identify the eleven-skill topology");
     }
+    if (!description?.includes("项目核心记忆")) {
+      fail(path, "description must identify core project memory");
+    }
   }
-  if (!readme.includes("## 提示式终态记忆")) {
-    fail(readmePath, "README must describe prompt-driven terminal memory");
+  if (!readme.includes("## 项目记忆")) {
+    fail(readmePath, "README must describe project memory");
   }
   for (const [path, content] of [
     [readmePath, readme],
@@ -587,11 +526,12 @@ function validateDocumentationAndManifests() {
         fail(path, `must not advertise removed Hook asset ${forbidden}`);
       }
     }
+    rejectLegacyMemoryContract(path, content);
   }
 }
 
 validateTopology();
-validateTerminalMemoryContract();
+validateRemovedRuntimeAssets();
 validateDocumentationAndManifests();
 
 if (errors.length > 0) {
@@ -599,5 +539,5 @@ if (errors.length > 0) {
   for (const error of errors) console.error(`- ${error}`);
   process.exitCode = 1;
 } else {
-  console.log(`Project validation passed: ${EXPECTED_SKILLS.length} skills and prompt-driven terminal memory contracts are consistent.`);
+  console.log(`Project validation passed: ${EXPECTED_SKILLS.length} skills and core project memory contracts are consistent.`);
 }

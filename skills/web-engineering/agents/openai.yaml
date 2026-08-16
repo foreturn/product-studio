@@ -1,4 +1,4 @@
 interface:
   display_name: "Web 工程"
   short_description: "实现浏览器路由、界面、状态、兼容与性能行为"
-  default_prompt: "使用 $web-engineering 审查或实现当前产品的 Web 工程行为，给出相称的浏览器证据，并在验证后完成终态事实检查。"
+  default_prompt: "使用 $web-engineering 审查或实现当前产品的 Web 工程行为，给出相称的浏览器证据，并读取、维护相关项目核心记忆。"

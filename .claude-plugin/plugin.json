@@ -1,7 +1,7 @@
 {
   "name": "product-studio",
-  "version": "2.1.0",
-  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并由各 Skill 的终态提示契约维护当前项目事实。",
+  "version": "2.1.1",
+  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并由各 Skill 读取和维护项目核心记忆。",
   "author": {
     "name": "foreturn"
   },
@@ -20,7 +20,7 @@
     "quality-engineering",
     "release-engineering",
     "current-facts",
-    "terminal-memory"
+    "project-memory"
   ],
   "skills": "./skills/"
 }
