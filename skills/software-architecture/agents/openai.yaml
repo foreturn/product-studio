@@ -1,4 +1,4 @@
 interface:
   display_name: "软件架构"
   short_description: "裁定系统边界、依赖、拓扑与架构演进"
-  default_prompt: "使用 $software-architecture 基于当前代码与运行证据，裁定本次工作涉及的边界、职责、依赖和质量属性，并在验证后完成事实终态检查。"
+  default_prompt: "使用 $software-architecture 基于当前代码与运行证据，裁定本次工作涉及的边界、职责、依赖和质量属性，并在验证后完成终态事实检查。"

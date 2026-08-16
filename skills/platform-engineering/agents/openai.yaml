@@ -1,4 +1,4 @@
 interface:
   display_name: "平台工程"
   short_description: "裁定基础设施、运行平台、可观测性、韧性与容量成本边界"
-  default_prompt: "使用 $platform-engineering 基于当前环境、声明配置与运行证据裁定平台实现和验证要求。"
+  default_prompt: "使用 $platform-engineering 基于当前环境、声明配置与运行证据裁定平台实现和验证要求，并在验证后完成终态事实检查。"

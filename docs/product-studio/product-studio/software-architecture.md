@@ -14,9 +14,9 @@
 - **影响边界**：十一项 Skill 的加载体积、专业边界、维护审查和项目事实写法都依赖此分层；三类文件各自格式统一，但彼此不共用同一内容模型。
 - **复核入口**：运行项目契约校验与十一项 `quick_validate.py`，检查精确章节、能力索引、每类约束条目数、事实类型数量、共同门禁、字段顺序、locator 和元数据；任一文件职责或统一结构变化时重审。
 
-## 非语义终态守门边界
+## 提示式终态记忆边界
 
-- **当前事实**：终态守门由 `UserPromptSubmit` 建立每回合基线，`PreToolUse` 与 `PostToolUse` 将工具前后仓库指纹写入同仓有界事件账本，`Stop` 再核验绑定当前会话、turn、最终指纹、观测验证、产品、Owner 与事实册路径的回执并最多请求一次续写；Hook 不选择专业、不裁定 Owner、不起草事实，也不从差异自动更新文档，只能核对观测证据、回执声明与事实册变化一致，不能证明 AI 已选全受影响 Owner 或事实语义正确。
-- **权威依据**：`hooks/hooks.json`；`scripts/terminal-hook.mjs#handlePrompt`；`scripts/terminal-hook.mjs#handleToolEvent`；`scripts/terminal-hook.mjs#handleStop`；`references/terminal-protocol.md`
-- **影响边界**：该边界只为客户端实际送达的 Hook 事件提供可写回合终态 guardrail，不是自动记忆引擎或不可绕过的执行沙箱，也不替代专业判断、Owner 完整性、验证质量或外部操作授权；非 Git 目录明确降级，同仓并发变更不静默归属。
-- **复核入口**：运行 `node --test tests/terminal-hook.test.mjs`，核对四类事件、账本链、续写、回执、并发冲突、陈旧拒绝和非 Git 降级；Hook 事件、状态机、客户端事件字段或专业职责变化时重审。
+- **当前事实**：每项专业 Skill 在自身“终态记忆”章节内写死 Owner 与事实册 locator，并要求最终答复前主动读取该 Owner 的 memory 规则、复核命中主题、执行事实动作和报告终态结果；公共终态协议只统一多 Owner 协调、权威删除、按 `BLOCKED` > `DEFERRED` > `SYNCED` > `NO_CHANGE` 的互斥结果及安全边界。插件不维护独立运行时状态，专业差异仍由各 Skill 的 memory 规则渐进加载。
+- **权威依据**：`skills/*/SKILL.md#终态记忆`；`skills/*/references/memory.md`；`references/terminal-protocol.md`；`scripts/validate-project.mjs#validateTerminalMemoryContract`
+- **影响边界**：该结构使事实选择、语义判断与写入责任保持在唯一 Owner 内，并消除客户端事件格式、信任和会话状态依赖；代价是提示契约无法机械阻断遗漏，也不能自行证明编码代理已选全受影响 Owner、写入正确或在后续会话完成读取。
+- **复核入口**：运行项目校验与十一项 Skill 独立校验，确认每份提示都绑定正确 Owner、locator、四种动作与四种结果；再以未显式点名 Skill 的新上下文任务验证专业选择、实际写入、无变化守恒与跨会话读取。Skill 提示、公共协议、Owner 模型或事实存储边界变化时重审。

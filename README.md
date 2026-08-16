@@ -1,6 +1,6 @@
 # 产品工作室
 
-产品工作室是一套面向 Codex 与 Claude Code 的软件工程专业技能插件。编码代理仍直接理解请求、阅读仓库、编写代码并自主决定需要哪些专业判断；插件以十一项 Skill 提供清晰的专业所有权、实施准则与证据约束，并在可写回合结束前由终态 Hook 检查当前项目事实是否得到处置。
+产品工作室是一套面向 Codex 与 Claude Code 的软件工程专业技能插件。编码代理仍直接理解请求、阅读仓库、编写代码并自主决定需要哪些专业判断；插件以十一项 Skill 提供清晰的专业所有权、实施准则与证据约束，并由每项命中 Skill 的提示契约在最终答复前完成当前项目事实检查。
 
 它不提供中央路由，不要求预先写成套计划，也不规定固定技能链。一个任务可以只使用一项 Skill，也可以按证据需要组合多项；未命中的专业内容不会被机械加载。
 
@@ -69,48 +69,24 @@
 
 每个事实以稳定语义与主题合并键组织，不规定统一 Markdown 标题、四栏标签、顺序或句数。正文可依事实类型与检索需要使用段落、列表、表格或局部小节；但必须能够辨认当前成立的语义、权威依据、适用或影响边界、复核方式与失效触发。同一主题只容纳共同检索、共同变化的稳定事实，不用空栏或占位符凑格式。
 
-每次实现形成可交付终态并取得相称验证后，必须执行事实同步检查。每个受影响 Owner 先读取所有权、索引、通用门禁、动作与安全规则，再只展开本轮命中的事实类型和既有主题，并沿权威入口重新取证；只有通过全部门禁的事实确有新增、改变或消失时才修改事实册。事实动作只有 `ADD`、`UPDATE`、`DELETE`、`NO_CHANGE`，其中 `NO_CHANGE` 必须保持事实文件字节不变。
+每次实现形成可交付终态并取得相称验证后，必须执行事实同步检查。每个受影响 Owner 先读取所有权、索引、通用门禁、动作与安全规则，再只展开本轮命中的事实类型和既有主题，并沿权威入口重新取证。新增或更新候选通过全部门禁后才可入册；既有主题须沿当前权威与删除规则判定是否消失。事实动作只有 `ADD`、`UPDATE`、`DELETE`、`NO_CHANGE`，其中 `NO_CHANGE` 必须保持事实文件字节不变。
 
-## 终态 Hook
+## 提示式终态记忆
 
-插件通过默认路径 `hooks/hooks.json` 注册四类事件：
+每项 `SKILL.md` 的“终态记忆”都是必须在最终答复前主动执行的提示契约。插件不注册客户端 Hook，也不维护会话状态、工具账本或机器回执；专业判断、事实写入和结果报告均由实际命中的 Skill 完成。
 
-- `UserPromptSubmit` 记录当前 Git 仓库和事实册基线。
-- `PreToolUse` 与 `PostToolUse` 以 `session + turn + tool_use_id` 配对，记录输入摘要、命令哈希、可解析退出状态和仓库前后指纹。
-- `Stop` 比较终态与仓库事件账本，并核验是否存在绑定当前会话、观测验证、产品、Owner 和事实册路径的终态回执。
+对每个受影响 Owner，编码代理必须唯一确认 Git 根、产品与 `product-id`，读取该 Skill `references/memory.md` 的所有权、事实类型索引、通用门禁、动作与安全规则，再只展开命中的事实类型和既有主题。事实册只作语义导航，所有候选都须沿当前代码、Schema、配置、契约、制品或获准环境重新复核。
 
-只读回合且没有观测到本轮变化时自动放行。仓库变化但没有匹配回执时，Hook 只续写一次，要求编码代理按实际核验范围检查受影响 Owner；再次停止仍无回执时报告协议失败并放行，避免无限循环。Skill 内的 `references/memory.md` 是入册规则，真正的事实写入目标仓库 Owner 事实册。Hook 不选择 Skill、不判断事实 Owner、不起草事实正文，也不从 diff 自动写文档；它只能核验回执、观测证据与事实册变化是否一致，不能证明 AI 已选全受影响 Owner 或事实语义本身正确。
+事实动作仍只有 `ADD`、`UPDATE`、`DELETE`、`NO_CHANGE`。新增或更新候选通过全部门禁时才可 `ADD` 或 `UPDATE`；当前权威证明既有主题或最后消费者消失时执行 `DELETE`；完整复核且无实质变化时为 `NO_CHANGE` 且必须保持文件字节不变。增改删均须已获仓库写入授权；归属、证据、当前性或写权限不足时不写入，并报告具体缺口。
 
-验证证据不能自报命令或退出码，只能引用 `status.validationEvidenceCandidates` 中由 Hook 实际观察到的 `Bash`、`exec_command` 或 `shell_command` 完成事件；`status`、`begin`、`record` 协议命令与 `apply_patch`、`Edit` 等编辑工具不能冒充验证。候选必须发生在最后一次实现变更之后，且验证前后实现指纹均与终态一致；实现指纹只排除合法 Owner 事实册，因而验证后可再写入事实，其他文件变更仍会使旧证据失效。无法解析、超时、取消、Pre/Post 输入不一致或并发的事件均无效。其他会话的顺序变更只用于解释共享工作树漂移，不会归给当前会话；重叠会话触及同一事实册时只能明确 `DEFERRED` 或 `BLOCKED`。
+最终答复按实际检查的 Owner 报告，每个 Owner 只有一个结果，并按 `BLOCKED` > `DEFERRED` > `SYNCED` > `NO_CHANGE` 裁定：
 
-终态结果只有：
+- `BLOCKED`：交付物尚未形成可验证终态，不进行事实同步。
+- `DEFERRED`：交付已形成终态，但至少一个应检查主题尚未安全收束；未通过项不写入，已安全完成的事实动作仍逐项报告。
+- `SYNCED`：全部应检查主题已安全收束，至少一个事实执行了 `ADD`、`UPDATE` 或 `DELETE`，且写后已经复核。
+- `NO_CHANGE`：全部应检查主题已安全收束且没有事实变化，事实册保持字节不变。
 
-- `SYNCED`：至少一个事实执行 `ADD`、`UPDATE` 或 `DELETE`，事实册指纹已经变化。
-- `NO_CHANGE`：已检查 Owner，但所有事实均无变化，事实册字节未变。
-- `DEFERRED`：实现已有观测验证，但事实归属、证据或写权限不足，事实册保持不变并记录原因。
-- `BLOCKED`：交付物尚未形成可验证终态，事实册保持不变并记录阻塞。
-
-Hook 注入的上下文会给出当前会话可直接执行的完整 `status` 命令。普通工具 Shell 不保证继承 Hook 数据环境，必须保留命令中的 `--data-dir` 与 `--session`：
-
-```bash
-node "<plugin-root>/scripts/terminal-hook.mjs" status --data-dir "<plugin-data>" --session "<session-id>" --json
-```
-
-专门维护事实而其他仓库内容可能不变时，先显式开始：
-
-```bash
-node "<plugin-root>/scripts/terminal-hook.mjs" begin --data-dir "<plugin-data>" --session "<session-id>" --json
-```
-
-按 `references/terminal-protocol.md` 创建回执后记录：
-
-```bash
-node "<plugin-root>/scripts/terminal-hook.mjs" record --data-dir "<plugin-data>" --session "<session-id>" --envelope "<status.envelopePath>" --json
-```
-
-每个会话与 turn 使用独立的 `envelopePath`，新 `turn_id` 不继承旧续写。回执绑定 Git 根、会话、turn、最终指纹、账本中的工具 ID/输入摘要/命令哈希、`productId + owner + factBookPath` 和事实动作；实际归属于当前会话的事实册变化必须逐册一致。回执记录成功或拒绝后立即删除，孤儿回执 24 小时清理，七日未更新的会话状态与超过 1024 条的旧账本边会被有界清理。
-
-Hook 是客户端 guardrail，不是不可绕过的执行沙箱。未注册工具、专用执行路径或外部编辑器可能不产生工具事件，`tool_response` 也只是 model-facing JSON；这类未观测变化会令回执失败，但若客户端完全绕过 Hook，插件不能宣称形成完整强制边界。Hook 也不能仅凭 Shell 名称或退出零判定验证是否充分；完整指纹与实现指纹都流式覆盖脏文件、`assume-unchanged`、`skip-worktree` 与脏子模块，仍只证明本地工作树状态。
+完整步骤见 `references/terminal-protocol.md`。提示契约无法机械阻断遗漏，也不能证明编码代理已经选全受影响 Owner；项目静态校验只证明十一项 Skill 都含完整指令。专业选择、事实语义、实际写入与后续会话读取必须通过新上下文行为验收。
 
 ## 目录
 
@@ -123,12 +99,8 @@ product-studio/
 |       `-- references/
 |           |-- principles.md     # 统一专业能力格式
 |           `-- memory.md         # 统一事实规则格式
-|-- hooks/hooks.json              # Prompt、工具前后与 Stop 终态 Hook
-|-- scripts/
-|   |-- terminal-hook.mjs
-|   `-- validate-project.mjs
-|-- references/terminal-protocol.md
-|-- tests/terminal-hook.test.mjs
+|-- scripts/validate-project.mjs
+|-- references/terminal-protocol.md # 提示式终态记忆公共协议
 |-- docs/product-studio/<product-id>/
 |-- .codex-plugin/plugin.json
 |-- .claude-plugin/
@@ -151,14 +123,13 @@ claude plugin marketplace add foreturn/product-studio
 claude plugin install product-studio@foreturn
 ```
 
-安装后应先审阅并信任插件 Hook。Hook 命令在当前会话目录执行，状态与回执写入客户端提供的插件数据目录，不写入目标仓库。
+安装后应在新上下文确认十一项 Skill 可被发现，并用未显式点名 Skill 的正反向任务检查专业选择与终态事实报告。
 
 ## 校验
 
 ```bash
 node scripts/validate-project.mjs
-node --test tests/terminal-hook.test.mjs
 claude plugin validate --strict .
 ```
 
-每项 Skill 还应使用当前 `skill-creator` 的 `quick_validate.py` 独立校验。静态结构和 Hook 单元测试不能证明真实客户端一定会在新上下文中选择正确专业；发布前仍应以未显式点名 Skill 的正反向任务做安装态行为验收。
+每项 Skill 还应使用当前 `skill-creator` 的 `quick_validate.py` 独立校验。静态结构不能证明真实客户端一定会在新上下文中选择正确专业、执行终态记忆或写出正确事实；发布前仍应以未显式点名 Skill 的正反向任务做安装态行为验收。

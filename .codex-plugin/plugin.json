@@ -1,7 +1,7 @@
 {
   "name": "product-studio",
-  "version": "2.0.0",
-  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并以终态 Hook 守住当前项目事实闭环。",
+  "version": "2.1.0",
+  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并由各 Skill 的终态提示契约维护当前项目事实。",
   "author": {
     "name": "foreturn"
   },
@@ -20,13 +20,13 @@
     "quality-engineering",
     "release-engineering",
     "current-facts",
-    "terminal-hook"
+    "terminal-memory"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "product-studio",
-    "shortDescription": "十一项专业技能约束编码，以终态 Hook 沉淀当前事实。",
-    "longDescription": "编码代理依请求、仓库证据与风险自主发现十一项专业技能；SKILL 规定执行契约，principles 承载详细专业能力，memory 规定各 Owner 记住哪些当前事实及如何原位增改删。终态 Hook 只核验仓库变化与证据回执，不参与技能编排或事实裁决。",
+    "shortDescription": "十一项专业技能约束编码，以终态提示维护当前事实。",
+    "longDescription": "编码代理依请求、仓库证据与风险自主发现十一项专业技能；SKILL 规定执行契约与最终答复前的终态记忆，principles 承载详细专业能力，memory 规定各 Owner 记住哪些当前事实及如何原位增改删。插件不注册客户端 Hook，事实闭环依各 Skill 的提示契约执行。",
     "developerName": "foreturn",
     "category": "Productivity",
     "capabilities": [

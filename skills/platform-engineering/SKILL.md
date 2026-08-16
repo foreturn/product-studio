@@ -16,7 +16,7 @@ description: 环境账户、基础设施即代码、网络计算、运行配置�
 3. 先读取 [当前产品事实规则](references/memory.md) 的事实类型索引，只读本轮命中的既有事实主题，并沿其权威依据回到当前 IaC、配置、运行入口与可重复验证复核；事实册不得替代权威来源。
 4. 在授权范围内依命中准则完成最小充分实现或审查，不规定其他专业能力的选择、先后或数量。
 5. 运行与风险相称的验证并检查最终差异，记录证据能证明与不能证明的范围。
-6. 形成可交付终态后，按 [当前产品事实规则](references/memory.md) 对本轮核验范围内的全部候选事实逐项执行全部入册门禁，完成事实动作，并依公共终态协议收束。
+6. 形成可交付终态后，按 [当前产品事实规则](references/memory.md) 检查本轮实际影响的主题：新增或更新候选执行全部入册门禁，既有主题沿当前权威与删除规则复核，再裁定事实动作和终态结果。
 
 ## 输出契约
 
@@ -51,10 +51,12 @@ description: 环境账户、基础设施即代码、网络计算、运行配置�
 
 - 专业判断与实施细则：[references/principles.md](references/principles.md)。
 - 当前事实的入册、合并、更新和删除规则：[references/memory.md](references/memory.md)。
-- 公共事实检查与终态回执：[终态协议](../../references/terminal-protocol.md)。
+- 提示词驱动的事实检查与写入：[终态记忆协议](../../references/terminal-protocol.md)。
 
-## 终态协议
+## 终态记忆
 
-- 每次实现形成可交付终态并取得相称验证后，必须执行事实同步检查；只有事实确有新增、改变或消失时才修改索引。
-- 事实动作仅为 `ADD`、`UPDATE`、`DELETE`、`NO_CHANGE`；`NO_CHANGE` 不得触碰事实文件。
-- 跨 Owner 汇总、终态结果、回执结构、仓库指纹与验证证据绑定以及 Hook 判定完全遵循 [公共终态协议](../../references/terminal-protocol.md)，本技能不另行定义。
+- 在最终答复前必须主动执行本节，不等待外部机制或用户再次提醒；仅在交付物形成可验证终态后同步事实。
+- 对 `platform-engineering` 唯一确认 Git 根与 `product-id`；读取 `references/memory.md` 的所有权与稳定位置、事实类型索引、通用入册门禁、动作语义和全册安全与删除规则，再只展开本轮命中的事实类型与 `docs/product-studio/<product-id>/platform-engineering.md` 既有主题。
+- 沿当前权威来源复核实际影响的主题；新增或更新候选通过全部门禁时才判定 `ADD` 或 `UPDATE`，当前权威证明既有主题或最后消费者消失时判定 `DELETE`，完整复核且无实质变化时判定 `NO_CHANGE`。未安全收束的主题不强判事实动作，并按下一项作 `DEFERRED` 收束；仅在拥有仓库写权限时才执行增改删，`NO_CHANGE` 必须保持事实册字节不变。
+- 每个 Owner 只判定一个终态结果，优先级为 `BLOCKED` > `DEFERRED` > `SYNCED` > `NO_CHANGE`：交付物未形成可验证终态时为 `BLOCKED`；否则任一应检查主题因归属、证据、当前性或写权限不足而未安全收束时为 `DEFERRED`；全部安全收束且至少完成一项 `ADD`、`UPDATE` 或 `DELETE` 并复核写入时为 `SYNCED`；其余为 `NO_CHANGE`。
+- 写后重读事实册并检查最终差异；最终答复以人类可读方式报告本 Owner 的终态结果、检查主题、事实动作、权威依据及必要的证据边界。

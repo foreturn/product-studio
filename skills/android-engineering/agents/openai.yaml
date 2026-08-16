@@ -1,4 +1,4 @@
 interface:
   display_name: "Android 工程"
   short_description: "实现 Android 生命周期、界面、数据与设备集成"
-  default_prompt: "使用 $android-engineering 审查或实现当前产品的 Android 客户端行为，并给出相称的设备证据。"
+  default_prompt: "使用 $android-engineering 审查或实现当前产品的 Android 客户端行为，给出相称的设备证据，并在验证后完成终态事实检查。"

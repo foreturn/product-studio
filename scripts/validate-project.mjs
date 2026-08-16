@@ -32,6 +32,13 @@ const REMOVED_FACT_BOOKS = [
   "verification.md",
   "release.md",
 ];
+const REMOVED_HOOK_ASSETS = [
+  "hooks",
+  "hooks/hooks.json",
+  "scripts/terminal-hook.mjs",
+  "tests/terminal-hook.test.mjs",
+  "tests/fixtures/terminal-envelope.json",
+];
 
 const SKILL_HEADINGS = [
   "目标",
@@ -41,7 +48,7 @@ const SKILL_HEADINGS = [
   "停止条件",
   "权限与边界规则",
   "参考资料",
-  "终态协议",
+  "终态记忆",
 ];
 const PRINCIPLE_HEADINGS = [
   "能力索引",
@@ -294,6 +301,37 @@ function validateSkill(skill) {
       fail(skillPath, `execution contract must reference ${token}`);
     }
   }
+  const terminalMemorySection = section(skillDoc, "终态记忆");
+  for (const [label, pattern] of [
+    ["mandatory final-answer execution", /最终答复前.*(?:主动|必须).*执行/],
+    ["owner fact-book locator", new RegExp(`docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["human-readable final report", /最终答复.*报告/],
+    ["authoritative deletion", /当前权威.*消失.*DELETE/],
+    ["unresolved action boundary", /未安全收束.*不强判事实动作.*DEFERRED/],
+    ["exclusive result priority", /BLOCKED.*DEFERRED.*SYNCED.*NO_CHANGE/],
+  ]) {
+    if (!pattern.test(terminalMemorySection)) {
+      fail(skillPath, `terminal memory prompt must cover ${label}`);
+    }
+  }
+  for (const token of [
+    "ADD",
+    "UPDATE",
+    "DELETE",
+    "NO_CHANGE",
+    "SYNCED",
+    "DEFERRED",
+    "BLOCKED",
+  ]) {
+    if (!terminalMemorySection.includes(token)) {
+      fail(skillPath, `terminal memory prompt must define ${token}`);
+    }
+  }
+  for (const forbidden of ["Hook", "回执", "指纹", "sessionId", "toolUseId"]) {
+    if (terminalMemorySection.includes(forbidden)) {
+      fail(skillPath, `terminal memory prompt must not depend on ${forbidden}`);
+    }
+  }
   assertAutonomousOrchestration(skillPath, skillDoc, skill);
 
   assertExactHeadings(principlesPath, principles, PRINCIPLE_HEADINGS);
@@ -368,6 +406,9 @@ function validateSkill(skill) {
   if (!agent.includes(`$${skill}`)) {
     fail(agentPath, `default_prompt must invoke $${skill}`);
   }
+  if (!/default_prompt:.*终态.*事实/.test(agent)) {
+    fail(agentPath, "default_prompt must request a terminal fact check");
+  }
 }
 
 function validateTopology() {
@@ -421,115 +462,45 @@ function validateTopology() {
   }
 }
 
-function validateHookAssets() {
-  const hooksPath = join(PROJECT_ROOT, "hooks", "hooks.json");
-  const scriptPath = join(PROJECT_ROOT, "scripts", "terminal-hook.mjs");
+function validateTerminalMemoryContract() {
   const protocolPath = join(PROJECT_ROOT, "references", "terminal-protocol.md");
-  const fixturePath = join(PROJECT_ROOT, "tests", "fixtures", "terminal-envelope.json");
-  const hooksText = read(hooksPath);
-  read(scriptPath);
   const protocolText = read(protocolPath);
-  const fixtureText = read(fixturePath);
-  if (!hooksText) return;
-  try {
-    const hooks = JSON.parse(hooksText).hooks ?? {};
-    for (const event of ["UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"]) {
-      if (!Array.isArray(hooks[event]) || hooks[event].length === 0) {
-        fail(hooksPath, `must configure ${event}`);
-        continue;
-      }
-      const handlers = hooks[event].flatMap((entry) =>
-        Array.isArray(entry?.hooks) ? entry.hooks : [],
-      );
-      if (handlers.length === 0) {
-        fail(hooksPath, `${event} must contain at least one hook handler`);
-        continue;
-      }
-      for (const [index, handler] of handlers.entries()) {
-        if (handler?.type !== "command") {
-          fail(hooksPath, `${event} handler ${index} must use type=command`);
-        }
-        if (
-          typeof handler?.command !== "string" ||
-          !handler.command.includes("${CLAUDE_PLUGIN_ROOT}") ||
-          !handler.command.includes("terminal-hook.mjs")
-        ) {
-          fail(
-            hooksPath,
-            `${event} handler ${index} must invoke terminal-hook.mjs through \${CLAUDE_PLUGIN_ROOT}`,
-          );
-        }
-        if (!Number.isFinite(handler?.timeout) || handler.timeout < 180) {
-          fail(hooksPath, `${event} handler ${index} timeout must be at least 180 seconds`);
-        }
-      }
-      if (
-        ["PreToolUse", "PostToolUse"].includes(event) &&
-        !hooks[event].some(
-          (entry) =>
-            typeof entry?.matcher === "string" &&
-            entry.matcher.includes("Bash") &&
-            entry.matcher.includes("exec_command") &&
-            entry.matcher.includes("shell_command"),
-        )
-      ) {
-        fail(hooksPath, `${event} must observe Bash, exec_command, and shell_command`);
-      }
-    }
-  } catch (error) {
-    fail(hooksPath, `invalid JSON: ${error.message}`);
+  for (const asset of REMOVED_HOOK_ASSETS) {
+    const path = join(PROJECT_ROOT, asset);
+    if (existsSync(path)) fail(path, "removed terminal Hook asset must not exist");
   }
-
   for (const token of [
+    "提示契约",
+    "docs/product-studio/<product-id>/<owner>.md",
+    "ADD",
+    "UPDATE",
+    "DELETE",
+    "NO_CHANGE",
+    "SYNCED",
+    "DEFERRED",
+    "BLOCKED",
+    "最终答复",
+    "BLOCKED` > `DEFERRED` > `SYNCED` > `NO_CHANGE",
+  ]) {
+    if (!protocolText.includes(token)) {
+      fail(protocolPath, `terminal memory protocol must describe ${token}`);
+    }
+  }
+  for (const forbidden of [
+    "terminal-hook.mjs",
+    "UserPromptSubmit",
+    "PreToolUse",
+    "PostToolUse",
     "--data-dir",
-    "--session",
     "sessionId",
     "toolUseId",
     "inputDigest",
     "commandHash",
-    "expectedExitCodes",
-    "productId",
-    "factBookPath",
     "envelopePath",
-    "guardrail",
   ]) {
-    if (!protocolText.includes(token)) {
-      fail(protocolPath, `terminal protocol must describe ${token}`);
+    if (protocolText.includes(forbidden)) {
+      fail(protocolPath, `terminal memory protocol must not depend on ${forbidden}`);
     }
-  }
-  if (!fixtureText) return;
-  try {
-    const fixture = JSON.parse(fixtureText);
-    if (fixture.schemaVersion !== 2 || typeof fixture.sessionId !== "string") {
-      fail(fixturePath, "terminal fixture must use schemaVersion 2 and include sessionId");
-    }
-    for (const [index, evidence] of (fixture.validationEvidence ?? []).entries()) {
-      if (!Array.isArray(evidence.expectedExitCodes) || evidence.expectedExitCodes.length === 0) {
-        fail(fixturePath, `validationEvidence[${index}] must include expectedExitCodes`);
-      }
-      for (const field of ["toolUseId", "inputDigest", "commandHash"]) {
-        if (typeof evidence[field] !== "string" || evidence[field].length === 0) {
-          fail(fixturePath, `validationEvidence[${index}] must include ${field}`);
-        }
-      }
-      if ("command" in evidence || "exitCode" in evidence) {
-        fail(fixturePath, `validationEvidence[${index}] must not self-report command or exitCode`);
-      }
-    }
-    for (const [index, owner] of (fixture.checkedOwners ?? []).entries()) {
-      if (
-        typeof owner.productId !== "string" ||
-        owner.factBookPath !==
-          `docs/product-studio/${owner.productId}/${owner.owner}.md`
-      ) {
-        fail(
-          fixturePath,
-          `checkedOwners[${index}] must bind productId, owner, and factBookPath`,
-        );
-      }
-    }
-  } catch (error) {
-    fail(fixturePath, `invalid terminal fixture JSON: ${error.message}`);
   }
 }
 
@@ -559,6 +530,14 @@ function validateDocumentationAndManifests() {
   }
   if (codex.skills !== "./skills/" || claude.skills !== "./skills/") {
     fail(codexPath, "both manifests must expose ./skills/");
+  }
+  for (const [path, manifest] of [
+    [codexPath, codex],
+    [claudePath, claude],
+  ]) {
+    if (Object.hasOwn(manifest, "hooks")) {
+      fail(path, "plugin manifest must not declare removed Hook assets");
+    }
   }
   if (marketplace.plugins?.[0]?.name !== codex.name) {
     fail(marketplacePath, "marketplace plugin name must match plugin manifests");
@@ -594,10 +573,25 @@ function validateDocumentationAndManifests() {
       fail(path, "description must identify the eleven-skill topology");
     }
   }
+  if (!readme.includes("## 提示式终态记忆")) {
+    fail(readmePath, "README must describe prompt-driven terminal memory");
+  }
+  for (const [path, content] of [
+    [readmePath, readme],
+    [codexPath, JSON.stringify(codex)],
+    [claudePath, JSON.stringify(claude)],
+    [marketplacePath, JSON.stringify(marketplace)],
+  ]) {
+    for (const forbidden of ["terminal-hook", "hooks/hooks.json"]) {
+      if (content.includes(forbidden)) {
+        fail(path, `must not advertise removed Hook asset ${forbidden}`);
+      }
+    }
+  }
 }
 
 validateTopology();
-validateHookAssets();
+validateTerminalMemoryContract();
 validateDocumentationAndManifests();
 
 if (errors.length > 0) {
@@ -605,5 +599,5 @@ if (errors.length > 0) {
   for (const error of errors) console.error(`- ${error}`);
   process.exitCode = 1;
 } else {
-  console.log(`Project validation passed: ${EXPECTED_SKILLS.length} skills and terminal hook assets are consistent.`);
+  console.log(`Project validation passed: ${EXPECTED_SKILLS.length} skills and prompt-driven terminal memory contracts are consistent.`);
 }

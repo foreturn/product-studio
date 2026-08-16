@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0 - 2026-08-16
+
+- Removed the terminal Hook registration, state machine, receipt fixture, and Hook-specific test suite so terminal fact closure no longer depends on client Hook trust, event delivery, or per-session runtime state.
+- Moved terminal memory closure into every professional Skill as an explicit final-answer prompt contract: each Owner now revalidates hit facts, applies `ADD`, `UPDATE`, `DELETE`, or `NO_CHANGE`, writes only with repository authorization, and reports `SYNCED`, `NO_CHANGE`, `DEFERRED`, or `BLOCKED` in human-readable form.
+- Replaced Hook asset validation with static checks that all eleven Skills contain owner-specific fact locators, complete action and result semantics, and terminal fact instructions, while explicitly documenting that behavioral compliance still requires fresh-context acceptance evidence.
+
 ## 2.0.0 - 2026-08-14
 
 - Rebuilt the plugin as eleven independently discoverable professional skills spanning product management, architecture, backend, Web, Android, iOS, database, platform, security, quality, and release engineering; the coding agent chooses and orders applicable skills from the request, repository evidence, and risk.

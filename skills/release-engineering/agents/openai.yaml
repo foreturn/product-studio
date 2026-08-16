@@ -1,4 +1,4 @@
 interface:
   display_name: "发布工程与运行"
   short_description: "治理版本制品，在精确授权内发布、观测与恢复"
-  default_prompt: "使用 $release-engineering 核验验收制品、版本、Tag、数据库方案、安全门禁、目标环境与精确授权，再形成可追溯且可恢复的发布处置。"
+  default_prompt: "使用 $release-engineering 核验验收制品、版本、Tag、数据库方案、安全门禁、目标环境与精确授权，再形成可追溯且可恢复的发布处置，并在验证后完成终态事实检查。"

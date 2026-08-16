@@ -1,4 +1,4 @@
 interface:
   display_name: "质量工程与独立验收"
   short_description: "按风险设计测试，以当前证据独立裁决是否通过"
-  default_prompt: "使用 $quality-engineering 从原始要求、专业契约和完整差异执行风险驱动验收，给出逐项证据、归因状态与独立总体裁决。"
+  default_prompt: "使用 $quality-engineering 从原始要求、专业契约和完整差异执行风险驱动验收，给出逐项证据、归因状态与独立总体裁决，并在验证后完成终态事实检查。"

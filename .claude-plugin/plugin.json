@@ -1,7 +1,7 @@
 {
   "name": "product-studio",
-  "version": "2.0.0",
-  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并以终态 Hook 守住当前项目事实闭环。",
+  "version": "2.1.0",
+  "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并由各 Skill 的终态提示契约维护当前项目事实。",
   "author": {
     "name": "foreturn"
   },
@@ -20,7 +20,7 @@
     "quality-engineering",
     "release-engineering",
     "current-facts",
-    "terminal-hook"
+    "terminal-memory"
   ],
   "skills": "./skills/"
 }

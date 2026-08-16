@@ -1,4 +1,4 @@
 interface:
   display_name: "安全工程"
   short_description: "裁定威胁、身份授权、数据保护、供应链与漏洞处置边界"
-  default_prompt: "使用 $security-engineering 基于当前资产、信任边界与攻击面裁定安全控制和验证要求。"
+  default_prompt: "使用 $security-engineering 基于当前资产、信任边界与攻击面裁定安全控制和验证要求，并在验证后完成终态事实检查。"
