@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0 - 2026-08-17
+
+- Moved project-memory location, authority, admission, synchronization, and exclusion instructions into every `SKILL.md`, leaving each `references/memory.md` focused exclusively on the owner-specific project facts worth remembering.
+- Expanded all eleven memory references to nine core topics with three explicit fact prompts each, covering ownership, authority, lifecycle, failure, recovery, compatibility, and evidence boundaries without duplicating source inventories or task history.
+- Updated the project validator, README, and current Product Studio fact books to enforce and describe the separate Skill, principles, and memory responsibilities while rejecting the legacy memory usage contract.
+
 ## 2.1.1 - 2026-08-16
 
 - Simplified every professional memory reference to five to nine core project-knowledge topics, so future agents read only the durable product-specific context that changes engineering judgment.

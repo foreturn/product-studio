@@ -16,7 +16,7 @@
 
 ## 项目核心记忆政策
 
-- **当前事实**：每项命中 Skill 都要求先唯一确认目标 Git 根与安全单级 `product-id`，再于相关工作前读取本专业 `references/memory.md` 与 `docs/product-studio/<product-id>/<owner>.md`；归属不唯一或名称不安全时不猜测或创建事实册。项目记忆只作后续判断的背景；当前代码、配置、正式契约或已验证运行事实与旧记忆冲突时，以当前权威为准。只有本轮改变核心认知时才在既有写权限内更新或移除旧内容；记忆只保留当前仍成立的项目认知，不保存秘密、用户数据、任务过程或一次性结果，也不要求专门的状态报告。
-- **权威依据**：`README.md#项目记忆`；`skills/product-management/SKILL.md#项目记忆`；`skills/product-management/references/memory.md#使用方式`
+- **当前事实**：每项命中 Skill 都在自身“项目记忆”章内要求先唯一确认目标 Git 根与安全单级 `product-id`，再于相关工作前读取本专业 `references/memory.md` 的命中主题与 `docs/product-studio/<product-id>/<owner>.md`；归属不唯一或名称不安全时不猜测或创建事实册。项目记忆只作后续判断的背景；当前代码、配置、正式契约或已验证运行事实与旧记忆冲突时，以当前权威为准。只有本轮改变核心认知时才在既有写权限内更新或移除旧内容；记忆只保留当前仍成立的项目认知，不保存秘密、用户数据、任务过程或一次性结果，也不要求专门的状态报告。
+- **权威依据**：`README.md#项目记忆`；`skills/product-management/SKILL.md#项目记忆`；`skills/product-management/references/memory.md#核心记忆`
 - **影响边界**：该政策约束十一位 Owner 在目标仓库中的累计当前事实视图；它不把事实册提升为权威源，不要求未命中专业机械读取全部事实，也不因记忆维护扩大原任务的写权限。提示指令依赖编码代理实际遵循 Skill，不提供客户端级强制或遗漏阻断。
 - **复核入口**：运行项目与十一项 Skill 静态校验，再以新上下文正反向任务检查自主专业选择、Git 根与 `product-id` 唯一解析、相关事实读取、当前权威优先、认知变化后的旧内容维护和敏感信息排除；记忆主题、Skill 指令、Owner locator 或存储边界变化时重审。

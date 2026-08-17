@@ -70,7 +70,7 @@ const PROHIBITED_PRINCIPLE_FIELDS = [
   "反模式",
   "验收要点",
 ];
-const MEMORY_HEADINGS = ["使用方式", "核心记忆"];
+const MEMORY_HEADINGS = ["核心记忆"];
 const LEGACY_MEMORY_PATTERNS = [
   ["shared terminal protocol", /terminal-protocol\.md|终态记忆协议/],
   ["terminal-memory wording", /终态记忆|terminal-memory/],
@@ -208,6 +208,9 @@ function assertCoreMemoryLists(path, entries) {
       if (memory.slice(2).trim().length < 15) {
         fail(path, `core memory topic "${entry.title}" contains an underspecified item: ${memory}`);
       }
+      if (!memory.startsWith("- 记住")) {
+        fail(path, `core memory topic "${entry.title}" must state what to remember: ${memory}`);
+      }
     }
   }
 }
@@ -293,10 +296,16 @@ function validateSkill(skill) {
   for (const [label, pattern] of [
     ["fact-book identity resolution", /唯一确认目标 Git 根与 `product-id`/],
     ["unsafe identity boundary", /归属不唯一或名称不安全时不猜测或创建事实册/],
+    ["identity evidence", /用户范围.*产品入口与元数据.*相关项目根.*目标代码.*调用链/],
+    ["safe single-level product id", /`product-id`.*仓库内唯一、稳定.*安全单级目录名/],
     ["pre-work loading", /工作前读取/],
+    ["core-memory definition loading", /读取 `references\/memory\.md` 中本次命中的核心主题/],
     ["owner fact-book locator", new RegExp(`docs/product-studio/<product-id>/${skill}\\.md`)],
     ["current-authority precedence", /以当前权威为准/],
+    ["core-memory focus", /持续影响后续判断.*难从局部代码直接看清/],
+    ["source-inventory exclusion", /不复制源码、配置或可生成清单/],
     ["stale-memory maintenance", /更新或移除旧内容/],
+    ["current-facts only", /只保留当前仍成立的事实/],
     ["write-authority boundary", /不得因本节扩大写入范围/],
     ["secret exclusion", /秘密/],
     ["user-data exclusion", /用户数据/],
@@ -305,6 +314,11 @@ function validateSkill(skill) {
   ]) {
     if (!pattern.test(projectMemorySection)) {
       fail(skillPath, `project memory prompt must cover ${label}`);
+    }
+  }
+  for (const token of ["非 `.` 或 `..`", "不含 `/` 或 `\\`"]) {
+    if (!projectMemorySection.includes(token)) {
+      fail(skillPath, `project memory prompt must reject unsafe product-id token: ${token}`);
     }
   }
   rejectLegacyMemoryContract(skillPath, skillDoc);
@@ -337,36 +351,6 @@ function validateSkill(skill) {
   }
   const coreMemories = blocks(memory, "核心记忆");
   assertCoreMemoryLists(memoryPath, coreMemories);
-  const locator = `docs/product-studio/<product-id>/${skill}.md`;
-  if (!memory.includes(locator)) {
-    fail(memoryPath, `must declare owner locator ${locator}`);
-  }
-  const usageSection = section(memory, "使用方式");
-  for (const [label, pattern] of [
-    ["fact-book identity resolution", /唯一确认目标 Git 根与 `product-id`/],
-    ["unsafe identity boundary", /归属不唯一或名称不安全时不猜测或创建事实册/],
-    ["identity evidence", /用户范围.*产品入口与元数据.*相关项目根.*目标代码.*调用链/],
-    ["safe single-level product id", /`product-id`.*仓库内唯一、稳定.*安全单级目录名/],
-    ["pre-work loading", /开始.*工作前[，,]?\s*读取/],
-    ["current-authority precedence", /当前.*权威.*旧事实|旧事实.*当前权威/],
-    ["core-memory focus", /持续影响后续判断.*难从局部代码直接看清/],
-    ["source-inventory exclusion", /不复制源码、配置或可生成清单/],
-    ["stale-memory maintenance", /核心认知改变时更新或移除旧内容/],
-    ["current-facts only", /只保留当前仍成立的事实/],
-    ["secret exclusion", /秘密/],
-    ["user-data exclusion", /用户数据/],
-    ["task-process exclusion", /任务过程/],
-    ["one-off-result exclusion", /一次性结果/],
-  ]) {
-    if (!pattern.test(usageSection)) {
-      fail(memoryPath, `memory usage must cover ${label}`);
-    }
-  }
-  for (const token of ["非 `.` 或 `..`", "不含 `/` 或 `\\`"]) {
-    if (!usageSection.includes(token)) {
-      fail(memoryPath, `memory usage must reject unsafe product-id token: ${token}`);
-    }
-  }
   rejectLegacyMemoryContract(memoryPath, memory);
   assertAutonomousOrchestration(memoryPath, memory, skill);
 
