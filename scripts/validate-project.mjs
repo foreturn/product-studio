@@ -274,10 +274,11 @@ function validateSkill(skill) {
     fail(skillPath, "execution protocol must contain exactly six ordered contract steps");
   }
   for (const [label, pattern] of [
-    ["fact-book identity resolution", /唯一确认目标 Git 根与 `product-id`/],
+    ["fact-book identity resolution", /唯一确认当前产品根目录与 `product-id`/],
     ["project memory loading", /阅读.*项目记忆/],
-    ["owner fact-book loading", new RegExp(`docs/product-studio/<product-id>/${skill}\\.md`)],
-    ["core-memory maintenance", /核心认知.*更新或移除/],
+    ["owner fact-book loading", new RegExp(`<当前产品根目录>/docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["mandatory memory closeout", /最终回复前必须.*新确认、改变或失效的核心认知/],
+    ["direct fact-book maintenance", /任务已允许修改当前产品根目录内的目标文件时直接创建、更新或移除本专业事实册/],
   ]) {
     if (!pattern.test(executionSection)) {
       fail(skillPath, `execution protocol must cover ${label}`);
@@ -294,19 +295,37 @@ function validateSkill(skill) {
   }
   const projectMemorySection = section(skillDoc, "项目记忆");
   for (const [label, pattern] of [
-    ["fact-book identity resolution", /唯一确认目标 Git 根与 `product-id`/],
-    ["unsafe identity boundary", /归属不唯一或名称不安全时不猜测或创建事实册/],
-    ["identity evidence", /用户范围.*产品入口与元数据.*相关项目根.*目标代码.*调用链/],
-    ["safe single-level product id", /`product-id`.*仓库内唯一、稳定.*安全单级目录名/],
+    ["current-product-root resolution", /唯一确认“当前产品根目录”/],
+    ["non-Git product root", /不要求存在 Git 仓库或 `\.git`/],
+    ["unsafe identity boundary", /无法唯一确认时不读取、创建或修改任何候选事实册/],
+    ["identity evidence", /用户明确指定的产品目录优先.*当前打开的工作区.*目标文件.*产品入口与元数据.*目标代码、配置和调用链/],
+    ["Git-root evidence boundary", /Git 根只作可选佐证/],
+    ["working-directory exclusion", /不得仅因当前进程工作目录、Git 根或 Skill 所在目录而选根/],
+    ["provider-directory exclusion", /Product Studio 仅作为技能提供者时.*不得把.*源码目录.*技能文件目录.*插件安装目录.*缓存目录/],
+    ["Product Studio target exception", /只有任务明确以 Product Studio 本身为目标产品时才可使用其目录/],
+    ["safe single-level product id", /`product-id`.*当前产品根目录内唯一、稳定.*安全单级目录名/],
+    ["product-root fact-book locator", new RegExp(`<当前产品根目录>/docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["root-anchored path", /读取与写入必须使用以已确认根目录为基准的路径/],
+    ["relative-path exclusion", /不得把相对的 .*按进程当前目录或 Skill 所在目录解析/],
     ["pre-work loading", /工作前读取/],
     ["core-memory definition loading", /读取 `references\/memory\.md` 中本次命中的核心主题/],
     ["owner fact-book locator", new RegExp(`docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["missing-book closeout", /不得因缺少文件跳过最终检查/],
     ["current-authority precedence", /以当前权威为准/],
     ["core-memory focus", /持续影响后续判断.*难从局部代码直接看清/],
+    ["pre-existing fact admission", /本轮未修改.*既有事实同样需要写入.*不以 Git 差异为限/],
     ["source-inventory exclusion", /不复制源码、配置或可生成清单/],
+    ["read-only write boundary", /只读分析、审查或状态查询没有事实册写权限/],
+    ["product-root write authority", /任务已允许修改当前产品根目录内的目标文件.*事实册属于同一写权限/],
+    ["mandatory direct maintenance", /最终回复前必须.*直接创建、更新或移除.*不得只在回复中列出候选/],
+    ["first-fact creation", new RegExp(`事实册不存在且至少有一条应入册事实时.*在当前产品根目录下一并创建.*${skill}\\.md`)],
+    ["empty-book exclusion", /没有事实时不创建空目录或空册/],
+    ["fact-book title", new RegExp(`首行固定为 .*# ${skill} 当前产品事实`)],
+    ["fact-topic format", /稳定业务语义为二级标题.*现在时.*相对于当前产品根目录的权威核验入口.*失效或重审条件/],
     ["stale-memory maintenance", /更新或移除旧内容/],
     ["current-facts only", /只保留当前仍成立的事实/],
-    ["write-authority boundary", /不得因本节扩大写入范围/],
+    ["last-fact cleanup", /最后一个主题移除后删除事实册.*`<product-id>` 目录为空时一并删除/],
+    ["write-authority boundary", /不得因本节扩大当前产品根目录之外的写入范围/],
     ["secret exclusion", /秘密/],
     ["user-data exclusion", /用户数据/],
     ["task-process exclusion", /任务过程/],
@@ -319,6 +338,11 @@ function validateSkill(skill) {
   for (const token of ["非 `.` 或 `..`", "不含 `/` 或 `\\`"]) {
     if (!projectMemorySection.includes(token)) {
       fail(skillPath, `project memory prompt must reject unsafe product-id token: ${token}`);
+    }
+  }
+  for (const forbidden of ["目标 Git 根", "<目标 Git 根>", "目标 Git 仓库"]) {
+    if (skillDoc.includes(forbidden)) {
+      fail(skillPath, `must not retain Git-dependent product-root wording: ${forbidden}`);
     }
   }
   rejectLegacyMemoryContract(skillPath, skillDoc);
@@ -411,6 +435,15 @@ function validateTopology() {
           if (!factBook.startsWith(`${expectedTitle}\n`) && !factBook.startsWith(`${expectedTitle}\r\n`)) {
             fail(path, `fact book title must be ${expectedTitle}`);
           }
+          const factTopics = headings(factBook, 2);
+          if (factTopics.length === 0) {
+            fail(path, "fact book must contain at least one current fact topic");
+          }
+          for (const topic of factTopics) {
+            if (!section(factBook, topic).trim()) {
+              fail(path, `fact book topic "${topic}" must not be empty`);
+            }
+          }
         }
       }
     }
@@ -498,6 +531,17 @@ function validateDocumentationAndManifests() {
   }
   if (!readme.includes("## 项目记忆")) {
     fail(readmePath, "README must describe project memory");
+  }
+  for (const [label, pattern] of [
+    ["current product root locator", /<current-product-root>\/docs\/product-studio\/<product-id>\/<owner>\.md/],
+    ["non-Git product root", /不要求已初始化 Git.*不要求存在 `\.git`/],
+    ["Product Studio provider exclusion", /Product Studio 只是技能提供者时.*源码目录.*技能文件目录.*插件安装目录.*缓存目录.*都不是当前产品根目录/],
+    ["root-anchored fact-book access", /所有事实册读写都必须锚定已经确认的 `current-product-root`/],
+    ["relative-path exclusion", /不得把相对的 `docs\/product-studio\/\.\.\.` 按进程当前目录或 Skill 所在目录解析/],
+  ]) {
+    if (!pattern.test(readme)) {
+      fail(readmePath, `must document ${label}`);
+    }
   }
   for (const [path, content] of [
     [readmePath, readme],

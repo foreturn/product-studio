@@ -1,6 +1,6 @@
 {
   "name": "product-studio",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并由各 Skill 读取和维护项目核心记忆。",
   "author": {
     "name": "foreturn"

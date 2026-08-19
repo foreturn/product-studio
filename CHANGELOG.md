@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.2.1 - 2026-08-19
+
+- Made project-memory closeout explicit in all eleven Skills: tasks authorized to modify files under the current product root now directly create, update, or remove owner fact books before the final response, while read-only work remains read-only.
+- Defined the current product root independently of Git, prioritized explicit product scope and target artifacts, and prohibited resolving fact books from the process directory or Product Studio's source, Skill, installation, or cache directories when the plugin is only the capability provider.
+- Clarified root-anchored storage, first-fact directory and file creation, admission of newly verified pre-existing facts, current-fact writing guidance, and cleanup of empty fact books without turning memory into a task log.
+- Extended project validation and documentation to enforce the complete root resolution, loading, authority, creation, maintenance, formatting, and cleanup contract, including rejection of empty current-fact books.
+
 ## 2.2.0 - 2026-08-17
 
 - Moved project-memory location, authority, admission, synchronization, and exclusion instructions into every `SKILL.md`, leaving each `references/memory.md` focused exclusively on the owner-specific project facts worth remembering.
