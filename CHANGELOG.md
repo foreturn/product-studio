@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.2 - 2026-08-23
+
+- Reframed user-visible content around the user's context, business object, task, decision, outcome, and next step, while limiting AI or system narration and unsupported value claims.
+- Required Web, Android, and iOS Skills to implement confirmed product content semantics faithfully and report material semantic gaps instead of inventing product copy from an implementation perspective.
+- Aligned client principles, project-memory topics, OpenAI invocation prompts, public ownership documentation, and the current Product Studio product facts with the same content-semantics boundary.
+
 ## 2.2.1 - 2026-08-19
 
 - Made project-memory closeout explicit in all eleven Skills: tasks authorized to modify files under the current product root now directly create, update, or remove owner fact books before the final response, while read-only work remains read-only.
