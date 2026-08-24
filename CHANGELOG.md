@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.3 - 2026-08-24
+
+- Required architecture, backend, Web, Android, iOS, and platform implementation to satisfy confirmed functionality and boundaries before choosing the simplest behaviorally complete design.
+- Added code-level organization and naming constraints for directories, files, modules, types, classes, components, methods, functions, constants, configuration, pure logic, and side effects.
+- Prioritized reuse of existing project capabilities, platform standards, and mature open-source components, while requiring contract, maintenance, security, license, dependency, operational, upgrade, and exit-cost review before adoption or limited custom implementation.
+
 ## 2.2.2 - 2026-08-23
 
 - Reframed user-visible content around the user's context, business object, task, decision, outcome, and next step, while limiting AI or system narration and unsupported value claims.
