@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.4 - 2026-08-31
+
+- Distinguished fully enumerable deterministic rules from context-dependent semantic interpretation across software architecture and backend engineering.
+- Required semantic interpretation to cross boundaries through constrained structured results with explicit scope, ambiguity, evidence needs, and next steps, while limiting deterministic execution to validation, authorization, resource, evidence, and side-effect safeguards.
+- Added observable evidence-gap feedback and conservative degradation, rejecting keyword, regular-expression, deletion-list, and example heuristics as substitutes for product-owned semantic responsibility.
+
 ## 2.2.3 - 2026-08-24
 
 - Required architecture, backend, Web, Android, iOS, and platform implementation to satisfy confirmed functionality and boundaries before choosing the simplest behaviorally complete design.
