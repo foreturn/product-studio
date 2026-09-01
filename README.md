@@ -125,3 +125,7 @@ claude plugin validate --strict .
 ```
 
 每项 Skill 还应使用当前 `skill-creator` 的 `quick_validate.py` 独立校验。静态结构不能证明真实客户端一定会在新上下文中选择正确专业、读取相关记忆或维护正确事实；发布前仍应以未显式点名 Skill 的正反向任务做安装态行为验收。
+
+## 许可
+
+本项目依据 [MIT License](LICENSE) 授权。
