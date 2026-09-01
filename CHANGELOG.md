@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.5 - 2026-09-01
+
+- Required behavior-affecting architecture and implementation work to trace real entry points, state, data interactions, side effects, and recovery through to observable business results before coding.
+- Distinguished reusable business capabilities from parameterized examples, helper extraction, and duplicated branches, while converging backend interfaces, messages, tasks, and administrative entry points on shared use cases or domain surfaces.
+- Required Web, Android, and iOS entry adapters to reuse established business capabilities and applicable contracts without forcing full-flow design onto unrelated local changes or prebuilding generic frameworks for hypothetical reuse.
+
 ## 2.2.4 - 2026-08-31
 
 - Distinguished fully enumerable deterministic rules from context-dependent semantic interpretation across software architecture and backend engineering.
