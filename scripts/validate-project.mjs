@@ -277,6 +277,11 @@ function validateSkill(skill) {
     ["fact-book identity resolution", /唯一确认当前产品根目录与 `product-id`/],
     ["project memory loading", /阅读.*项目记忆/],
     ["owner fact-book loading", new RegExp(`<当前产品根目录>/docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["decision evidence separation", /用户已裁定的目标与政策、当前事实、因果推断和待证假设/],
+    ["decision-source evidence boundary", /用户、编码代理或既有实现给出的具体方案都不以来源自证正确/],
+    ["whole-flow decision review", /受影响完整流程的可确认结果、必要状态与交接、失败恢复、变更扩散和维护成本/],
+    ["invalid-decision reopening", /新证据推翻决定前提.*重审受影响决定.*不在失效决定上叠加局部修补.*不因局部失败推翻无关决定/],
+    ["decision ownership boundary", /超出本专业所有权时只报告矛盾、整体影响和待裁决选项/],
     ["mandatory memory closeout", /最终回复前必须.*新确认、改变或失效的核心认知/],
     ["direct fact-book maintenance", /任务已允许修改当前产品根目录内的目标文件时直接创建、更新或移除本专业事实册/],
   ]) {
@@ -533,6 +538,11 @@ function validateDocumentationAndManifests() {
     fail(readmePath, "README must describe project memory");
   }
   for (const [label, pattern] of [
+    ["decision reflection contract", /## 决策反思与纠偏/],
+    ["decision source evidence boundary", /用户或编码代理给出的具体方案.*不能因来源而自动成为正确结论/],
+    ["whole-flow simplicity", /方案的简便性按受影响完整流程衡量.*用户、开发和运行维护的总成本/],
+    ["decision failure classification", /实现偏离已确认决定、决定前提已被证伪和适用条件已经变化/],
+    ["invalid decision reopening", /重审受影响决定及其验收.*不在失效决定上继续叠加局部修补.*不因局部失败推翻无关决定/],
     ["current product root locator", /<current-product-root>\/docs\/product-studio\/<product-id>\/<owner>\.md/],
     ["non-Git product root", /不要求已初始化 Git.*不要求存在 `\.git`/],
     ["Product Studio provider exclusion", /Product Studio 只是技能提供者时.*源码目录.*技能文件目录.*插件安装目录.*缓存目录.*都不是当前产品根目录/],

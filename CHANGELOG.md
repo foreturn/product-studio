@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.6 - 2026-09-03
+
+- Required every professional Skill to separate user-owned goals and policies from facts, inferences, assumptions, and proposed solutions before making, retaining, or repairing a decision.
+- Added whole-flow simplicity and maintainability review across observable outcomes, necessary states and handoffs, failure recovery, rule duplication, change propagation, and long-term operating cost.
+- Required invalidated decisions to be reopened within their affected scope instead of accumulating downstream patches, with explicit quality attribution and static contract guards across all eleven Skills.
+
 ## 2.2.5 - 2026-09-01
 
 - Required behavior-affecting architecture and implementation work to trace real entry points, state, data interactions, side effects, and recovery through to observable business results before coding.
