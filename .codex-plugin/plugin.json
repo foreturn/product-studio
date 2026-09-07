@@ -1,6 +1,6 @@
 {
   "name": "product-studio",
-  "version": "2.2.7",
+  "version": "3.0.0",
   "description": "以十一项自主发现的软件工程专业技能约束产品、架构、服务端、Web、Android、iOS、数据库、平台、安全、质量与发布，并由各 Skill 读取和维护项目核心记忆。",
   "author": {
     "name": "foreturn"
@@ -27,7 +27,7 @@
   "interface": {
     "displayName": "product-studio",
     "shortDescription": "十一项专业技能约束编码，并维护项目核心记忆。",
-    "longDescription": "编码代理依请求、当前产品工件与风险自主发现十一项专业技能；SKILL 规定执行契约与项目记忆提示，principles 承载详细专业能力，memory 只列各 Owner 应记住的项目核心认知。工作前从已确认的当前产品根目录读取相关事实，最终回复前将新确认、改变或失效的核心认知直接创建、更新或移除到该根目录的 Owner 事实册。",
+    "longDescription": "编码代理依请求、当前产品工件与风险自主发现十一项专业技能；SKILL 规定执行契约与项目记忆提示，principles 承载详细专业能力，memory 按能力簇分卷列出各 Owner 应记住的项目核心认知。工作前依命中簇从已确认的当前产品根目录读取对应记忆卷与同名事实文件，证据闭环的核心认知即时写入对应簇的事实文件，最终回复前收口对账。",
     "developerName": "foreturn",
     "category": "Productivity",
     "capabilities": [

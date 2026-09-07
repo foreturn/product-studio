@@ -29,7 +29,6 @@ const REMOVED_FACT_BOOKS = [
   "backend.md",
   "frontend.md",
   "product-experience.md",
-  "verification.md",
   "release.md",
 ];
 const REMOVED_RUNTIME_ASSETS = [
@@ -40,15 +39,9 @@ const REMOVED_RUNTIME_ASSETS = [
   "tests/fixtures/terminal-envelope.json",
   "references/terminal-protocol.md",
 ];
-
 const SKILL_HEADINGS = [
   "目标",
   "执行协议",
-  "输出契约",
-  "完成条件",
-  "停止条件",
-  "权限与边界规则",
-  "参考资料",
   "项目记忆",
 ];
 const PRINCIPLE_HEADINGS = [
@@ -69,7 +62,6 @@ const PROHIBITED_PRINCIPLE_FIELDS = [
   "反模式",
   "验收要点",
 ];
-const MEMORY_HEADINGS = ["核心记忆"];
 const LEGACY_MEMORY_PATTERNS = [
   ["shared terminal protocol", /terminal-protocol\.md|终态记忆协议/],
   ["terminal-memory wording", /终态记忆|terminal-memory/],
@@ -141,19 +133,6 @@ function section(markdown, heading) {
   return lines.slice(start + 1, end).join("\n");
 }
 
-function blocks(markdown, parentHeading) {
-  return section(markdown, parentHeading)
-    .split(/^### /m)
-    .slice(1)
-    .map((block) => {
-      const newline = block.indexOf("\n");
-      return {
-        title: (newline === -1 ? block : block.slice(0, newline)).trim(),
-        body: newline === -1 ? "" : block.slice(newline + 1),
-      };
-    });
-}
-
 function assertCategoryBulletLists(path, entries) {
   for (const entry of entries) {
     const lines = entry.body
@@ -175,36 +154,51 @@ function assertCategoryBulletLists(path, entries) {
   }
 }
 
-function assertCoreMemoryLists(path, entries) {
-  if (entries.length < 5 || entries.length > 9) {
-    fail(path, `must define 5-9 core memory topics; found ${entries.length}`);
+function assertMemoryVolumes(root, skill, professionalName) {
+  const memoryDir = join(root, "references", "memory");
+  const legacyPath = join(root, "references", "memory.md");
+  if (existsSync(legacyPath)) {
+    fail(legacyPath, "single-file memory contract is replaced by references/memory/ cluster volumes");
   }
-  if (new Set(entries.map((entry) => entry.title)).size !== entries.length) {
-    fail(path, "core memory topic titles must be unique");
+  const memoryFiles = existsSync(memoryDir)
+    ? readdirSync(memoryDir).filter((name) => name.endsWith(".md")).sort()
+    : [];
+  const clusters = clusterRegistry(skill);
+  const expectedFiles = clusters.map((cluster) => cluster.file).sort();
+  if (JSON.stringify(memoryFiles) !== JSON.stringify(expectedFiles)) {
+    fail(memoryDir, `memory volumes must exactly match principles cluster volumes (${expectedFiles.join(", ")}); found ${memoryFiles.join(", ")}`);
+    return;
   }
-  for (const entry of entries) {
-    const lines = entry.body
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    const memories = lines.filter((line) => /^- (?!\*\*)\S/.test(line));
-    if (lines.length !== memories.length) {
-      fail(path, `core memory topic "${entry.title}" must contain only plain bullets`);
+  for (const cluster of clusters) {
+    const volumePath = join(memoryDir, cluster.file);
+    const content = read(volumePath);
+    if (!content) continue;
+    const titles = headings(content, 1);
+    if (titles.length !== 1 || titles[0] !== `${professionalName}项目记忆 · ${cluster.name}`) {
+      fail(volumePath, `level-one title must be "${professionalName}项目记忆 · ${cluster.name}"`);
     }
-    if (memories.length < 1 || memories.length > 3) {
-      fail(path, `core memory topic "${entry.title}" must contain 1-3 bullets; found ${memories.length}`);
+    const lines = content.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const memories = lines.filter((line) => /^- (?!\*\*)\S/.test(line));
+    if (lines.length !== memories.length + 1) {
+      fail(volumePath, "memory volume must contain only its title and plain bullets");
+      continue;
+    }
+    if (memories.length < 1 || memories.length > 12) {
+      fail(volumePath, `memory volume "${cluster.name}" must contain 1-12 bullets; found ${memories.length}`);
+      continue;
     }
     for (const memory of memories) {
-      if (memory.slice(2).trim().length < 15) {
-        fail(path, `core memory topic "${entry.title}" contains an underspecified item: ${memory}`);
-      }
       if (!memory.startsWith("- 记住")) {
-        fail(path, `core memory topic "${entry.title}" must state what to remember: ${memory}`);
+        fail(volumePath, `must state what to remember: ${memory}`);
+      }
+      if (memory.slice(2).trim().length < 15) {
+        fail(volumePath, `memory volume "${cluster.name}" contains an underspecified item: ${memory}`);
       }
     }
+    rejectLegacyMemoryContract(volumePath, content);
+    assertAutonomousOrchestration(volumePath, content, skill);
   }
 }
-
 function rejectLegacyMemoryContract(path, markdown) {
   for (const [label, pattern] of LEGACY_MEMORY_PATTERNS) {
     if (pattern.test(markdown)) {
@@ -235,14 +229,12 @@ function validateSkill(skill) {
   const root = join(SKILLS_ROOT, skill);
   const skillPath = join(root, "SKILL.md");
   const principlesPath = join(root, "references", "principles.md");
-  const memoryPath = join(root, "references", "memory.md");
   const agentPath = join(root, "agents", "openai.yaml");
   const skillDoc = read(skillPath);
   const principles = read(principlesPath);
-  const memory = read(memoryPath);
   const agent = read(agentPath);
 
-  if (!skillDoc || !principles || !memory || !agent) return;
+  if (!skillDoc || !principles || !agent) return;
 
   const metadata = frontmatter(skillDoc);
   if (!new RegExp(`^name:\\s*${skill}$`, "m").test(metadata)) {
@@ -264,17 +256,17 @@ function validateSkill(skill) {
     fail(skillPath, "execution protocol must contain exactly six ordered contract steps");
   }
   for (const [label, pattern] of [
-    ["fact-book identity resolution", /唯一确认当前产品根目录与 `product-id`/],
-    ["project memory loading", /阅读.*项目记忆/],
-    ["owner fact-book loading", new RegExp(`<当前产品根目录>/docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["project memory loading", /依第 2 步判定的命中簇，按“项目记忆”章读取对应的记忆卷与簇事实文件/],
+    ["evidence-timed immediate write", /形成证据闭环且预计不受本轮剩余工作影响时.*即时写入对应簇的事实文件/],
     ["decision evidence separation", /用户已裁定的目标与政策、当前事实、因果推断和待证假设/],
     ["decision-source evidence boundary", /用户、编码代理或既有实现给出的具体方案都不以来源自证正确/],
     ["whole-flow decision review", /受影响完整流程的可确认结果、必要状态与交接、失败恢复、变更扩散和维护成本/],
     ["invalid-decision reopening", /新证据推翻决定前提.*重审受影响决定.*不在失效决定上叠加局部修补.*不因局部失败推翻无关决定/],
     ["decision ownership boundary", /超出本专业所有权时只报告矛盾、整体影响和待裁决选项/],
     ["mandatory memory closeout", /最终回复前必须.*新确认、改变或失效的核心认知/],
-    ["direct fact-book maintenance", /任务已允许修改当前产品根目录内的目标文件时直接创建、更新或移除本专业事实册/],
+    ["direct fact-book maintenance", /任务已允许修改当前产品根目录内的目标文件时直接落册/],
   ]) {
+
     if (!pattern.test(executionSection)) {
       fail(skillPath, `execution protocol must cover ${label}`);
     }
@@ -282,7 +274,7 @@ function validateSkill(skill) {
   for (const token of [
     "references/principles.md",
     "能力索引",
-    "references/memory.md",
+    "references/memory/",
   ]) {
     if (!skillDoc.includes(token)) {
       fail(skillPath, `execution contract must reference ${token}`);
@@ -299,12 +291,15 @@ function validateSkill(skill) {
     ["provider-directory exclusion", /Product Studio 仅作为技能提供者时.*不得把.*源码目录.*技能文件目录.*插件安装目录.*缓存目录/],
     ["Product Studio target exception", /只有任务明确以 Product Studio 本身为目标产品时才可使用其目录/],
     ["safe single-level product id", /`product-id`.*当前产品根目录内唯一、稳定.*安全单级目录名/],
-    ["product-root fact-book locator", new RegExp(`<当前产品根目录>/docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["product-root fact-book locator", new RegExp(`<当前产品根目录>/docs/product-studio/<product-id>/${skill}/`)],
     ["root-anchored path", /读取与写入必须使用以已确认根目录为基准的路径/],
     ["relative-path exclusion", /不得把相对的 .*按进程当前目录或 Skill 所在目录解析/],
     ["pre-work loading", /工作前读取/],
-    ["core-memory definition loading", /读取 `references\/memory\.md` 中本次命中的核心主题/],
-    ["owner fact-book locator", new RegExp(`docs/product-studio/<product-id>/${skill}\\.md`)],
+    ["core-memory definition loading", /读取 `references\/memory\/` 下与命中簇卷同名的/],
+    ["cluster-keyed storage", /事实文件名与 `references\/principles\/` 对应簇卷文件名一致/],
+    ["cluster-keyed fact reading", /与命中簇卷同名的/],
+    ["unmatched cluster exclusion", /未命中的簇事实文件不读取/],
+    ["cluster fact-book locator", new RegExp(`docs/product-studio/<product-id>/${skill}/`)],
     ["missing-book closeout", /不得因缺少文件跳过最终检查/],
     ["current-authority precedence", /以当前权威为准/],
     ["core-memory focus", /持续影响后续判断.*难从局部代码直接看清/],
@@ -313,13 +308,15 @@ function validateSkill(skill) {
     ["read-only write boundary", /只读分析、审查或状态查询没有事实册写权限/],
     ["product-root write authority", /任务已允许修改当前产品根目录内的目标文件.*事实册属于同一写权限/],
     ["mandatory direct maintenance", /最终回复前必须.*直接创建、更新或移除.*不得只在回复中列出候选/],
-    ["first-fact creation", new RegExp(`事实册不存在且至少有一条应入册事实时.*在当前产品根目录下一并创建.*${skill}\\.md`)],
-    ["empty-book exclusion", /没有事实时不创建空目录或空册/],
-    ["fact-book title", new RegExp(`首行固定为 .*# ${skill} 当前产品事实`)],
+    ["evidence-timed immediate write", /形成证据闭环且预计不受本轮剩余工作影响时.*即时写入命中簇对应的事实文件/],
+    ["reconciliation closeout", /最终回复前必须收口对账/],
+    ["first-fact creation", new RegExp(`出现首条应入册事实而对应文件不存在时.*在当前产品根目录下一并创建.*${skill}/`)],
+    ["empty-book exclusion", /没有事实时不创建空文件或空目录/],
+    ["fact-book title", new RegExp(`首行固定为 .*# ${skill} 当前产品事实 · <簇名>`)],
     ["fact-topic format", /稳定业务语义为二级标题.*现在时.*相对于当前产品根目录的权威核验入口.*失效或重审条件/],
     ["stale-memory maintenance", /更新或移除旧内容/],
     ["current-facts only", /只保留当前仍成立的事实/],
-    ["last-fact cleanup", /最后一个主题移除后删除事实册.*`<product-id>` 目录为空时一并删除/],
+    ["last-fact cleanup", /最后一条事实移除后删除该文件.*`<product-id>` 目录为空时一并删除/],
     ["write-authority boundary", /不得因本节扩大当前产品根目录之外的写入范围/],
     ["secret exclusion", /秘密/],
     ["user-data exclusion", /用户数据/],
@@ -437,15 +434,7 @@ function validateSkill(skill) {
     );
   }
 
-  assertExactHeadings(memoryPath, memory, MEMORY_HEADINGS);
-  const memoryTitles = headings(memory, 1);
-  if (memoryTitles.length !== 1 || !memoryTitles[0].endsWith("项目记忆")) {
-    fail(memoryPath, "must contain exactly one level-one title ending in 项目记忆");
-  }
-  const coreMemories = blocks(memory, "核心记忆");
-  assertCoreMemoryLists(memoryPath, coreMemories);
-  rejectLegacyMemoryContract(memoryPath, memory);
-  assertAutonomousOrchestration(memoryPath, memory, skill);
+  assertMemoryVolumes(root, skill, professionalName);
 
   for (const key of ["interface:", "display_name:", "short_description:", "default_prompt:"]) {
     if (!agent.includes(key)) fail(agentPath, `missing ${key}`);
@@ -457,6 +446,43 @@ function validateSkill(skill) {
     fail(agentPath, "default_prompt must request reading and maintaining core project memory");
   }
   rejectLegacyMemoryContract(agentPath, agent);
+}
+
+function clusterRegistry(skill) {
+  const principles = readFileSync(join(SKILLS_ROOT, skill, "references", "principles.md"), "utf8");
+  return [...section(principles, "能力索引").matchAll(
+    /^\| (.+?) \| .+? \| \[([a-z0-9-]+\.md)\]\(references\/principles\/[a-z0-9-]+\.md\)/gm,
+  )].map((match) => ({ name: match[1].trim(), file: match[2] }));
+}
+
+function validateClusterFactFile(path, productId, owner, fileName) {
+  if (!EXPECTED_SKILLS.includes(owner)) {
+    fail(path, `fact directory owner must be one of ${EXPECTED_SKILLS.join(", ")}`);
+    return;
+  }
+  if (productId === "." || productId === "..") {
+    fail(path, `product id must be a safe single-level directory name; found ${productId}`);
+    return;
+  }
+  const cluster = clusterRegistry(owner).find((item) => item.file === fileName);
+  if (!cluster) {
+    fail(path, `fact file must be named after one of ${owner}'s cluster volumes; found ${fileName}`);
+    return;
+  }
+  const factBook = read(path);
+  const expectedTitle = `# ${owner} 当前产品事实 · ${cluster.name}`;
+  if (!factBook.startsWith(`${expectedTitle}\n`) && !factBook.startsWith(`${expectedTitle}\r\n`)) {
+    fail(path, `fact file title must be ${expectedTitle}`);
+  }
+  const factTopics = headings(factBook, 2);
+  if (factTopics.length === 0) {
+    fail(path, "fact file must contain at least one current fact topic");
+  }
+  for (const topic of factTopics) {
+    if (!section(factBook, topic).trim()) {
+      fail(path, `fact file topic "${topic}" must not be empty`);
+    }
+  }
 }
 
 function validateTopology() {
@@ -490,29 +516,22 @@ function validateTopology() {
           fail(path, "removed fact locator must not exist");
         }
         if (entry.isFile() && entry.name.endsWith(".md")) {
+          const productPath = relativePath(factRoot, dirname(path)).replaceAll("\\", "/");
+          const segments = productPath ? productPath.split("/") : [];
+          if (segments.length === 2) {
+            validateClusterFactFile(path, segments[0], segments[1], entry.name);
+            continue;
+          }
           const owner = basename(entry.name, ".md");
           if (!EXPECTED_SKILLS.includes(owner)) {
             fail(path, `fact book owner must be one of ${EXPECTED_SKILLS.join(", ")}`);
             continue;
           }
-          const productPath = relativePath(factRoot, dirname(path)).replaceAll("\\", "/");
-          if (!productPath || productPath.includes("/")) {
-            fail(path, "fact book must be directly under docs/product-studio/<product-id>/");
+          if (segments.length === 1) {
+            fail(path, `${owner} must store facts under ${owner}/ as per-cluster files`);
+            continue;
           }
-          const factBook = read(path);
-          const expectedTitle = `# ${owner} 当前产品事实`;
-          if (!factBook.startsWith(`${expectedTitle}\n`) && !factBook.startsWith(`${expectedTitle}\r\n`)) {
-            fail(path, `fact book title must be ${expectedTitle}`);
-          }
-          const factTopics = headings(factBook, 2);
-          if (factTopics.length === 0) {
-            fail(path, "fact book must contain at least one current fact topic");
-          }
-          for (const topic of factTopics) {
-            if (!section(factBook, topic).trim()) {
-              fail(path, `fact book topic "${topic}" must not be empty`);
-            }
-          }
+          fail(path, "fact book must be under docs/product-studio/<product-id>/<owner>/");
         }
       }
     }
@@ -607,7 +626,8 @@ function validateDocumentationAndManifests() {
     ["whole-flow simplicity", /方案的简便性按受影响完整流程衡量.*用户、开发和运行维护的总成本/],
     ["decision failure classification", /实现偏离已确认决定、决定前提已被证伪和适用条件已经变化/],
     ["invalid decision reopening", /重审受影响决定及其验收.*不在失效决定上继续叠加局部修补.*不因局部失败推翻无关决定/],
-    ["current product root locator", /<current-product-root>\/docs\/product-studio\/<product-id>\/<owner>\.md/],
+    ["current product root locator", /<current-product-root>\/docs\/product-studio\/<product-id>\/<owner>\/<能力簇卷文件名>\.md/],
+    ["per-skill memory volumes", /references\/memory\/[^\n]*按能力簇分卷/],
     ["non-Git product root", /不要求已初始化 Git.*不要求存在 `\.git`/],
     ["Product Studio provider exclusion", /Product Studio 只是技能提供者时.*源码目录.*技能文件目录.*插件安装目录.*缓存目录.*都不是当前产品根目录/],
     ["root-anchored fact-book access", /所有事实册读写都必须锚定已经确认的 `current-product-root`/],

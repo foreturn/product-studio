@@ -1,126 +1,133 @@
-# Changelog
+# 更新日志
+
+## 3.0.0 - 2026-09-07
+
+- 将簇键化项目记忆推广到全部十一项 Skill：原 `references/memory.md` 的主题并入 `references/memory/` 下按簇分卷的记忆卷，文件名与 `references/principles/` 簇卷一致，全部“记住”陈述逐字保留；一次命中判定即可加载对应的记忆卷与事实文件。
+- 事实册改为按簇分文件存放于 `docs/product-studio/<product-id>/<owner>/<能力簇卷文件名>.md`，首行 `# <owner> 当前产品事实 · <簇名>`；证据闭环即时写入，最终回复前必须收口对账，并落实至 `<product-id>` 目录的三级清理；迁移既有五册 Product Studio 事实册并移除旧式单册 locator。
+- 项目校验器归一到单簇契约：`references/memory/` 卷双射映射、按簇事实文件拓扑并拒绝旧式单册、统一 SKILL.md 执行协议与项目记忆章断言，并更新 README 契约、locator 与目录树。
+- 每份 SKILL.md 由八章精简为三章（目标、执行协议、项目记忆）：删去输出契约、完成条件、停止条件、权限与边界规则及参考资料章，其剩余语义由执行协议与 principles 卷承接；执行协议第 3/6 步改为指向“项目记忆”章，不再重复其内容。
 
 ## 2.2.7 - 2026-09-07
 
-- Restructured every professional Skill's `references/principles.md` into a slim capability index with a reading protocol and a hit-condition table, moving the constraint body into four to six cluster volumes under `references/principles/` with all bullets preserved verbatim.
-- Rewrote the project validator for the cluster contract: bijective index-volume mapping, four to six clusters per Skill, eight to sixteen categories with four to eight plain bullets each, protocol and verification-pointer checks, and extended prohibited-field and orchestration guards to every cluster volume.
-- Updated the README three-layer contract, directory tree, and Product Studio fact books to describe on-demand cluster loading, where unmatched cluster volumes stay unread and fresh-context behavioral acceptance remains required.
+- 将每项 Skill 的 `references/principles.md` 重构为带读取协议与命中条件表的瘦索引，约束正文移入 `references/principles/` 下四至六个簇分卷，全部条目逐字保留。
+- 重写项目校验器以适配簇契约：索引与卷双射映射、每项 Skill 四至六簇、八至十六个大类且每类四至八条、协议与核验入口检查，并把禁用字段与固定编排防护扩展到每个簇卷。
+- 更新 README 三层契约、目录树与 Product Studio 事实册，描述按需簇加载：未命中的簇卷不读取，新上下文行为验收仍然必需。
 
 ## 2.2.6 - 2026-09-03
 
-- Required every professional Skill to separate user-owned goals and policies from facts, inferences, assumptions, and proposed solutions before making, retaining, or repairing a decision.
-- Added whole-flow simplicity and maintainability review across observable outcomes, necessary states and handoffs, failure recovery, rule duplication, change propagation, and long-term operating cost.
-- Required invalidated decisions to be reopened within their affected scope instead of accumulating downstream patches, with explicit quality attribution and static contract guards across all eleven Skills.
+- 要求每项 Skill 在作出、沿用或修复决定前，把用户拥有的目标与政策和事实、推断、假设、拟议方案区分开。
+- 新增跨可观察结果、必要状态与交接、失败恢复、规则重复、变更扩散及长期维护成本的整体流程简便性与可维护性审查。
+- 要求失效决定在其影响范围内重开，而非在下游不断叠加修补；十一项 Skill 全部配备明确的质量归因与静态契约防护。
 
 ## 2.2.5 - 2026-09-01
 
-- Required behavior-affecting architecture and implementation work to trace real entry points, state, data interactions, side effects, and recovery through to observable business results before coding.
-- Distinguished reusable business capabilities from parameterized examples, helper extraction, and duplicated branches, while converging backend interfaces, messages, tasks, and administrative entry points on shared use cases or domain surfaces.
-- Required Web, Android, and iOS entry adapters to reuse established business capabilities and applicable contracts without forcing full-flow design onto unrelated local changes or prebuilding generic frameworks for hypothetical reuse.
+- 要求影响行为的架构与实现工作在编码前沿真实入口、状态、数据交互、副作用与恢复路径追踪至可观察业务结果。
+- 区分可复用业务能力与参数化示例、辅助函数抽取与重复分支，并把后端接口、消息、任务与管理入口收敛到共享用例或领域表面。
+- 要求 Web、Android、iOS 入口适配器复用既有业务能力与适用契约，不把全流程设计强加给无关局部改动，也不为假想复用预建通用框架。
 
 ## 2.2.4 - 2026-08-31
 
-- Distinguished fully enumerable deterministic rules from context-dependent semantic interpretation across software architecture and backend engineering.
-- Required semantic interpretation to cross boundaries through constrained structured results with explicit scope, ambiguity, evidence needs, and next steps, while limiting deterministic execution to validation, authorization, resource, evidence, and side-effect safeguards.
-- Added observable evidence-gap feedback and conservative degradation, rejecting keyword, regular-expression, deletion-list, and example heuristics as substitutes for product-owned semantic responsibility.
+- 在软件架构与后端工程中区分可完全枚举的确定性规则与依赖上下文的语义解释。
+- 要求语义解释经由带明确范围、歧义、证据需求与后续步骤的受约束结构化结果跨边界传递，把确定性执行限制在校验、授权、资源、证据与副作用防护内。
+- 新增可观察的证据缺口反馈与保守降级，拒绝以关键词、正则、删除清单或示例启发式替代产品拥有的语义责任。
 
 ## 2.2.3 - 2026-08-24
 
-- Required architecture, backend, Web, Android, iOS, and platform implementation to satisfy confirmed functionality and boundaries before choosing the simplest behaviorally complete design.
-- Added code-level organization and naming constraints for directories, files, modules, types, classes, components, methods, functions, constants, configuration, pure logic, and side effects.
-- Prioritized reuse of existing project capabilities, platform standards, and mature open-source components, while requiring contract, maintenance, security, license, dependency, operational, upgrade, and exit-cost review before adoption or limited custom implementation.
+- 要求架构、后端、Web、Android、iOS 与平台实现先满足已确认的功能与边界，再选择行为完整的最简设计。
+- 新增目录、文件、模块、类型、类、组件、方法、函数、常量、配置、纯逻辑与副作用层面的代码组织与命名约束。
+- 优先复用项目既有能力、平台标准与成熟开源组件；采纳或有限自研前须评审契约、维护、安全、许可、依赖、运维、升级与退出成本。
 
 ## 2.2.2 - 2026-08-23
 
-- Reframed user-visible content around the user's context, business object, task, decision, outcome, and next step, while limiting AI or system narration and unsupported value claims.
-- Required Web, Android, and iOS Skills to implement confirmed product content semantics faithfully and report material semantic gaps instead of inventing product copy from an implementation perspective.
-- Aligned client principles, project-memory topics, OpenAI invocation prompts, public ownership documentation, and the current Product Studio product facts with the same content-semantics boundary.
+- 以用户情境、业务对象、任务、决策、结果与下一步重组用户可见内容，限制 AI 或系统自述及无依据的价值声明。
+- 要求 Web、Android、iOS Skill 忠实落实已确认的产品内容语义，出现实质语义缺口时只报告缺口，不从实现视角代写产品文案。
+- 让客户端 principles、项目记忆主题、OpenAI 调用提示、公开所有权文档与 Product Studio 当前产品事实对齐同一内容语义边界。
 
 ## 2.2.1 - 2026-08-19
 
-- Made project-memory closeout explicit in all eleven Skills: tasks authorized to modify files under the current product root now directly create, update, or remove owner fact books before the final response, while read-only work remains read-only.
-- Defined the current product root independently of Git, prioritized explicit product scope and target artifacts, and prohibited resolving fact books from the process directory or Product Studio's source, Skill, installation, or cache directories when the plugin is only the capability provider.
-- Clarified root-anchored storage, first-fact directory and file creation, admission of newly verified pre-existing facts, current-fact writing guidance, and cleanup of empty fact books without turning memory into a task log.
-- Extended project validation and documentation to enforce the complete root resolution, loading, authority, creation, maintenance, formatting, and cleanup contract, including rejection of empty current-fact books.
+- 十一项 Skill 全部明确项目记忆收口：任务已获授权修改当前产品根目录内文件时，最终回复前直接创建、更新或移除 Owner 事实册；只读工作保持只读。
+- 当前产品根目录的判定独立于 Git，显式产品范围与目标工件优先；插件仅作能力提供者时，禁止从进程目录或 Product Studio 的源码、Skill、安装或缓存目录解析事实册。
+- 明确锚定根目录的存放、首条事实的目录与文件创建、新核验既有事实的准入、当前事实写入指引及空事实册清理，不把记忆变成任务日志。
+- 扩展项目校验与文档，强制完整的根目录判定、读取、权威、创建、维护、格式与清理契约，包括拒绝空的当前事实册。
 
 ## 2.2.0 - 2026-08-17
 
-- Moved project-memory location, authority, admission, synchronization, and exclusion instructions into every `SKILL.md`, leaving each `references/memory.md` focused exclusively on the owner-specific project facts worth remembering.
-- Expanded all eleven memory references to nine core topics with three explicit fact prompts each, covering ownership, authority, lifecycle, failure, recovery, compatibility, and evidence boundaries without duplicating source inventories or task history.
-- Updated the project validator, README, and current Product Studio fact books to enforce and describe the separate Skill, principles, and memory responsibilities while rejecting the legacy memory usage contract.
+- 把项目记忆的位置、权威、准入、同步与排除指令移入每份 `SKILL.md`，让各 `references/memory.md` 专注于本 Owner 值得记住的项目事实。
+- 全部十一份记忆参考扩展为九个核心主题、每主题三条明确事实提示，覆盖所有权、权威、生命周期、失败、恢复、兼容与证据边界，不复制源码清单或任务历史。
+- 更新项目校验器、README 与 Product Studio 当前事实册，强制并描述 Skill、principles、memory 三者职责分离，拒绝旧式记忆使用契约。
 
 ## 2.1.1 - 2026-08-16
 
-- Simplified every professional memory reference to five to nine core project-knowledge topics, so future agents read only the durable product-specific context that changes engineering judgment.
-- Removed the shared terminal-memory protocol and its action/result vocabulary; each Skill now reads relevant project memory before work and updates or removes stale knowledge only when core understanding changes.
+- 把每份专业记忆参考简化为五至九个核心项目认知主题，让未来代理只读会改变工程判断的持久产品上下文。
+- 移除共享的终端记忆协议及其动作/结果词汇；各 Skill 现在工作前读取相关项目记忆，仅当核心认知变化时更新或移除过时知识。
 
 ## 2.1.0 - 2026-08-16
 
-- Removed the terminal Hook registration, state machine, receipt fixture, and Hook-specific test suite so terminal fact closure no longer depends on client Hook trust, event delivery, or per-session runtime state.
-- Moved terminal memory closure into every professional Skill as an explicit final-answer prompt contract: each Owner now revalidates hit facts, applies `ADD`, `UPDATE`, `DELETE`, or `NO_CHANGE`, writes only with repository authorization, and reports `SYNCED`, `NO_CHANGE`, `DEFERRED`, or `BLOCKED` in human-readable form.
-- Replaced Hook asset validation with static checks that all eleven Skills contain owner-specific fact locators, complete action and result semantics, and terminal fact instructions, while explicitly documenting that behavioral compliance still requires fresh-context acceptance evidence.
+- 移除终端 Hook 注册、状态机、回执夹具与 Hook 专属测试套件，终端事实收口不再依赖客户端 Hook 信任、事件送达或会话级运行状态。
+- 把终端记忆收口移入每项专业 Skill 作为显式的最终回复提示契约：各 Owner 重新核验命中事实、应用 `ADD`、`UPDATE`、`DELETE` 或 `NO_CHANGE`、仅在仓库授权内写入，并以人类可读形式报告 `SYNCED`、`NO_CHANGE`、`DEFERRED` 或 `BLOCKED`。
+- 以静态检查取代 Hook 资产校验：十一项 Skill 均含 Owner 专属事实 locator、完整动作与结果语义及终端事实指令，同时明确记录行为合规仍需新上下文验收证据。
 
 ## 2.0.0 - 2026-08-14
 
-- Rebuilt the plugin as eleven independently discoverable professional skills spanning product management, architecture, backend, Web, Android, iOS, database, platform, security, quality, and release engineering; the coding agent chooses and orders applicable skills from the request, repository evidence, and risk.
-- Standardized every `SKILL.md` as an execution contract with hit-only fact loading and authority revalidation, every `principles.md` as broad professional categories containing framework-neutral invariants and trade-off constraints, and every `memory.md` as five to nine owner-specific semantic terminal fact types with explicit admission, merging, wording, authority, revalidation, change, and exclusion rules.
-- Removed applicability, non-applicability, and required-input sections from every Skill so the coding agent retains discovery and input-selection autonomy; frontmatter descriptions are now concise Chinese professional summaries.
-- Tightened fact admission to require current terminal truth, stability, non-obviousness, decision relevance, rediscovery cost, unique ownership, revalidatability, and safe retention; source summaries, plans, migration progress, runtime snapshots, generated inventories, and one-run results remain turn evidence rather than project memory.
-- Consolidated product intent and product experience under one product-management owner, while giving Web, Android, iOS, and platform engineering independent platform-specific boundaries.
-- Replaced callable terminal synchronization with `UserPromptSubmit`, paired `PreToolUse`/`PostToolUse`, and `Stop` hooks that journal observed repository changes and validation commands, stream content fingerprints across unborn repositories, hidden index flags and nested worktrees, isolate concurrent sessions, bind exact fact-book paths, accept `SYNCED`, `NO_CHANGE`, `DEFERRED`, or `BLOCKED` receipts, delete accepted or rejected envelopes, and bound continuation to one retry.
-- Bound validation evidence from observed `Bash`, `exec_command`, and `shell_command` completions while treating edit tools solely as mutation evidence.
-- Split full-repository and implementation fingerprints so verified implementation evidence survives a later owner fact-book update, excluded protocol-control commands from validation evidence, and allowed only the sole observed `record` control to close its own ToolUse envelope.
-- Made fact-book expression semantic rather than template-driven: topics retain stable merge keys, current truth, authority, scope, and revalidation meaning without requiring fixed Markdown headings, four labeled fields, order, or sentence counts.
-- Adopted owner-named fact locators under `docs/product-studio/<product-id>/`, with no compatibility aliases or duplicate fact stores.
+- 插件重建为十一项可独立发现的专业 Skill，覆盖产品管理、架构、后端、Web、Android、iOS、数据库、平台、安全、质量与发布工程；编码代理依请求、仓库证据与风险自行选择并排序适用技能。
+- 统一每份 `SKILL.md` 为执行契约（仅加载命中的事实并重验权威），每份 `principles.md` 为承载跨框架不变量与取舍约束的宽专业类目，每份 `memory.md` 为五至九类 Owner 专属语义终端事实类型，配以明确的准入、合并、措辞、权威、重验、变更与排除规则。
+- 移除各 Skill 的适用、不适用与必需输入章，保留编码代理的发现与输入选择自主权；frontmatter description 改为简洁的中文专业摘要。
+- 收紧事实准入：须为当前终端真相、稳定、非显而易见、影响决策、重发现成本高、所有权唯一、可重验且可安全保留；源码摘要、计划、迁移进度、运行快照、生成的清单与单次结果仍属本轮证据而非项目记忆。
+- 产品意图与产品体验合并由 product-management 一个 Owner 承担，Web、Android、iOS 与平台工程保持独立的平台专属边界。
+- 以 `UserPromptSubmit`、成对 `PreToolUse`/`PostToolUse` 与 `Stop` Hook 取代可调用终端同步：记录观察到的仓库变更与校验命令、跨未出生仓库流式传输内容指纹、处理隐藏索引标志与嵌套 worktree、隔离并发会话、绑定精确事实册路径、接受 `SYNCED`、`NO_CHANGE`、`DEFERRED` 或 `BLOCKED` 回执、删除已接受或已拒绝的信封，并把续行限制为一次重试。
+- 把校验证据绑定到观察到的 `Bash`、`exec_command` 与 `shell_command` 完成，编辑类工具仅作变更证据。
+- 拆分全仓库指纹与实现指纹，使已验证的实现证据在 Owner 事实册后续更新后仍可存活；把协议控制命令排除出校验证据，只允许唯一观察到的 `record` 控制关闭其自身 ToolUse 信封。
+- 让事实册表达语义化而非模板驱动：主题保留稳定合并键、当前真相、权威、范围与重验含义，不要求固定 Markdown 标题、四个标注字段、顺序或句数。
+- 采用 Owner 命名的事实 locator `docs/product-studio/<product-id>/`，不设兼容别名或重复事实存储。
 
 ## 1.0.3 - 2026-08-11
 
-- Scoped each specialist fact store to `docs/product-studio/<product-id>/<owner>.md` using a repository-unique, directory-safe product ID that may span multiple project roots; multi-product work now resolves and synchronizes every affected product separately without duplicating authoritative facts.
+- 每个专业的事实存储定位于 `docs/product-studio/<product-id>/<owner>.md`，产品 ID 在仓库内唯一、可作安全目录名且可跨多个项目根；多产品工作分别解析并同步每个受影响产品，不复制权威事实。
 
 ## 1.0.2 - 2026-08-06
 
-- Redefined the six specialist fact stores as cumulative, project-wide views of each Owner's currently verified facts. A task now synchronizes only its actually inspected scope without treating the task, final diff, or most recent code change as the fact boundary, and read-only work reports candidate memory changes unless fact-store writes are authorized.
-- Standardized every fact-store template and the fourteen existing Product Studio facts on four fields: current fact, authoritative evidence, impact boundary, and revalidation entry. Fact stores now use current-project titles without frontmatter, Owner metadata, status, timestamps, or format versions; volatile release facts still bind environment, artifact, verification time, and invalidation conditions.
-- Clarified that Router owns no fact store, architecture memory retains only implemented evolution, migration, and compatibility constraints rather than temporary delivery slices, and each specialist remains the sole Owner of its fact text.
-- Added durable verification and release facts for the distinct Codex and Claude Code distribution surfaces, their evidence limits, and the production-operation authorization boundary.
+- 把六个专业事实存储重新定义为各 Owner 当前已核验事实的累计项目级视图。任务只同步其实际核验范围，不把任务、最终差异或最近代码改动当作事实边界；只读工作在事实存储写入未获授权时报告候选记忆变更。
+- 统一全部事实存储模板与既有十四条 Product Studio 事实为四字段：当前事实、权威证据、影响边界、复核入口。事实存储改用当前项目标题，不再有 frontmatter、Owner 元数据、状态、时间戳或格式版本；易变的发布事实仍绑定环境、制品、核验时间与失效条件。
+- 明确 Router 不拥有事实存储；架构记忆只保留已实现的演进、迁移与兼容约束而非临时交付切片；各专业仍是其事实文本的唯一 Owner。
+- 为 Codex 与 Claude Code 两条分发渠道分别补录发布与核验事实、其证据边界及生产运维授权边界。
 
 ## 1.0.1 - 2026-08-03
 
-- Reorganized frontend engineering into nine concrete capabilities, merging duplicated task and information-architecture rules, assigning interaction state, interface integration, accessibility, security, performance, and real-browser evidence to a single capability each, and simplifying the Skill workflow and completion gates so they no longer repeat detailed capability rules.
-- Reorganized backend engineering into nine concrete capabilities, separating data modeling and queries from migration and data evolution. Assigned API idempotency semantics, transaction enforcement, asynchronous delivery, and performance evidence to a single capability each, and simplified the Skill workflow so it no longer repeats detailed capability rules.
-- Reorganized system architecture into nine non-overlapping capabilities, separating architecture-context gating, boundary responsibilities, data ownership and invariants, cross-boundary interactions, quality decisions, failure recovery, security, operability, and evolution/delivery slicing. Simplified the Skill workflow so it no longer repeats the detailed capability rules.
-- Reorganized product design into eight concrete capabilities: current-state problem definition, user-role-task modeling, business rules and closure, task journey and information actions, state and recovery, scope, success and acceptance, and assumption/decision management. Removed the standalone product-contract section, assigned risk handling, permission semantics, prioritization, and unknowns to a single capability each, and simplified the Skill workflow so it no longer repeats detailed capability rules.
-- Reorganized router orchestration into eight non-overlapping capabilities covering trigger decisions, minimal skill chains, vertical slices, contract dependencies, parallel write isolation, risk probes, gate stopping, and change handoffs. Router remains the sole owner of explicit skill selection while specialist Skills keep only their progressive-loading principles entry, and the orchestration workflow no longer repeats detailed capability rules.
-- Reorganized release and operations into nine non-overlapping capabilities covering release scope, version and Tag governance, release notes, artifact provenance, environment readiness, compatibility and migration, execution gates, health, and recovery feedback. Reduced duplicated workflow and incident rules while preserving exact authorization for repository and environment changes.
-- Restored `release` as the seventh callable skill beside `router`, `design`, `architecture`, `backend`, `frontend`, and `verification`. Release readiness, authorization, execution, health, rollback, incident response, and feedback now have a separate owner again.
-- Centralized production deployment, production migration, traffic switching, production configuration changes, rollback, and incident operations in `release`. External changes require explicit authorization bound to the current artifact, target environment, scope, action, and time window, and must use the target project's existing operational tooling.
-- Curated seven professional capability references around concrete core capabilities and common misjudgments, removing generic role-responsibility sections already owned by each `SKILL.md`.
-- Normalized every skill-owned capability filename to the single word `principles.md`; each Skill loads only its own curated reference.
-- Replaced process/history memory with six current-fact stores owned by `design`, `architecture`, `backend`, `frontend`, `verification`, and `release`. Each professional Skill owns its sole `references/memory.md`; release memory retains only reusable, currently evidenced operational facts and never persists authorization, command streams, incident timelines, or secrets. `router` owns no memory.
-- Removed the repository-specific Python validator and exact capability-reference hashes. Platform validators now cover plugin shape, while routing, ownership boundaries, and task behavior require direct evidence from fresh-context trials.
-- Removed router-owned terminal closure and centralized memory synchronization. The router now stops orchestration when promised artifacts are ready or a hard dependency prevents continuation; `verification` owns the final verdict, while each invoked specialist owns its own fact synchronization.
+- 前端工程重组为九项具体能力：合并重复的任务与信息架构规则，交互状态、接口集成、无障碍、安全、性能与真实浏览器证据各归一项能力，并简化 Skill 工作流与完成门，不再重复详细能力规则。
+- 后端工程重组为九项具体能力：数据建模与查询同迁移及数据演进分离；API 幂等语义、事务强制、异步交付与性能证据各归一项能力，并简化 Skill 工作流。
+- 系统架构重组为九项互不重叠的能力：架构上下文门控、边界职责、数据所有权与不变量、跨边界交互、质量决策、失败恢复、安全、可运维性与演进/交付切片；简化 Skill 工作流，不再重复详细能力规则。
+- 产品设计重组为八项具体能力：现状问题定义、用户-角色-任务建模、业务规则与闭环、任务旅程与信息动作、状态与恢复、范围、成功与验收、假设/决策管理；移除独立的产品契约章，风险处理、权限语义、优先级与未知各归一项，并简化 Skill 工作流。
+- Router 编排重组为八项互不重叠的能力：触发决策、最小技能链、纵向切片、契约依赖、并行写隔离、风险探针、门禁停止与变更交接。Router 仍是显式技能选择的唯一 Owner，专业 Skill 只保留渐进加载的 principles 入口，编排工作流不再重复详细能力规则。
+- 发布与运维重组为九项互不重叠的能力：发布范围、版本与 Tag 治理、发布说明、制品来源、环境就绪、兼容与迁移、执行门禁、健康与恢复反馈；减少重复的工作流与事故规则，同时精确保留仓库与环境变更的授权要求。
+- 恢复 `release` 为与 `router`、`design`、`architecture`、`backend`、`frontend`、`verification` 并列的第七项可调用技能；发布就绪、授权、执行、健康、回滚、事故响应与反馈重新拥有独立 Owner。
+- 生产部署、生产迁移、切流、生产配置变更、回滚与事故运维集中到 `release`：外部变更须获显式授权并绑定当前制品、目标环境、范围、动作与时间窗，且必须使用目标项目既有运维工具。
+- 围绕具体核心能力与常见误判重整七份专业能力参考，移除已由各 `SKILL.md` 承担的通用角色职责章。
+- 各 Skill 能力文件名统一为单词 `principles.md`；每项 Skill 只加载自己的精选参考。
+- 以 `design`、`architecture`、`backend`、`frontend`、`verification`、`release` 六个 Owner 拥有的当前事实存储取代过程/历史记忆。每项专业 Skill 独占自己的 `references/memory.md`；release 记忆只保留可复用、有当前证据的运维事实，绝不持久化授权、命令流、事故时间线或秘密。`router` 不拥有记忆。
+- 移除仓库专属的 Python 校验器与精确能力参考哈希。平台校验器覆盖插件形态，而路由、所有权边界与任务行为仍需新上下文试行的直接证据。
+- 移除 router 拥有的终端收口与集中式记忆同步。Router 在承诺产物就绪或硬依赖阻断续行时停止编排；`verification` 拥有最终结论，各被调用专业拥有自己的事实同步。
 
 ## 0.3.0 - 2026-07-16
 
-- Added evidence-based expansion for sparse vibe-coding prompts with explicit fact, inference, and decision boundaries.
-- Defined role inputs, responsibilities, outputs, handoff gates, and return paths across the complete product lifecycle.
-- Added requirement-to-evidence traceability and stricter delivery completion rules.
-- Added release operations for deployment authorization, migrations, rollback, post-release validation, and feedback loops.
-- Expanded every lifecycle role with explicit professional capabilities and implementation-level decision heuristics, including comprehensive frontend UX and visual quality guidance.
-- Expanded shared templates, Codex UI metadata, dual-platform descriptions, and deterministic project validation targets.
+- 为稀疏的 vibe-coding 提示新增基于证据的扩展，带明确的事实、推断与决策边界。
+- 定义完整产品生命周期中各角色的输入、职责、输出、交接门与返回路径。
+- 新增需求到证据的可追溯性与更严格的交付完成规则。
+- 新增部署授权、迁移、回滚、发布后验证与反馈环路的发布运维。
+- 为每个生命周期角色扩充专业能力与实现级决策启发，含全面的前端 UX 与视觉质量指引。
+- 扩充共享模板、Codex 界面元数据、双平台描述与确定性项目校验目标。
 
 ## 0.2.1 - 2026-07-16
 
-- Translated skill instructions, UI prompts, plugin metadata, templates, and usage documentation into Chinese.
-- Removed routing eval cases that were not connected to an evaluation runner.
+- 将 Skill 指令、界面提示、插件元数据、模板与使用文档翻译为中文。
+- 移除未接入评测执行器的路由评测用例。
 
 ## 0.2.0 - 2026-07-16
 
-- Extracted product, frontend, backend, architecture, and verification guidance from global instructions into focused skills.
-- Added end-to-end product delivery orchestration and durable artifact paths.
-- Added architecture and acceptance templates, routing eval cases, and deterministic project validation.
+- 把产品、前端、后端、架构与验证指引从全局指令抽取为聚焦的 Skill。
+- 新增端到端产品交付编排与持久工件路径。
+- 新增架构与验收模板、路由评测用例及确定性项目校验。
 
 ## 0.1.0 - 2026-07-16
 
-- Initialized shared product development skills and templates.
-- Added Codex and Claude Code plugin manifests.
+- 初始化共享产品开发技能与模板。
+- 新增 Codex 与 Claude Code 插件清单。
