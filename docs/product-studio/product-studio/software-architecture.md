@@ -9,7 +9,7 @@
 
 ## 专业内容三层分离
 
-- **当前事实**：每项专业使用相同目录形制：`SKILL.md` 用中文 description 作发现摘要，正文只保留目标、执行、输出、完成、停止、权限、参考和项目记忆八章，其中“项目记忆”章承载当前产品根目录与产品标识定位、事实读取、准入、维护与排除规则；`references/principles.md` 按八至十六个专业大类组织，每类只列四至八条跨框架专业约束；`references/memory.md` 只有“核心记忆”一章，以五至九个专业主题、每题一至三条“记住……”普通列表详细定义未来 AI 应记住的项目不变量；`agents/openai.yaml` 只承载界面元数据。
+- **当前事实**：每项专业使用相同目录形制：`SKILL.md` 用中文 description 作发现摘要，正文只保留目标、执行、输出、完成、停止、权限、参考和项目记忆八章，其中“项目记忆”章承载当前产品根目录与产品标识定位、事实读取、准入、维护与排除规则；`references/principles.md` 以瘦索引列四至六个能力簇与任务句式命中条件，约束正文按簇分卷于 `references/principles/`，全部簇卷合计八至十六个专业大类，每类只列四至八条跨框架专业约束；`references/memory.md` 只有“核心记忆”一章，以五至九个专业主题、每题一至三条“记住……”普通列表详细定义未来 AI 应记住的项目不变量；`agents/openai.yaml` 只承载界面元数据。
 - **权威依据**：`README.md#三层文件契约`；`scripts/validate-project.mjs#SKILL_HEADINGS`；`scripts/validate-project.mjs#PRINCIPLE_HEADINGS`；`scripts/validate-project.mjs#MEMORY_HEADINGS`；`scripts/validate-project.mjs#assertCoreMemoryLists`
 - **影响边界**：十一项 Skill 的加载体积、专业边界、维护审查和项目事实写法都依赖此分层；三类文件各自格式统一，但彼此不共用同一内容模型。
 - **复核入口**：运行项目契约校验与十一项 `quick_validate.py`，检查精确章节、能力索引、每类约束条目数、核心记忆主题数量、每题条目数与“记住”陈述、SKILL 内 Owner locator 和元数据；任一文件职责或统一结构变化时重审。
@@ -17,21 +17,21 @@
 ## 完整业务流优先的能力复用与极简实现
 
 - **当前事实**：Product Studio 的软件架构、后端、Web、Android 与 iOS 工程要求会改变用户任务、领域行为或共享能力的实施，先沿真实入口及实际存在的调用、状态、持久化、数据交互和副作用追踪至可确认结果，识别能力所有者、既有实现、共同不变量与真实消费者。相同业务动作由唯一用例、领域公共面或稳定业务契约承载，接口、消息、任务、页面和系统入口只作协议或平台适配，不以参数化样例、抽取工具函数或复制条件冒充复用；业务能力复用之后才评估语言、平台与成熟开源组件提供的技术机制。代码仍须先完整满足已确认功能、边界与验收，再在行为等价方案中以用户步骤、业务状态与交接、代码路径、运行部件、失败恢复和变更扩散的总成本选择整体最简且易读的实现。
-- **权威依据**：`skills/software-architecture/SKILL.md#执行协议`；`skills/software-architecture/references/principles.md#代码组织命名与能力复用`；`skills/backend-engineering/SKILL.md#执行协议`；`skills/backend-engineering/references/principles.md#应用分层与模块内聚`；Web、Android 与 iOS 工程的 `SKILL.md#执行协议`、工程结构准则及 `references/memory.md`。
+- **权威依据**：`skills/software-architecture/SKILL.md#执行协议`；`skills/software-architecture/references/principles/decomposition-cohesion.md#代码组织命名与能力复用`；`skills/backend-engineering/SKILL.md#执行协议`；`skills/backend-engineering/references/principles/domain-structure.md#应用分层与模块内聚`；Web、Android 与 iOS 工程的 `SKILL.md#执行协议`、工程结构准则及 `references/memory.md`。
 - **影响边界**：该约束影响服务端与客户端实现、共享业务能力、调用链和消费者契约；它不要求为单一消费者或假想变化预建通用框架，也不允许以复用或极简之名省略权限、错误、事务、数据约束、副作用、恢复或验证。平台标准与开源复用仍须审查契约、维护、安全、许可、体积、依赖、运维、升级和退出成本。
 - **复核入口**：运行项目与各 Skill 校验，并以同一业务动作的接口、消息、任务、页面及系统入口检查是否收敛到同一能力和结果语义；再用当前样例、等价变体、相邻业务情形及失败恢复路径核对完整流程。能力所有权、消费者、调用链、工程专业范围或复用优先级变化时重审。
 
 ## 十一项专业的决策反思与局部纠偏
 
 - **当前事实**：十一项独立 Skill 均在自身执行协议中要求作出、沿用或修复专业决定前，区分用户已裁定的目标与政策、当前事实、因果推断和待证假设；用户、编码代理或既有实现给出的具体方案不以来源自证正确。每项专业按受影响完整流程的结果、必要状态与交接、失败恢复、变更扩散和维护成本复核方案。新证据推翻决定前提，或修复只能依靠新增例外、复制规则或状态、绕过责任边界成立时，只重审受影响决定，不在失效决定上叠加局部修补，也不因局部失败推翻无关决定；越出当前 Owner 时仅报告矛盾、整体影响和待裁决选项。该约束由各 Skill 独立承载，不引入中央路由或固定专业链。
-- **权威依据**：`README.md#决策反思与纠偏`；`skills/*/SKILL.md#执行协议`；`skills/software-architecture/references/principles.md#架构驱动因素与质量场景`；`skills/software-architecture/references/principles.md#兼容演进与架构验证`；`scripts/validate-project.mjs#validateSkill`
+- **权威依据**：`README.md#决策反思与纠偏`；`skills/*/SKILL.md#执行协议`；`skills/software-architecture/references/principles/drivers-evolution.md#架构驱动因素与质量场景`；`skills/software-architecture/references/principles/drivers-evolution.md#兼容演进与架构验证`；`scripts/validate-project.mjs#validateSkill`
 - **影响边界**：该约束覆盖产品、结构、工程、数据、平台、安全、质量与发布决定的形成、沿用和修复，但不改变十一项专业所有权，不允许任一专业借纠偏之名改写其他 Owner 的已确认语义，也不把任何局部缺陷自动升级为全局重构理由。
 - **复核入口**：运行项目校验，并分别删除事实分层、来源不自证、完整流程复核、失效决定重开、无关决定保护或所有权边界中的任一语义，确认对应 Skill 校验失败；再以实现偏差、决定前提证伪及适用条件变化三类压力场景做新上下文行为验证。专业所有权、执行协议或失败归因模型变化时重审。
 
 ## 语义解释与确定性规则边界
 
 - **当前事实**：Product Studio 的软件架构与后端工程准则要求每项业务判断先区分封闭且可完整枚举的确定性规则，与依赖上下文、组合关系、表达差异或无法穷举知识的语义解释。语义解释必须由产品明确的责任边界承担并以结构化结果跨界传递；确定性执行只负责结构、协议、权限、作用域、资源、证据和副作用约束，不得以业务关键词、句式正则、删词表或少量示例近似语义责任。
-- **权威依据**：`skills/software-architecture/references/principles.md#语义解释与确定性规则边界`；`skills/backend-engineering/references/principles.md#语义解释与确定性规则边界`；两项专业的 `references/memory.md`。
+- **权威依据**：`skills/software-architecture/references/principles/contracts-data.md#语义解释与确定性规则边界`；`skills/backend-engineering/references/principles/contract-validation.md#语义解释与确定性规则边界`；两项专业的 `references/memory.md`。
 - **影响边界**：该约束不绑定输入形态、交互方式或具体实现；只要业务含义依赖上下文便适用。协议结构、标识符、格式、封闭词表和正式规则仍可使用正则、枚举或固定映射，但须有完备权威和明确作用域。证据不足或解释冲突时回到既定语义责任边界补证、重释或请求澄清，责任不可用时进入显式保守降级。
 - **复核入口**：运行项目及两项 Skill 校验，并以等价表达、相邻含义、歧义、证据不足和语义责任不可用场景审查结构化结果与确定性守卫；语义所有权、规则完备性、证据标准、降级政策或专业边界变化时重审。
 

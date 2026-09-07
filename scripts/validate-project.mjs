@@ -53,7 +53,6 @@ const SKILL_HEADINGS = [
 ];
 const PRINCIPLE_HEADINGS = [
   "能力索引",
-  "专业约束",
 ];
 const PROHIBITED_PRINCIPLE_FIELDS = [
   "决策对象",
@@ -155,16 +154,7 @@ function blocks(markdown, parentHeading) {
     });
 }
 
-function numberedIndex(markdown, parentHeading) {
-  return [...section(markdown, parentHeading).matchAll(/^\d+\.\s+(.+)$/gm)].map(
-    (match) => match[1].trim(),
-  );
-}
-
-function assertConstraintLists(path, entries) {
-  if (entries.length < 8 || entries.length > 16) {
-    fail(path, `must define 8-16 broad professional constraint categories; found ${entries.length}`);
-  }
+function assertCategoryBulletLists(path, entries) {
   for (const entry of entries) {
     const lines = entry.body
       .split(/\r?\n/)
@@ -358,20 +348,94 @@ function validateSkill(skill) {
   if (principleTitles.length !== 1 || !principleTitles[0].endsWith("专业约束")) {
     fail(principlesPath, "must contain exactly one level-one title ending in 专业约束");
   }
-  const capabilities = blocks(principles, "专业约束");
-  assertConstraintLists(principlesPath, capabilities);
+  const professionalName = principleTitles[0].slice(0, -"专业约束".length);
+  const clusterDir = join(root, "references", "principles");
+  const clusterFiles = existsSync(clusterDir)
+    ? readdirSync(clusterDir)
+        .filter((name) => name.endsWith(".md"))
+        .sort()
+    : [];
+  if (clusterFiles.length < 4 || clusterFiles.length > 6) {
+    fail(clusterDir, `must define 4-6 capability clusters; found ${clusterFiles.length}`);
+  }
+
+  const indexSection = section(principles, "能力索引");
+  const linked = [
+    ...indexSection.matchAll(/\[([a-z0-9-]+\.md)\]\(references\/principles\/([a-z0-9-]+\.md)\)/g),
+  ].map((match) => (match[1] === match[2] ? match[2] : null));
+  if (linked.some((name) => name === null)) {
+    fail(principlesPath, "cluster links must use [file.md](references/principles/file.md) with matching text");
+  }
+  const linkedFiles = linked.filter(Boolean);
+  if (new Set(linkedFiles).size !== linkedFiles.length) {
+    fail(principlesPath, "index must not link the same cluster file twice");
+  }
+  const unlinked = clusterFiles.filter((name) => !linkedFiles.includes(name));
+  if (unlinked.length > 0) {
+    fail(principlesPath, `index must link every cluster file; unlinked: ${unlinked.join(", ")}`);
+  }
+  const unknown = linkedFiles.filter((name) => !clusterFiles.includes(name));
+  if (unknown.length > 0) {
+    fail(principlesPath, `index links unknown cluster files: ${unknown.join(", ")}`);
+  }
+  for (const [label, pattern] of [
+    ["cluster hit determination", /先依命中条件判定本次任务命中的簇/],
+    ["prefer-overread bias", /命中存疑时宁可加读相邻簇.*不因漏判而缺约束/],
+    ["unrelated cluster exclusion", /与本次工作无关的簇不读取/],
+  ]) {
+    if (!pattern.test(principles)) {
+      fail(principlesPath, `index protocol must cover ${label}`);
+    }
+  }
+  const clusterNames = [...indexSection.matchAll(/^\| ([^|]+) \|/gm)]
+    .map((match) => match[1].trim())
+    .filter((name) => name !== "能力簇");
+  for (const match of principles.matchAll(/加读“([^”]+)”卷/g)) {
+    if (!clusterNames.some((name) => name.includes(match[1]))) {
+      fail(principlesPath, `verification pointer must name a listed cluster: ${match[1]}`);
+    }
+  }
   for (const field of PROHIBITED_PRINCIPLE_FIELDS) {
     if (principles.includes(`**${field}**`)) {
       fail(principlesPath, `must not use labeled capability field ${field}`);
     }
   }
-  if (
-    JSON.stringify(numberedIndex(principles, "能力索引")) !==
-    JSON.stringify(capabilities.map((entry) => entry.title))
-  ) {
-    fail(principlesPath, "capability index must exactly match professional constraint titles");
-  }
   assertAutonomousOrchestration(principlesPath, principles, skill);
+
+  let categoryCount = 0;
+  for (const name of clusterFiles) {
+    const clusterPath = join(clusterDir, name);
+    const content = read(clusterPath);
+    if (!content) continue;
+    const clusterTitles = headings(content, 1);
+    if (clusterTitles.length !== 1 || !clusterTitles[0].startsWith(`${professionalName} · `)) {
+      fail(clusterPath, `level-one title must be "${professionalName} · <簇名>"`);
+    }
+    const entries = content
+      .split(/^### /m)
+      .slice(1)
+      .map((block) => {
+        const newline = block.indexOf("\n");
+        return {
+          title: (newline === -1 ? block : block.slice(0, newline)).trim(),
+          body: newline === -1 ? "" : block.slice(newline + 1),
+        };
+      });
+    assertCategoryBulletLists(clusterPath, entries);
+    categoryCount += entries.length;
+    for (const field of PROHIBITED_PRINCIPLE_FIELDS) {
+      if (content.includes(`**${field}**`)) {
+        fail(clusterPath, `must not use labeled capability field ${field}`);
+      }
+    }
+    assertAutonomousOrchestration(clusterPath, content, skill);
+  }
+  if (categoryCount < 8 || categoryCount > 16) {
+    fail(
+      principlesPath,
+      `cluster volumes must jointly define 8-16 broad professional categories; found ${categoryCount}`,
+    );
+  }
 
   assertExactHeadings(memoryPath, memory, MEMORY_HEADINGS);
   const memoryTitles = headings(memory, 1);

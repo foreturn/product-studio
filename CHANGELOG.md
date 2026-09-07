@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.7 - 2026-09-07
+
+- Restructured every professional Skill's `references/principles.md` into a slim capability index with a reading protocol and a hit-condition table, moving the constraint body into four to six cluster volumes under `references/principles/` with all bullets preserved verbatim.
+- Rewrote the project validator for the cluster contract: bijective index-volume mapping, four to six clusters per Skill, eight to sixteen categories with four to eight plain bullets each, protocol and verification-pointer checks, and extended prohibited-field and orchestration guards to every cluster volume.
+- Updated the README three-layer contract, directory tree, and Product Studio fact books to describe on-demand cluster loading, where unmatched cluster volumes stay unread and fresh-context behavioral acceptance remains required.
+
 ## 2.2.6 - 2026-09-03
 
 - Required every professional Skill to separate user-owned goals and policies from facts, inferences, assumptions, and proposed solutions before making, retaining, or repairing a decision.

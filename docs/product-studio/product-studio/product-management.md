@@ -10,14 +10,14 @@
 ## 产品意图与体验的一体化裁决
 
 - **当前事实**：产品管理先区分用户与商业结果、业务资格与预期结果政策、范围、指标和产品验收，再在这些语义内裁定入口、旅程、信息架构、内容、动作、可见状态、恢复、响应式、无障碍、可用性，以及视觉层级与设计系统语义一致性。页面说明、引导、空态与帮助内容从用户情境、业务对象、任务、决策、结果和下一步出发；AI 或系统只有在其身份、自动化边界或处理方式影响用户判断时才作为叙述主体，能力与效果宣称须有产品证据。Web、Android 与 iOS 只落实已确认的产品内容语义，语义缺失且不同表达会改变产品理解、承诺或行动时不代作产品裁决。高影响政策缺失时只列互斥选项、后果和所需权威，不以所谓保守临时政策代选。可信主体、对象级授权强制、默认拒绝和租户隔离由安全工程引用产品政策后独立裁定，不在产品事实中复制。
-- **权威依据**：`README.md#十一项通用底座`；`skills/product-management/SKILL.md#执行协议`；`skills/product-management/references/principles.md#专业约束`；`skills/product-management/references/memory.md#核心记忆`；`skills/web-engineering/SKILL.md#执行协议`；`skills/android-engineering/SKILL.md#执行协议`；`skills/ios-engineering/SKILL.md#执行协议`
+- **权威依据**：`README.md#十一项通用底座`；`skills/product-management/SKILL.md#执行协议`；`skills/product-management/references/principles.md#能力索引`；`skills/product-management/references/memory.md#核心记忆`；`skills/web-engineering/SKILL.md#执行协议`；`skills/android-engineering/SKILL.md#执行协议`；`skills/ios-engineering/SKILL.md#执行协议`
 - **影响边界**：所有需要实现或验收用户可见结果的软件任务均消费这一产品语义，尤其包括 Web、Android 与 iOS 中的标题、动作、状态、说明、引导、空态、帮助、错误与恢复内容；业务资格不能被权限枚举反向定义，安全强制也不能被产品意图代替。纯内部实现且已证实产品和体验均未改变时，不触发新的产品裁决。
 - **复核入口**：分别以政策缺失、业务资格与授权强制冲突、政策已定但恢复体验不清、业务状态与可见状态冲突、页面说明偏向实现者或生成者、AI 身份影响用户判断、三端内容语义缺失及纯内部重构场景检查停止边界、对象级分工和核心记忆主题；产品或体验 Owner 边界改变时重审。
 
 ## 可证伪的产品决定与整体简便性
 
 - **当前事实**：产品管理把用户已裁定的目标与政策同具体方案、当前事实、因果推断和待证假设分开，方案不因来自用户、编码代理、既有实现或已有测试而自证正确。裁定前比较能够形成同一必要结果的现实路径，以真实入口至可确认结果间的用户步骤、业务状态与交接、异常恢复、规则重复、变更扩散及长期维护总成本判断整体简便性。新证据若推翻既有决定依赖的角色、问题、政策、依赖或结果假设，便重开受影响裁决并同步调整范围与验收，不以新增特例、隐藏状态或下游补救维持失效结论，也不牵连仍有依据的无关决定。
-- **权威依据**：`README.md#决策反思与纠偏`；`skills/product-management/SKILL.md#执行协议`；`skills/product-management/references/principles.md#问题证据与机会判断`；`skills/product-management/references/principles.md#范围闭环与优先级`；`skills/product-management/references/memory.md#范围闭环非目标与优先级`
+- **权威依据**：`README.md#决策反思与纠偏`；`skills/product-management/SKILL.md#执行协议`；`skills/product-management/references/principles/problem-users-policy.md#问题证据与机会判断`；`skills/product-management/references/principles/scope-priority-metrics.md#范围闭环与优先级`；`skills/product-management/references/memory.md#范围闭环非目标与优先级`
 - **影响边界**：该裁决约束产品问题、政策、范围、优先级、旅程与验收的形成和修正；用户仍拥有目标、政策和价值取舍的最终裁决权，产品管理不借反思之名改写安全、系统、数据库、发布或具体工程机制。
 - **复核入口**：以用户指定但事实不成立的方案、局部实现最简却增加全流程状态的方案、连续特例修复、前提变化及无关局部失败五类情形核对事实与假设分离、整体成本比较、受影响裁决重开和所有权边界；产品决策权、完整流程或验收语义变化时重审。
 
