@@ -1,8 +1,8 @@
 # quality-engineering 当前产品事实 · 证据层级、隔离与自动化
 
-## 单项 Skill 结构入口
+## 技能元数据与清单校验
 
-- **当前事实**：每项 Skill 可使用当前 `skill-creator` 的 `quick_validate.py` 独立检查 frontmatter、命名与基本结构，项目契约校验再补充本插件的统一章节、principles 索引与簇卷对应契约、`references/memory/` 簇卷对应契约与“记住……”陈述、SKILL 的项目记忆定位读取准入维护指令、按簇 Owner 事实目录和跨文件拓扑约束；两类静态检查互不替代。
-- **权威依据**：`skills/product-management/SKILL.md`；`skills/release-engineering/SKILL.md`；`scripts/validate-project.mjs#validateSkill`
-- **影响边界**：十一项 Skill 的源文件结构受此入口保护；详细专业正确性、自动发现、边界服从和实际行为仍需压力场景与真实任务证据。
-- **复核入口**：枚举 `skills/` 后对每个实际目录运行 `quick_validate.py`，再运行项目校验并分别记录失败；skill-creator 规则或本插件结构契约变化时重审。
+- **当前事实**：技能元数据可使用 `skill-creator` 提供的 `quick_validate.py` 检查 frontmatter、命名与描述；Claude Code CLI 可分别校验 marketplace 和插件清单。能力簇、专业规则与项目记忆的语义完整性由任务评审和实际使用证据判断。
+- **权威依据**：`README.md#校验`；`skills/*/SKILL.md`；`.claude-plugin/marketplace.json`；`.claude-plugin/plugin.json`。
+- **影响边界**：这些工具的通过结果不能证明专业选择、规则合理性、提示完整性或事实册正确维护，也不能替代安装后的新会话验证。
+- **复核入口**：按实际变更运行相关元数据或清单检查；以具体任务、真实边界和可观察结果评审提示效果，技能接口、客户端加载方式或验证工具发生变化时重审。

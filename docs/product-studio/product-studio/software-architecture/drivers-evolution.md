@@ -3,6 +3,13 @@
 ## 十一项专业的决策反思与局部纠偏
 
 - **当前事实**：十一项独立 Skill 均在自身执行协议中要求作出、沿用或修复专业决定前，区分用户已裁定的目标与政策、当前事实、因果推断和待证假设；用户、编码代理或既有实现给出的具体方案不以来源自证正确。每项专业按受影响完整流程的结果、必要状态与交接、失败恢复、变更扩散和维护成本复核方案。新证据推翻决定前提，或修复只能依靠新增例外、复制规则或状态、绕过责任边界成立时，只重审受影响决定，不在失效决定上叠加局部修补，也不因局部失败推翻无关决定；越出当前 Owner 时仅报告矛盾、整体影响和待裁决选项。该约束由各 Skill 独立承载，不引入中央路由或固定专业链。
-- **权威依据**：`README.md#决策反思与纠偏`；`skills/*/SKILL.md#执行协议`；`skills/software-architecture/references/principles/drivers-evolution.md#架构驱动因素与质量场景`；`skills/software-architecture/references/principles/drivers-evolution.md#兼容演进与架构验证`；`scripts/validate-project.mjs#validateSkill`
+- **权威依据**：`skills/*/SKILL.md#执行协议`；`skills/software-architecture/references/principles/drivers-evolution.md#架构驱动因素与质量场景`；`skills/software-architecture/references/principles/drivers-evolution.md#兼容演进与架构验证`
 - **影响边界**：该约束覆盖产品、结构、工程、数据、平台、安全、质量与发布决定的形成、沿用和修复，但不改变十一项专业所有权，不允许任一专业借纠偏之名改写其他 Owner 的已确认语义，也不把任何局部缺陷自动升级为全局重构理由。
-- **复核入口**：运行项目校验，并分别删除事实分层、来源不自证、完整流程复核、失效决定重开、无关决定保护或所有权边界中的任一语义，确认对应 Skill 校验失败；再以实现偏差、决定前提证伪及适用条件变化三类压力场景做新上下文行为验证。专业所有权、执行协议或失败归因模型变化时重审。
+- **复核入口**：依据各专业实际任务评审决定前提、完整流程与所有权边界，并以实现偏差、决定前提证伪及适用条件变化三类压力场景做新上下文行为验证。专业所有权、执行协议或失败归因模型变化时重审。
+
+## 任务拆解与阶段证据
+
+- **当前事实**：十一项 Skill 按真实依赖与本专业可验证结果拆解复杂工作，每步聚焦单一目标并保持相应契约、状态或结果不变量，简单任务直接处理。阶段目标完成后按风险选择检查，再推进依赖该结果的工作，最终核对完整结果和证据边界；验证准则的命中包含验证设计与只读证据审查，不限于实现或部署完成以后，内部步骤通过不等于产品、系统或发布完成。
+- **权威依据**：`skills/*/SKILL.md#执行协议`；`skills/product-management/references/principles/scope-priority.md`；`skills/quality-engineering/references/principles/evidence-automation.md`；`skills/release-engineering/references/principles/version-scope.md`。
+- **影响边界**：该方法不要求计划文档、固定技术顺序或每次编辑都执行全量检查；证据复用取决于对象、依赖和环境是否仍有效。任务包含提交时，提交按可审查、可验证且可恢复的变更单元组织，不能按文件或机械步骤拆散必须共同成立的契约。
+- **复核入口**：以简单调整、带真实依赖的跨模块实现、兼容迁移及只读审查检查任务粒度与阶段证据是否相称；风险模型、完成定义、专业执行协议或提交边界变化时重审。
