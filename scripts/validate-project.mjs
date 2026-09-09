@@ -352,8 +352,8 @@ function validateSkill(skill) {
         .filter((name) => name.endsWith(".md"))
         .sort()
     : [];
-  if (clusterFiles.length < 4 || clusterFiles.length > 6) {
-    fail(clusterDir, `must define 4-6 capability clusters; found ${clusterFiles.length}`);
+  if (clusterFiles.length < 4 || clusterFiles.length > 8) {
+    fail(clusterDir, `must define 4-8 capability clusters; found ${clusterFiles.length}`);
   }
 
   const indexSection = section(principles, "能力索引");

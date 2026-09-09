@@ -2,13 +2,15 @@
 
 ## 能力索引
 
-专业约束正文按簇分卷存放于 `references/principles/`，每簇汇聚数个专业类别的跨框架与跨设备形态的不变量。先依命中条件判定本次任务命中的簇（通常一至三簇），再完整读取命中簇文件；命中存疑时宁可加读相邻簇，不因漏判而缺约束；与本次工作无关的簇不读取。实施类任务完成实现进入验证时，加读“测试与可观测性”卷。
+专业约束正文按簇分卷存放于 `references/principles/`，每簇汇聚一至数个专业类别的跨框架与跨设备形态的不变量。先依命中条件判定本次任务命中的簇（通常一至四簇），再完整读取命中簇文件；命中存疑时宁可加读相邻簇，不因漏判而缺约束；与本次工作无关的簇不读取。实施类任务完成实现进入验证时，加读“测试与可观测性”卷。
 
 | 能力簇 | 命中条件 | 正文 |
 |---|---|---|
 | 应用结构、生命周期与构建治理 | 新建功能模块或重构工程结构、调整状态分层与数据流边界、处理场景切换与进程终止后的恢复、引入或升级依赖、调整构建配置与签名分发、升级目标系统版本或适配新系统行为与设备形态 | [structure-delivery.md](references/principles/structure-delivery.md) |
-| 导航、数据与离线同步 | 实现页面导航、层级返回、通用链接与通知入口跳转、跨场景参数传递；接入网络请求、分页、实时推送、缓存与自动重试；实现本地持久化、数据迁移与离线同步 | [navigation-data.md](references/principles/navigation-data.md) |
+| 导航与任务连续性 | 实现页面导航、层级返回、通用链接与通知入口跳转、跨场景参数传递，恢复集合上下文与未完成任务 | [navigation-continuity.md](references/principles/navigation-continuity.md) |
+| 状态、数据与离线同步 | 接入状态并发、网络请求、分页实时推送、缓存与自动重试，实现本地持久化、迁移与离线同步 | [state-data-sync.md](references/principles/state-data-sync.md) |
 | 组件、布局与视觉体系 | 新建或重构 SwiftUI 与 UIKit 组件、调整页面容器与滚动结构、适配 iPad 多窗口与分屏、使用设计令牌与深浅色外观、调整字号间距图标与视觉层级、设备与屏幕形态适配 | [components-visual.md](references/principles/components-visual.md) |
 | 表单、交互反馈与可达性 | 实现表单输入与提交、列表与批量操作、加载空错状态与操作反馈、动效与触觉反馈；多语言与双向文本、动态字体、高对比度与屏幕阅读器适配 | [interaction-a11y.md](references/principles/interaction-a11y.md) |
-| 平台能力、安全与性能 | 实现后台任务与后台刷新、通知推送、权限请求与授权恢复、系统扩展与跨应用共享、凭据密钥存储与网络安全；排查启动耗时、掉帧卡顿、内存泄漏与能耗发热 | [runtime-security.md](references/principles/runtime-security.md) |
+| 平台能力与安全 | 实现后台任务与刷新、通知推送、权限请求与恢复、系统扩展与跨应用共享、凭据密钥存储与网络安全 | [platform-security.md](references/principles/platform-security.md) |
+| 性能与资源 | 排查启动耗时、掉帧卡顿、内存泄漏与能耗发热，治理主执行域、媒体列表和系统资源生命周期 | [performance-resources.md](references/principles/performance-resources.md) |
 | 测试与可观测性 | 制定测试策略、编写或评审测试、真机与模拟器验证、崩溃与性能监控、遥测脱敏 | [verification.md](references/principles/verification.md) |

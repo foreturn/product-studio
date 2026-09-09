@@ -9,7 +9,7 @@
 
 ## 专业内容三层分离
 
-- **当前事实**：每项专业使用相同目录形制：`SKILL.md` 用中文 description 作发现摘要，正文只保留目标、执行、输出、完成、停止、权限、参考和项目记忆八章，其中“项目记忆”章承载当前产品根目录与产品标识定位、按簇事实读取、准入、随写随记与收口对账维护及排除规则；`references/principles.md` 以瘦索引列四至六个能力簇与任务句式命中条件，约束正文按簇分卷于 `references/principles/`，全部簇卷合计八至十六个专业大类，每类只列四至八条跨框架专业约束；`references/memory/` 按能力簇分卷，卷名与 `references/principles/` 簇卷文件名一致，每卷以簇名为题，只列一至十二条“记住……”普通列表详细定义未来 AI 应记住的项目不变量；`agents/openai.yaml` 只承载界面元数据。
+- **当前事实**：每项专业使用相同目录形制：`SKILL.md` 用中文 description 作发现摘要，正文只保留目标、执行协议和项目记忆三章，其中“项目记忆”章承载当前产品根目录与产品标识定位、按簇事实读取、准入、随写随记与收口对账维护及排除规则；`references/principles.md` 以瘦索引列四至八个能力簇与任务句式命中条件，能力簇以可独立命中的变化原因及必须共同加载的记忆边界划分，不按类别数量凑数，也不捆绑依赖不同的职责，约束正文按簇分卷于 `references/principles/`，全部簇卷合计八至十六个专业大类，每类只列四至八条跨框架专业约束；`references/memory/` 按能力簇分卷，卷名与 `references/principles/` 簇卷文件名一致，每卷以簇名为题，只列一至十二条“记住……”普通列表详细定义未来 AI 应记住的项目不变量；`agents/openai.yaml` 只承载界面元数据。
 - **权威依据**：`README.md#三层文件契约`；`scripts/validate-project.mjs#SKILL_HEADINGS`；`scripts/validate-project.mjs#PRINCIPLE_HEADINGS`；`scripts/validate-project.mjs#assertMemoryVolumes`
 - **影响边界**：十一项 Skill 的加载体积、专业边界、维护审查和项目事实写法都依赖此分层；三类文件各自格式统一，但彼此不共用同一内容模型。
 - **复核入口**：运行项目契约校验与十一项 `quick_validate.py`，检查精确章节、能力索引、每类约束条目数、memory 簇卷与 principles 簇卷一一对应、每卷条目数与“记住”陈述、SKILL 内 Owner locator 和元数据；任一文件职责或统一结构变化时重审。
@@ -20,3 +20,10 @@
 - **权威依据**：`skills/software-architecture/SKILL.md#执行协议`；`skills/software-architecture/references/principles/decomposition-cohesion.md#代码组织命名与能力复用`；`skills/backend-engineering/SKILL.md#执行协议`；`skills/backend-engineering/references/principles/domain-structure.md#应用分层与模块内聚`；Web、Android 与 iOS 工程的 `SKILL.md#执行协议`、工程结构准则及 `references/memory/`。
 - **影响边界**：该约束影响服务端与客户端实现、共享业务能力、调用链和消费者契约；它不要求为单一消费者或假想变化预建通用框架，也不允许以复用或极简之名省略权限、错误、事务、数据约束、副作用、恢复或验证。平台标准与开源复用仍须审查契约、维护、安全、许可、体积、依赖、运维、升级和退出成本。
 - **复核入口**：运行项目与各 Skill 校验，并以同一业务动作的接口、消息、任务、页面及系统入口检查是否收敛到同一能力和结果语义；再用当前样例、等价变体、相邻业务情形及失败恢复路径核对完整流程。能力所有权、消费者、调用链、工程专业范围或复用优先级变化时重审。
+
+## 项目记忆边界
+
+- **当前事实**：每项专业 Skill 在自身“项目记忆”章节内完整规定 Owner 事实册的当前产品根目录定位、命中簇记忆卷与按簇事实文件读取、当前权威优先、事实准入、写权限解释、按簇首次创建、随写随记与收口对账维护、实例写法、末条删文件与空目录级联清理及敏感信息排除。当前产品根目录是任务所指产品的工作边界，不以 Git 初始化为前提；用户明确目录优先，Git 根仅作可选佐证，进程当前目录和 Skill 所在目录不得单独决定根。当 Product Studio 仅作为技能提供者时，其源码、技能、安装与缓存目录均被排除；事实册读写只能锚定 `<当前产品根目录>/docs/product-studio/<product-id>/<owner>/`，事实按能力簇分文件、文件名与该专业 `references/principles/` 簇卷文件名一致，根目录无法唯一确认时不得读取或改动候选文件。对会持续影响后续判断的核心认知，证据闭环且预计不受剩余工作影响时即时写入命中簇事实文件；可写任务在最终回复前仍须收口对账补录、更新或移除，只读任务保持只读；`product-id` 必须由项目证据唯一解析为当前产品根内的安全单级目录名。每份 `references/memory/<簇卷>.md` 只详细定义本专业应记住的核心认知，不承载使用协议，也不依赖公共协议或定义动作与结果状态。
+- **权威依据**：`skills/*/SKILL.md#项目记忆`；`skills/*/references/memory/`；`scripts/validate-project.mjs#validateRemovedRuntimeAssets`
+- **影响边界**：该结构让尚未初始化 Git 的产品也能按簇保存事实，并把业务产品与提供技能的 Product Studio 文件边界明确隔开；它让记忆行为随 Skill 触发即进入上下文，让专业认知按簇从 reference 与事实目录按需加载，并使事实选择、语义判断与维护责任保持在唯一 Owner 内。它消除了“事实册不存在便跳过”“只有代码差异才值得入册”和“按当前目录误读插件事实册”的提示歧义，但仍无法自行证明编码代理已选全受影响 Owner、判断正确或实际完成落册。
+- **复核入口**：运行项目校验与十一项 Skill 独立校验，确认每份提示都绑定正确 Owner、无 Git 前置的当前产品根解析、目录证据优先级、Product Studio 提供者排除、根锚定按簇目录、只读边界、可写任务即时落册、按簇首条建文件、既有事实准入、当前权威优先、末条删文件与空目录级联清理和安全边界；再以无 `.git` 产品目录及业务目录与插件目录并存的新上下文任务验证专业选择、事实读取、实际写入与跨会话复用。Skill 提示、Owner 模型或事实存储边界变化时重审。

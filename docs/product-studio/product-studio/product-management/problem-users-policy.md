@@ -10,7 +10,7 @@
 ## 可证伪的产品决定与整体简便性
 
 - **当前事实**：产品管理把用户已裁定的目标与政策同具体方案、当前事实、因果推断和待证假设分开，方案不因来自用户、编码代理、既有实现或已有测试而自证正确。裁定前比较能够形成同一必要结果的现实路径，以真实入口至可确认结果间的用户步骤、业务状态与交接、异常恢复、规则重复、变更扩散及长期维护总成本判断整体简便性。新证据若推翻既有决定依赖的角色、问题、政策、依赖或结果假设，便重开受影响裁决并同步调整范围与验收，不以新增特例、隐藏状态或下游补救维持失效结论，也不牵连仍有依据的无关决定。
-- **权威依据**：`README.md#决策反思与纠偏`；`skills/product-management/SKILL.md#执行协议`；`skills/product-management/references/principles/problem-users-policy.md#问题证据与机会判断`；`skills/product-management/references/principles/scope-priority-metrics.md#范围闭环与优先级`；`skills/product-management/references/memory/scope-priority-metrics.md`
+- **权威依据**：`README.md#决策反思与纠偏`；`skills/product-management/SKILL.md#执行协议`；`skills/product-management/references/principles/problem-users-policy.md#问题证据与机会判断`；`skills/product-management/references/principles/scope-priority.md#范围闭环与优先级`；`skills/product-management/references/memory/scope-priority.md`
 - **影响边界**：该裁决约束产品问题、政策、范围、优先级、旅程与验收的形成和修正；用户仍拥有目标、政策和价值取舍的最终裁决权，产品管理不借反思之名改写安全、系统、数据库、发布或具体工程机制。
 - **复核入口**：以用户指定但事实不成立的方案、局部实现最简却增加全流程状态的方案、连续特例修复、前提变化及无关局部失败五类情形核对事实与假设分离、整体成本比较、受影响裁决重开和所有权边界；产品决策权、完整流程或验收语义变化时重审。
 
