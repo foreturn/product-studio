@@ -76,7 +76,7 @@ Antigravity (AGY)：
 git clone https://github.com/foreturn/product-studio.git .agents/plugins/product-studio
 
 # 全局安装（所有工作区生效）：
-git clone https://github.com/foreturn/product-studio.git ~/.gemini/antigravity/plugins/product-studio
+git clone https://github.com/foreturn/product-studio.git ~/.gemini/config/plugins/product-studio
 ```
 
 Codex：
