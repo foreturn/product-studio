@@ -1,6 +1,6 @@
 # 产品工作室
 
-产品工作室是一套面向 Codex 与 Claude Code 的软件工程专业技能插件。编码代理仍直接理解请求、阅读仓库、编写代码并自主决定需要哪些专业判断；插件以十一项 Skill 提供清晰的专业所有权、实施准则与证据约束，并由每项命中 Skill 读取和维护相关项目核心记忆。
+产品工作室是一套面向 Codex、Claude Code 与 Google Antigravity 的软件工程专业技能插件。编码代理仍直接理解请求、阅读仓库、编写代码并自主决定需要哪些专业判断；插件以十一项 Skill 提供清晰的专业所有权、实施准则与证据约束，并由每项命中 Skill 读取和维护相关项目核心记忆。
 
 它不提供中央路由，不要求预先写成套计划，也不规定固定技能链。一个任务可以只使用一项 Skill，也可以按证据需要组合多项；未命中的专业内容不会被机械加载。
 
@@ -52,6 +52,7 @@
 
 ```text
 product-studio/
+|-- plugin.json                   # 插件清单（Antigravity 与通用）
 |-- skills/                       # 十一项自主发现的专业 Skill
 |   `-- <skill>/
 |       |-- SKILL.md              # 统一执行契约
@@ -67,6 +68,16 @@ product-studio/
 ```
 
 ## 安装
+
+Antigravity (AGY)：
+
+```powershell
+# 工作区安装（仅当前项目生效）：
+git clone https://github.com/foreturn/product-studio.git .agents/plugins/product-studio
+
+# 全局安装（所有工作区生效）：
+git clone https://github.com/foreturn/product-studio.git ~/.gemini/antigravity/plugins/product-studio
+```
 
 Codex：
 
