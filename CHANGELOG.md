@@ -1,9 +1,11 @@
 # 更新日志
 
-## 3.2.2 - 2026-09-18
+## 3.2.2 - 2026-09-20
 
 - 增加对 Google Antigravity (AGY) 插件的原生支持，提供根目录标准插件清单 `plugin.json`。
-- 更新 README 补充 Antigravity 的工作区与全局安装使用指引，完善多生态支持。
+- 增加 `scripts/check.py` 内部契约校验脚本，秒级自动化校验 11 项技能结构、簇分卷双射映射、索引相对链接与清单版本对齐。
+- 更新 README 补充 Antigravity CLI 官方安装（`agy plugin install`）与校验指引；补齐市场元数据。
+- 演进发布工程事实册，确立涵盖 Codex、Claude Code 与 Antigravity 的三渠道分发证据边界。
 
 ## 3.2.0 - 2026-09-09
 
