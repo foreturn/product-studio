@@ -72,11 +72,13 @@ product-studio/
 Antigravity (AGY)：
 
 ```powershell
-# 工作区安装（仅当前项目生效）：
-git clone https://github.com/foreturn/product-studio.git .agents/plugins/product-studio
+# CLI 官方推荐安装（自动校验并全局启用）：
+agy plugin install foreturn/product-studio
+# 或从本地开发路径安装：
+agy plugin install /path/to/product-studio
 
-# 全局安装（所有工作区生效）：
-git clone https://github.com/foreturn/product-studio.git ~/.gemini/config/plugins/product-studio
+# 亦可手动安装至工作区（仅当前项目生效）：
+git clone https://github.com/foreturn/product-studio.git .agents/plugins/product-studio
 ```
 
 Codex：
@@ -98,6 +100,11 @@ claude plugin install product-studio@foreturn
 ## 校验
 
 ```bash
+# 1. 内部工程契约校验（检查 11 项技能结构、簇分卷双射映射、索引相对链接与清单版本一致性）：
+python scripts/check.py
+
+# 2. 平台清单与技能元数据校验：
+agy plugin validate .
 claude plugin validate --strict .
 claude plugin validate --strict .claude-plugin/plugin.json
 ```
