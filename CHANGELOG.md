@@ -1,5 +1,12 @@
 # 更新日志
 
+## 3.2.3 - 2026-09-23
+
+- 增加对 OpenCode 原生技能生态支持，提供 `opencode.json` 配置与工作区/全局安装契约。
+- 演进发布工程事实册，将原三渠道分发证据边界扩展为 Codex、Claude Code、Antigravity 与 OpenCode 四渠道。
+- 升级内部契约校验脚本 `scripts/check.py`，支持四端清单版本对齐与自动校验。
+- 同步更新多平台市场元数据与安装文档。
+
 ## 3.2.2 - 2026-09-20
 
 - 增加对 Google Antigravity (AGY) 插件的原生支持，提供根目录标准插件清单 `plugin.json`。

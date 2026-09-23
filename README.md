@@ -1,6 +1,6 @@
 # 产品工作室
 
-产品工作室是一套面向 Codex、Claude Code 与 Google Antigravity 的软件工程专业技能插件。编码代理仍直接理解请求、阅读仓库、编写代码并自主决定需要哪些专业判断；插件以十一项 Skill 提供清晰的专业所有权、实施准则与证据约束，并由每项命中 Skill 读取和维护相关项目核心记忆。
+产品工作室是一套面向 Codex、Claude Code、Google Antigravity 与 OpenCode 的软件工程专业技能插件。编码代理仍直接理解请求、阅读仓库、编写代码并自主决定需要哪些专业判断；插件以十一项 Skill 提供清晰的专业所有权、实施准则与证据约束，并由每项命中 Skill 读取和维护相关项目核心记忆。
 
 它不提供中央路由，不要求预先写成套计划，也不规定固定技能链。一个任务可以只使用一项 Skill，也可以按证据需要组合多项；未命中的专业内容不会被机械加载。
 
@@ -53,6 +53,7 @@
 ```text
 product-studio/
 |-- plugin.json                   # 插件清单（Antigravity 与通用）
+|-- opencode.json                 # OpenCode 技能配置与清单
 |-- skills/                       # 十一项自主发现的专业 Skill
 |   `-- <skill>/
 |       |-- SKILL.md              # 统一执行契约
@@ -68,6 +69,22 @@ product-studio/
 ```
 
 ## 安装
+
+OpenCode：
+
+```powershell
+# 方式一：工作区技能引入（在项目 opencode.json 中配置 skills 路径）：
+# {
+#   "$schema": "https://opencode.ai/config.json",
+#   "skills": ["path/to/product-studio/skills"]
+# }
+
+# 方式二：手动安装至工作区技能目录（仅当前项目生效）：
+git clone https://github.com/foreturn/product-studio.git .opencode/skills/product-studio
+
+# 方式三：克隆至全局配置目录（所有项目通用）：
+git clone https://github.com/foreturn/product-studio.git ~/.config/opencode/skills/product-studio
+```
 
 Antigravity (AGY)：
 

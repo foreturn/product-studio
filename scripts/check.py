@@ -92,6 +92,7 @@ def check_versions():
         "root": os.path.join(ROOT_DIR, "plugin.json"),
         "claude": os.path.join(ROOT_DIR, ".claude-plugin", "plugin.json"),
         "codex": os.path.join(ROOT_DIR, ".codex-plugin", "plugin.json"),
+        "opencode": os.path.join(ROOT_DIR, "opencode.json"),
     }
 
     versions = {}
