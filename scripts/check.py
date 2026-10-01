@@ -6,7 +6,7 @@ Product Studio 静态契约校验脚本。
 1. 十一项技能的目录规范与必要文件完整性。
 2. principles/ 与 memory/ 之间能力簇分卷的双射映射（Bijective mapping）。
 3. references/principles.md 中索引链接的有效性。
-4. 各平台插件清单（plugin.json, .claude-plugin, .codex-plugin, marketplace）版本一致性。
+4. 各平台插件清单（plugin.json, .claude-plugin, .codex-plugin, opencode.json, package.json, marketplace）版本一致性。
 """
 
 import os
@@ -93,6 +93,7 @@ def check_versions():
         "claude": os.path.join(ROOT_DIR, ".claude-plugin", "plugin.json"),
         "codex": os.path.join(ROOT_DIR, ".codex-plugin", "plugin.json"),
         "opencode": os.path.join(ROOT_DIR, "opencode.json"),
+        "pi": os.path.join(ROOT_DIR, "package.json"),
     }
 
     versions = {}

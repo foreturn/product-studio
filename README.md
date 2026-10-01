@@ -1,6 +1,6 @@
 # 产品工作室
 
-产品工作室是一套面向 Codex、Claude Code、Google Antigravity 与 OpenCode 的软件工程专业技能插件。编码代理仍直接理解请求、阅读仓库、编写代码并自主决定需要哪些专业判断；插件以十一项 Skill 提供清晰的专业所有权、实施准则与证据约束，并由每项命中 Skill 读取和维护相关项目核心记忆。
+产品工作室是一套面向 Codex、Claude Code、Google Antigravity、OpenCode 与 Pi (pi.dev) 的软件工程专业技能插件。编码代理仍直接理解请求、阅读仓库、编写代码并自主决定需要哪些专业判断；插件以十一项 Skill 提供清晰的专业所有权、实施准则与证据约束，并由每项命中 Skill 读取和维护相关项目核心记忆。
 
 它不提供中央路由，不要求预先写成套计划，也不规定固定技能链。一个任务可以只使用一项 Skill，也可以按证据需要组合多项；未命中的专业内容不会被机械加载。
 
@@ -54,6 +54,7 @@
 product-studio/
 |-- plugin.json                   # 插件清单（Antigravity 与通用）
 |-- opencode.json                 # OpenCode 技能配置与清单
+|-- package.json                  # Pi (pi.dev) 技能包配置与清单
 |-- skills/                       # 十一项自主发现的专业 Skill
 |   `-- <skill>/
 |       |-- SKILL.md              # 统一执行契约
@@ -69,6 +70,29 @@ product-studio/
 ```
 
 ## 安装
+
+Pi (pi.dev)：
+
+```powershell
+# 方式一：Pi 官方包管理安装（支持远程 git 仓库或本地路径）：
+pi install git:github.com/foreturn/product-studio
+# 或从本地开发路径安装（仅当前工作区生效）：
+pi install -l /path/to/product-studio
+
+# 方式二：工作区技能引入（在项目 .pi/settings.json 中配置 packages 或 skills）：
+# {
+#   "packages": ["git:github.com/foreturn/product-studio"]
+# }
+# 或配置 skills 路径：
+# {
+#   "skills": ["path/to/product-studio/skills"]
+# }
+
+# 方式三：手动克隆至用户或工作区技能目录：
+git clone https://github.com/foreturn/product-studio.git ~/.pi/agent/skills/product-studio
+# 或克隆至工作区目录（仅当前项目生效）：
+git clone https://github.com/foreturn/product-studio.git .pi/skills/product-studio
+```
 
 OpenCode：
 
