@@ -3,7 +3,7 @@ name: software-architecture
 description: 系统边界、模块职责、依赖方向、运行拓扑、跨边界契约、质量属性与架构演进的专业裁决。
 ---
 
-# 软件架构
+# 软件架构执行契约
 
 ## 目标
 

@@ -1,5 +1,14 @@
 # 更新日志
 
+## 3.2.3 - 2026-10-02
+
+- 增加对 Pi (pi.dev) 原生技能包与包管理生态支持，提供根目录 `package.json`（声明 `pi-package` 与 `pi.skills`）及工作区/全局安装契约。
+- 统一十一项专业 Skill 的 `SKILL.md` 卷首标题为标准“执行契约”规制（如 `# 后端工程执行契约`）。
+- 补齐多平台市场清单元数据，将 `.agents/plugins/marketplace.json` 与 `.claude-plugin/marketplace.json` 插件描述与核心清单完整对齐。
+- 深度强化内部契约校验脚本 `scripts/check.py`，增加对 `SKILL.md` 元数据与标题契约、`openai.yaml` 模式、事实册目录拓扑与清单元数据一致性的全量自动化严检。
+- 演进发布工程事实册，将四渠道分发证据边界扩展为 Codex、Claude Code、Antigravity、OpenCode 与 Pi (pi.dev) 多渠道。
+- 同步更新 README 补充 Pi 生态安装指南与分发事实说明。
+
 ## 3.2.3 - 2026-09-23
 
 - 增加对 OpenCode 原生技能生态支持，提供 `opencode.json` 配置与工作区/全局安装契约。
